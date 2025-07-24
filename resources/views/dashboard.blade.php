@@ -4,13 +4,13 @@
     <style>
         #title {
             opacity: 0;
-            transform: translateY(-20px);
+            transform: translateY(0);
             transition: opacity 0.1s ease, transform 0.2s ease;
         }
 
         #title.show-title {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(-20px);
         }
 
         /* kosongkan animation-name default, nanti kita isi via JS */
@@ -43,8 +43,12 @@
             <div class="col-md-5 main-menu">
                 <div class="card border-0">
                     <img src="{{ asset('icon/input.svg') }}" class="mx-auto mt-1 icon menu-btn" alt="Input"
-                        data-target="menu-input" id="img-input">
-                    <div class="card-body mx-auto" id="btn-input">
+                        data-target="menu-kalibrasi" id="img-input">
+                    <div class="card-body mx-auto" id="btn-kalibrasi">
+                        <button class="btn btn-primary py-2 px-5 rounded-4 menu-btn btn1"
+                            data-target="menu-kalibrasi">KALIBRASI</button>
+                    </div>
+                    <div class="menu-kalibrasi row d-none mx-md-0 card-body mx-auto" id="btn-input">
                         <button class="btn btn-primary py-2 px-5 rounded-4 menu-btn btn1"
                             data-target="menu-input">INPUT</button>
                     </div>
@@ -59,8 +63,13 @@
             <div class="col-md-5 main-menu">
                 <div class="card border-0">
                     <img src="{{ asset('icon/report.svg') }}" class="mx-auto mt-1 icon menu-btn" alt="Report"
-                        data-target="menu-report" id="img-report">
-                    <div class="card-body mx-auto" id="btn-report">
+                        data-target="menu-control" id="img-report">
+                    <div class="card-body mx-auto" id="btn-control">
+                        <button class="btn btn-primary py-2 px-5 rounded-4 menu-btn btn1 text-nowrap"
+                            data-target="menu-control">CONTROL
+                            LEADER</button>
+                    </div>
+                    <div class="menu-kalibrasi row d-none mx-md-0 card-body mx-auto" id="btn-report">
                         <button class="btn btn-primary py-2 px-5 rounded-4 menu-btn btn1"
                             data-target="menu-report">REPORT</button>
                     </div>
@@ -226,9 +235,35 @@
 @section('scripts')
     <script type="module">
         $(document).ready(function() {
-            $(".menu-btn").click(function() {
-                var target = $(this).data("target"); // Ambil target dari data-target button
-                if (target === "menu-input") {
+            $(".menu-btn").click(function(event) {
+                var target = $(this).attr("data-target"); // Ambil attribute asli, bukan cache jQuery
+                console.log('[Menu Button] Target:', target);
+                if (target === "menu-kalibrasi") {
+                    // Opacity gambar input 50%, hilangkan tombol input
+                    $("#img-input").css("opacity", "1");
+                    $("#img-report").css("opacity", "1");
+                    setTimeout(() => {
+                        $("#img-input").attr("data-target", "menu-input");
+                        $("#img-report").attr("data-target", "menu-report");
+                    }, 100); // ubah setelah klik selesai
+                    $("#btn-kalibrasi").addClass("d-none"); // Sembunyikan tombol kalibrasi
+                    $("#btn-control").addClass("d-none"); // Sembunyikan tombol control leader
+                    $("#btn-input").removeClass("d-none"); // Sembunyikan tombol input
+                    $("#btn-report").removeClass("d-none"); // Sembunyikan tombol report
+                    $("#btn-logout").addClass("d-none");
+                    $("#btn-back").removeClass("d-none"); // Tampilkan tombol back
+                    $(".menu-section").addClass("d-none"); // Sembunyikan semua menu-section
+                    $("#back").addClass("back-kalibrasi");
+                    $("#back").removeClass("back-input");
+                    $("#back").removeClass("back-master");
+                    $("." + target).removeClass("d-none"); // Tampilkan yang dipilih
+
+                    // Ubah judul
+                    $("#title").text("KALIBRASI").removeClass("d-none");
+                    setTimeout(() => {
+                        $("#title").addClass("show-title");
+                    }, 5); // kasih delay sedikit supaya transisi bisa kebaca
+                } else if (target === "menu-input") {
                     // Opacity gambar input 50%, hilangkan tombol input
                     $("#img-input").css("opacity", "1");
                     $("#img-report").css("opacity", "0.5");
@@ -237,6 +272,7 @@
                     $("#btn-logout").addClass("d-none");
                     $("#btn-back").removeClass("d-none"); // Tampilkan tombol back
                     $(".menu-section").addClass("d-none"); // Sembunyikan semua menu-section
+                    $("#back").removeClass("back-kalibrasi");
                     $("#back").addClass("back-input");
                     $("#back").removeClass("back-master");
                     $("." + target).removeClass("d-none"); // Tampilkan yang dipilih
@@ -249,16 +285,44 @@
                 } else if (target === "menu-report") {
                     window.location.href = "/report"
                 } else if (target === "back") {
-                    if ($("#back").hasClass("back-input")) {
+                    if ($("#back").hasClass("back-kalibrasi")) {
                         // Tutup semua menu-section
                         $("#img-input").css("opacity", "1");
                         $("#img-report").css("opacity", "1");
+                        setTimeout(() => {
+                            $("#img-input").attr("data-target", "menu-kalibrasi");
+                            $("#img-report").attr("data-target", "menu-control");
+                        }, 100); // ubah setelah klik selesai
                         $(".menu-section").addClass("d-none");
                         $("#btn-logout").removeClass("d-none");
                         $("#btn-back").addClass("d-none");
+                        $("#btn-input").addClass("d-none");
+                        $("#btn-report").addClass("d-none");
+                        $("#btn-kalibrasi").removeClass("d-none");
+                        $("#btn-control").removeClass("d-none");
+                        $("#back").removeClass("back-kalibrasi");
+                        // Ubah judul
+                        $("#title").removeClass("show-title");
+                        setTimeout(() => {
+                            $("#title").html("&nbsp;");
+                        }, 200); // tunggu animasi selesai (sesuai transition duration CSS)
+                    }
+                    if ($("#back").hasClass("back-input")) {
+                        // Tutup semua menu-section
+                        $("#img-input").css("opacity", "1");
+                        $("#img-input").attr("data-target", "menu-input");
+                        $("#img-report").css("opacity", "1");
+                        $("#img-report").attr("data-target", "menu-report");
+                        $(".menu-section").addClass("d-none");
+                        $("#btn-logout").addClass("d-none");
+                        $("#btn-back").removeClass("d-none");
                         $("#btn-input").removeClass("d-none");
                         $("#btn-report").removeClass("d-none");
+                        $("#btn-kalibrasi").addClass("d-none");
+                        $("#btn-control").addClass("d-none");
+                        $("#back").addClass("back-kalibrasi");
                         $("#back").removeClass("back-input");
+                        $("#back").removeClass("back-master");
 
                         // Ubah judul
                         $("#title").removeClass("show-title");
@@ -269,6 +333,8 @@
                     if ($("#back").hasClass("back-master")) {
                         $("#img-input").css("opacity", "1");
                         $("#img-report").css("opacity", "0.5");
+                        $("#btn-kalibrasi").addClass("d-none");
+                        $("#btn-control").addClass("d-none");
                         $("#btn-input").addClass("d-none"); // Sembunyikan tombol input
                         $("#btn-report").addClass("d-none"); // Sembunyikan tombol report
                         $("#btn-logout").addClass("d-none");
@@ -277,8 +343,9 @@
                         $("#dashboard").removeClass("mt-md-1");
                         $(".main-menu").removeClass("d-none");
                         $(".master-data").addClass("d-none"); // Tampilkan yang dipilih
-                        $("#back").removeClass("back-master");
+                        $("#back").removeClass("back-kalibrasi");
                         $("#back").addClass("back-input");
+                        $("#back").removeClass("back-master");
 
                         // Ubah judul
                         $("#title").text("INPUT").removeClass("d-none");
@@ -301,8 +368,9 @@
                         $(".main-menu").addClass("d-none");
                         $("." + target).removeClass("d-none"); // Tampilkan yang dipilih
                         $("#btn-back").removeClass("d-none");
-                        $("#back").addClass("back-master");
+                        $("#back").removeClass("back-kalibrasi");
                         $("#back").removeClass("back-input");
+                        $("#back").addClass("back-master");
                         $("#btn-logout").addClass("d-none");
 
                         // Ubah judul
@@ -332,6 +400,7 @@
         @endsession
     @endif
     <script>
+        // Cek apakah ada peringatan barang belum selesai kalibrasi
         document.addEventListener('DOMContentLoaded', () => {
             const warnings = @json($warnings);
             const dangers = @json($dangers);

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalibrasi</title>
+    <title>Application</title>
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -27,15 +27,15 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light @if (request()->is('login')) bg-transparent px-3 @else mx-5 px-5 pb-3 bg-primary text-light @endif"
+    <nav class="navbar navbar-expand-lg navbar-light text-light @if (request()->is('login')) bg-transparent px-3 @else mx-5 px-5 pb-3 bg-primary @endif"
         id="navbar-kalibrasi">
         <div class="container-fluid justify-content-center">
             <a class="navbar-brand mx-0 mx-md-4" href="/">
                 <img src="{{ asset('image/logo-pt.png') }}" alt="Logo" class="mt-0 logo">
             </a>
             <div class="row text-center justify-content-center" id="title-section">
-                <p class="fw-bold align-self-center main-title">CALIBRATION APP</p>
-                <p class="align-self-center main-title">PT. CATURINDO AGUNGJAYA RUBBER</p>
+                <p class="align-self-center main-title p-0 m-0">APPLICATION</p>
+                <p class="align-self-center company-name p-0 m-0">PT. CATURINDO AGUNGJAYA RUBBER</p>
                 @if (!request()->is('login'))
                     <button id="title" class="btn btn-lg btn-outline-light fw-medium p-0 my-auto sub-judul"
                         disabled>
