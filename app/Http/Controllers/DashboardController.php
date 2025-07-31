@@ -13,7 +13,8 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         if ($request->has('key')) {
-            return redirect()->route('dashboard')->with(['key' => $request->key]);
+            // dd('Key: ' . $request->key . ', Application: ' . $request->application);
+            return redirect()->route('dashboard')->with(['key' => $request->key, 'application' => $request->application]);
         }
 
         $equipments = MasterList::with(['results' => function ($q) {
@@ -98,7 +99,7 @@ class DashboardController extends Controller
             ['stage' => 'calibration']
         );
 
-        return redirect()->route('input.calibration.data')->with([
+        return redirect()->route('kalibrasi.input.calibration.data')->with([
             'success' => 'Please input the calibration data.',
         ]);
     }

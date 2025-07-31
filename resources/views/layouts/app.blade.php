@@ -34,7 +34,7 @@
                 <img src="{{ asset('image/logo-pt.png') }}" alt="Logo" class="mt-0 logo">
             </a>
             <div class="row text-center justify-content-center" id="title-section">
-                <p class="align-self-center main-title p-0 m-0">APPLICATION</p>
+                <p id="main-title" class="align-self-center main-title p-0 m-0">APPLICATION</p>
                 <p class="align-self-center company-name p-0 m-0">PT. CATURINDO AGUNGJAYA RUBBER</p>
                 @if (!request()->is('login'))
                     <button id="title" class="btn btn-lg btn-outline-light fw-medium p-0 my-auto sub-judul"
