@@ -22,6 +22,6 @@ class ChecksheetController extends Controller
 
     public function update(Request $request, $id)
     {
-        return redirect();
+        return redirect()->route('checksheet.index');
     }
 }
