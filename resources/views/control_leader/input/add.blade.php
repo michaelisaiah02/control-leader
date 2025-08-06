@@ -17,6 +17,33 @@
     <input type="text" id="" name="" placeholder="Production/Finishing" />
   </div>
 </div>
+<div class="d-flex w-100 gap-3">
+  <div class="p-2 w-100 border border-2 border-blue rounded-2">
+    <div class="px-4 py-2 border border-2 border-blue rounded-2">
+      <p>1. Shift</p>
+      <ul>
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+      </ul>
+    </div>
+    <div class="my-2 px-4 py-2 border border-2 border-blue rounded-2">
+      <label for="" class="w-100">2. Nama Operator</label>
+      <input type="text" class="" placeholder="Nama Lengkap">
+    </div>
+  </div>
+  <div class="p-2 w-50 border border-2 border-blue rounded-2">
+    <div class="p-2 my-2 border border-2 border-blue rounded-2">
+      <p>Text Area</p>
+    </div>
+    <div class="p-2 my-2 border border-2 border-blue rounded-2">
+      <p>Radio Group</p>
+    </div>
+    <div class="p-2 my-2 border border-2 border-blue rounded-2">
+      <p>Text Field</p>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('footer-action')
