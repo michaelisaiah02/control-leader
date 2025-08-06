@@ -6,6 +6,7 @@ use App\Http\Middleware\CheckRoleMinUser;
 use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\CheckIncompleteInput;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ChecksheetController;
 use App\Http\Controllers\Kalibrasi\APIController;
 use App\Http\Controllers\Kalibrasi\PrintController;
 use App\Http\Controllers\Kalibrasi\ReportController;
@@ -113,4 +114,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('control')->group(function () {
         Route::get('/input/production', [NewEquipmentController::class, 'create'])->name('input.production');
     });
+});
+
+Route::controller(ChecksheetController::class)->group(function () {
+    Route::get('/checksheet/create', 'create')->name('checksheet.create');
 });
