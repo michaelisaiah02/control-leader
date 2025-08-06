@@ -15,14 +15,13 @@
 </head>
 
 <body>
-  <main class="container d-flex flex-column justify-content-between align-items-center vh-100 px-5">
-    <header
-      class="bg-primary d-flex w-100 justify-content-center align-items-center text-white text-center pt-4 pb-3 rounded-bottom-pill">
+  <main class="d-flex flex-column justify-content-between align-items-center vh-100 px-5">
+    <header class="bg-primary d-flex w-100 justify-content-evenly align-items-center text-white text-center pt-2 rounded-bottom-pill">
       <a href="/">
-        <img src="{{ asset('image/logo-pt.png') }}" alt="Logo" class="mt-0 logo" />
+        <img src="{{ asset('image/logo-pt.png') }}" alt="Logo" class="logo" />
       </a>
-      <div class="mx-5">
-        <h1 class="fs-1 fw-bold text-uppercase">Control Leader</h1>
+      <div>
+        <h1 class="display-3 fw-bolder text-uppercase">Control Leader</h1>
         <p class="fs-2 lh-1">PT. CATURINDO AGUNGJAYA RUBBER</p>
         @yield('title-header')
       </div>
