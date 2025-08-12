@@ -1,10 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 
+@php
+    // Penjelasan: Logika ini sekarang ada di layout, bukan di controller.
+    // 1. Tentukan judul default.
+    $pageTitle = 'Application';
+
+    // 2. Cek apakah ada sesi 'active_app' setelah login.
+    if (session()->has('active_app')) {
+        // 3. Jika ada, gunakan array map untuk menentukan judulnya.
+        $appMap = [
+            'kalibrasi' => 'Kalibrasi',
+            'control_leader' => 'Control Leader',
+        ];
+        $pageTitle = $appMap[session('active_app')] ?? 'Application';
+    }
+@endphp
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application</title>
+    <title>@yield('title', $pageTitle)</title>
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -34,18 +50,10 @@
                 <img src="{{ asset('image/logo-pt.png') }}" alt="Logo" class="mt-0 logo">
             </a>
             <div class="row text-center justify-content-center" id="title-section">
-                <p id="main-title" class="align-self-center main-title p-0 m-0">APPLICATION</p>
+                <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
+                    @yield('title', $pageTitle)</p>
                 <p class="align-self-center company-name p-0 m-0">PT. CATURINDO AGUNGJAYA RUBBER</p>
-                @if (!request()->is('login'))
-                    <button id="title" class="btn btn-lg btn-outline-light fw-medium p-0 my-auto sub-judul"
-                        disabled>
-                        @if (!request()->is('dashboard'))
-                            {{ $title }}
-                        @else
-                            &nbsp;
-                        @endif
-                    </button>
-                @endif
+                @stack('subtitle')
             </div>
             <a class="navbar-brand mx-0 mx-md-4" href="/">
                 <img src="{{ asset('image/logo-rice.png') }}" alt="Logo" class="mt-0 logo">

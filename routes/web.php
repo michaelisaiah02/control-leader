@@ -18,15 +18,16 @@ use App\Http\Controllers\Kalibrasi\Input\RepairDataController;
 use App\Http\Controllers\Kalibrasi\Input\NewEquipmentController;
 use App\Http\Controllers\Kalibrasi\Input\CalibrationDataController;
 
-Route::get('/', function () {
-    return redirect('/dashboard');
-});
+
 Route::get('/ping', function () {
     return response()->json(['pong' => true]);
 })->name('ping');
 
 
 Route::middleware('guest')->group(function () {
+    Route::get('/', function () {
+        return view('welcome');
+    })->name('welcome');
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
 });
