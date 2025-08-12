@@ -4,6 +4,54 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $type_id
+ * @property string $id_num
+ * @property string $sn_num
+ * @property string $capacity
+ * @property string $accuracy
+ * @property int|null $unit_id
+ * @property string $brand
+ * @property string $calibration_type
+ * @property \Illuminate\Support\Carbon $first_used
+ * @property string $rank
+ * @property int $calibration_freq
+ * @property string $acceptance_criteria
+ * @property string $pic
+ * @property string $location
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Equipment $equipment
+ * @property-read \App\Models\Result|null $latestResult
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Repair> $repairs
+ * @property-read int|null $repairs_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Result> $results
+ * @property-read int|null $results_count
+ * @property-read \App\Models\Standard|null $standard
+ * @property-read \App\Models\Unit|null $unit
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereAcceptanceCriteria($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereAccuracy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereBrand($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereCalibrationFreq($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereCalibrationType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereCapacity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereFirstUsed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereIdNum($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereLocation($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList wherePic($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereRank($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereSnNum($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereTypeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereUnitId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class MasterList extends Model
 {
     protected $fillable = [
