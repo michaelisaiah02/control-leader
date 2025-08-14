@@ -45,9 +45,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             EquipmentSeeder::class,
             UnitSeeder::class,
-            // MasterListSeeder::class,
-            // StandardSeeder::class,
-            // ResultSeeder::class,
+            MasterListSeeder::class,
+            StandardSeeder::class,
+            ResultSeeder::class,
         ]);
     }
 }

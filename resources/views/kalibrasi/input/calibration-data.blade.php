@@ -40,10 +40,9 @@
                             class="form-control text-center @error('id_num') is-invalid @enderror {{ old('id_num') ? 'is-valid' : '' }}"
                             name="id_num" id="id-num" autocomplete="off" maxlength="7" required
                             value="{{ old('id_num') ?? $pending?->masterList->id_num }}"
+                            {{ old('id_num') ? '' : 'autofocus' }} name="id_num" id="id-num" autocomplete="off"
+                            maxlength="7" required value="{{ old('id_num') ?? $pending?->masterList->id_num }}"
                             {{ old('id_num') ? '' : 'autofocus' }}>
-                        name="id_num" id="id-num" autocomplete="off" maxlength="7" required
-                        value="{{ old('id_num') ?? $pending?->masterList->id_num }}"
-                        {{ old('id_num') ? '' : 'autofocus' }}>
                         <input type="text" aria-label="No SN" placeholder="No SN"
                             class="form-control text-center width-label-1" id="sn-num" disabled>
                     </div>

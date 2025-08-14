@@ -189,7 +189,7 @@
                     $('#checked').attr('checked', false);
                 }
                 $('#userModalLabel').text('Edit User');
-                $('#userForm').attr('action', `{{ url('admin/users/update-user') }}/${id}`);
+                $('#userForm').attr('action', `{{ url('kalibrasi/admin/users/update-user') }}/${id}`);
                 new bootstrap.Modal(document.getElementById('userModal')).show();
             });
 
@@ -197,7 +197,7 @@
             $(document).on('click', '.btn-delete-user', function() {
                 const id = $(this).data('id');
                 const name = $(this).data('name');
-                $('#deleteUserForm').attr('action', `{{ url('admin/users/delete-user') }}/${id}`);
+                $('#deleteUserForm').attr('action', `{{ url('kalibrasi/admin/users/delete-user') }}/${id}`);
                 $('#deleteUserName').text(name);
             });
 

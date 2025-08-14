@@ -151,7 +151,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             let route = document.referrer || "{{ route('kalibrasi.report.menu') }}";
-            if (route === "{{ url('/report/search') }}") {
+            if (route === "{{ url('/kalibrasi/report/search') }}") {
                 route = "{{ route('kalibrasi.report.menu') }}"
             }
             const printButton = document.createElement('button');
