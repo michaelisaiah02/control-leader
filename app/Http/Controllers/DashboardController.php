@@ -16,11 +16,11 @@ class DashboardController extends Controller
 
         // Jika sesi aplikasi adalah 'control_leader'
         if ($activeApp === 'control_leader') {
-
+            $guardName = 'web_control_leader';
             // Siapkan data yang dibutuhkan untuk view control leader
-            $user = auth()->user(); // Contoh mengambil data user
+            $user = auth()->guard($guardName)->user(); // Contoh mengambil data user
             $leaderName = $user->name;
-            $leaderRole = "Contoh Bagian"; // Ganti dengan data bagian/role yang sebenarnya
+            $leaderRole = $user->role; // Ganti dengan data bagian/role yang sebenarnya
 
             return view('dashboards.control_leader', [
                 'leaderName' => $leaderName,

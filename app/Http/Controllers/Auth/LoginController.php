@@ -14,23 +14,26 @@ class LoginController extends Controller
      */
     public function showLoginForm(Request $request)
     {
-        // Penjelasan: Jika user mengakses /login tanpa memilih aplikasi,
-        // kita kembalikan mereka ke halaman utama untuk memilih.
-        if (!$request->has('app') || !in_array($request->query('app'), ['kalibrasi', 'control_leader'])) {
+        // Jika ada parameter 'app' di URL (saat user pertama kali memilih)
+        if ($request->has('app')) {
+            // Simpan pilihan aplikasi ke dalam session sementara
+            $request->session()->put('login_app_type', $request->query('app'));
+        }
+
+        // Ambil pilihan aplikasi dari session
+        $appType = $request->session()->get('login_app_type');
+
+        // Jika session-nya pun tidak ada, baru lempar ke welcome
+        if (!$appType || !in_array($appType, ['kalibrasi', 'control_leader'])) {
             return redirect()->route('welcome');
         }
 
-        // Penjelasan: Ambil tipe aplikasi dari URL (e.g., 'kalibrasi').
-        $appType = $request->query('app');
-
-        // Penjelasan: Tentukan nama yang akan ditampilkan di halaman login.
         $appName = match ($appType) {
-            'kalibrasi' => 'Kalibrasi',
-            'control_leader' => 'Control Leader',
+            'kalibrasi' => 'KALIBRASI',
+            'control_leader' => 'CONTROL LEADER',
             default => 'APPLICATION'
         };
 
-        // Penjelasan: Kirim variabel $appName dan $appType ke view.
         return view('auth.login', [
             'appName' => $appName,
             'appType' => $appType,
@@ -42,28 +45,31 @@ class LoginController extends Controller
      */
     public function login(Request $request)
     {
-        // Penjelasan: Validasi input dasar.
         $request->validate([
             'employeeID' => 'required|string',
             'password' => 'required|string',
-            'app' => 'required|string|in:kalibrasi,control_leader', // Pastikan 'app' dikirim
+            'app' => 'required|string|in:kalibrasi,control_leader',
         ]);
 
         $credentials = $request->only('employeeID', 'password');
+        $activeApp = $request->input('app');
 
-        if (Auth::attempt($credentials)) {
-            // Penjelasan: Jika login berhasil, regenerate session untuk keamanan.
+        // Pilih guard mana yang akan digunakan untuk otentikasi
+        $guard = $activeApp === 'control_leader'
+            ? Auth::guard('web_control_leader')
+            : Auth::guard('web');
+
+        if ($guard->attempt($credentials)) {
             $request->session()->regenerate();
+            $request->session()->put('active_app', $activeApp);
 
-            // Penjelasan: INI BAGIAN KUNCI! Simpan aplikasi yang aktif ke session.
-            $request->session()->put('active_app', $request->input('app'));
+            $request->session()->forget('login_app_type');
 
             return redirect()->intended('/dashboard');
         }
 
-        // Penjelasan: Jika login gagal, kembalikan ke halaman sebelumnya dengan pesan error.
         throw ValidationException::withMessages([
-            'error' => 'Employee ID atau Password salah.',
+            'error' => 'Employee ID atau Password salah untuk aplikasi ini.',
         ]);
     }
 
@@ -74,11 +80,13 @@ class LoginController extends Controller
     {
         // Penjelasan: INI BAGIAN KUNCI! Hapus session 'active_app' saat logout.
         $request->session()->forget('active_app');
+        $request->session()->forget('login_app_type');
 
         Auth::logout();
+        Auth::guard('web')->logout();
+        Auth::guard('web_control_leader')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');
