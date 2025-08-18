@@ -8,37 +8,33 @@
 
 @section('content')
     <div class="container text-center mt-4">
-        {{-- Menampilkan Nama Leader dan Bagian --}}
-        <div class="mb-4">
-            <div class="d-inline-block border border-2 border-primary text-primary p-2 px-4 rounded-pill">
-                <h5 class="m-0 fw-bold">{{ $leaderName }} - {{ $leaderRole }}</h5>
-            </div>
-        </div>
-
         {{-- Baris Pertama Tombol --}}
-        <div class="row justify-content-center g-3 mb-3">
+        <div class="row justify-content-center g-5 mb-4">
             <div class="col-12 col-md-4">
-                <a href="#" class="btn btn-primary btn-lg w-100 py-3 fw-bold">AWAL SHIFT SEBELUM BEKERJA</a>
+                <a href="#" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-3 align-content-center">AWAL SHIFT SEBELUM
+                    BEKERJA</a>
             </div>
             <div class="col-12 col-md-4">
-                <a href="#" class="btn btn-primary btn-lg w-100 py-3 fw-bold">SAAT BEKERJA</a>
+                <a href="#" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-3 align-content-center">SAAT BEKERJA</a>
             </div>
         </div>
 
         {{-- Baris Kedua Tombol --}}
-        <div class="row justify-content-center g-3 mb-5">
+        <div class="row justify-content-center g-5 mb-4">
             <div class="col-12 col-md-4">
-                <a href="#" class="btn btn-primary btn-lg w-100 py-3 fw-bold">SETELAH ISTIRAHAT</a>
+                <a href="#" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-3 align-content-center">SETELAH
+                    ISTIRAHAT</a>
             </div>
             <div class="col-12 col-md-4">
-                <a href="#" class="btn btn-primary btn-lg w-100 py-3 fw-bold">AKHIR SHIFT SEBELUM PULANG</a>
+                <a href="#" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-3 align-content-center">AKHIR SHIFT
+                    SEBELUM PULANG</a>
             </div>
         </div>
 
         {{-- Tombol Report --}}
         <div class="row justify-content-center mb-5">
             <div class="col-12 col-md-4">
-                <a href="#" class="btn btn-dark btn-lg w-100 py-3 fw-bold">REPORT</a>
+                <a href="#" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-3 align-content-center">REPORT</a>
             </div>
         </div>
     </div>
@@ -47,7 +43,7 @@
     <div class="position-fixed bottom-0 end-0 p-3">
         <form action="{{ route('logout') }}" method="post">
             @csrf
-            <button type="submit" class="btn btn-secondary">Logout</button>
+            <button type="submit" class="btn btn-primary fs-5 fw-medium">Logout</button>
         </form>
     </div>
 @endsection
