@@ -6,6 +6,54 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property int $id
+ * @property string $id_num
+ * @property \Illuminate\Support\Carbon $calibration_date
+ * @property string|null $calibrator_equipment
+ * @property string|null $param_01
+ * @property string|null $param_02
+ * @property string|null $param_03
+ * @property string|null $param_04
+ * @property string|null $param_05
+ * @property string|null $param_06
+ * @property string|null $param_07
+ * @property string|null $param_08
+ * @property string|null $param_09
+ * @property string|null $param_10
+ * @property string $judgement
+ * @property string $created_by
+ * @property string|null $certificate
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\MasterList|null $calibrator
+ * @property-read \App\Models\User $creator
+ * @property-read \App\Models\MasterList $masterList
+ * @method static \Database\Factories\ResultFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereCalibrationDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereCalibratorEquipment($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereCertificate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereCreatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereIdNum($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereJudgement($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam01($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam02($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam03($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam04($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam05($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam06($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam07($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam08($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam09($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam10($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Result extends Model
 {
     /** @use HasFactory<\Database\Factories\ResultFactory> */

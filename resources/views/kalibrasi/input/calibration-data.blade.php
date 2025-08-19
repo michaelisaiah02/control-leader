@@ -11,6 +11,12 @@
             height: 100%;
             border: none;
         }
+
+        #certificateContent iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
     </style>
 @endsection
 @section('content')
@@ -18,6 +24,10 @@
         <form method="POST" class="needs-validation" enctype="multipart/form-data" id="calibration-form"
             action="{{ route('kalibrasi.store.calibration') }}">
             @csrf
+            @if ($pending)
+                <input type="hidden" name="master_list_id" value="{{ $pending->master_list_id }}">
+            @endif
+            <input type="hidden" id="id-result" name="id" value="{{ old('id') ?? '' }}">
             @if ($pending)
                 <input type="hidden" name="master_list_id" value="{{ $pending->master_list_id }}">
             @endif
@@ -30,6 +40,8 @@
                             class="form-control text-center @error('id_num') is-invalid @enderror {{ old('id_num') ? 'is-valid' : '' }}"
                             name="id_num" id="id-num" autocomplete="off" maxlength="7" required
                             value="{{ old('id_num') ?? $pending?->masterList->id_num }}"
+                            {{ old('id_num') ? '' : 'autofocus' }} name="id_num" id="id-num" autocomplete="off"
+                            maxlength="7" required value="{{ old('id_num') ?? $pending?->masterList->id_num }}"
                             {{ old('id_num') ? '' : 'autofocus' }}>
                         <input type="text" aria-label="No SN" placeholder="No SN"
                             class="form-control text-center width-label-1" id="sn-num" disabled>
@@ -76,8 +88,8 @@
                     <div class="input-group input-group-sm mb-1">
                         <span class="input-group-text bg-primary text-light width-label-2">Standar
                             Keberterimaan</span>
-                        <input type="text" class="form-control" id="acceptance-criteria" placeholder="Kg / gr / °C / mm"
-                            disabled>
+                        <input type="text" class="form-control" id="acceptance-criteria"
+                            placeholder="Kg / gr / °C / mm" disabled>
                     </div>
                     <div class="input-group input-group-sm mb-1" id="calibrator-equipment-section">
                         <span class="input-group-text bg-primary text-light width-label-2">Calibrator Equipment</span>

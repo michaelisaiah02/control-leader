@@ -147,7 +147,8 @@
                 $('#equipment-id').val(id);
                 $('#name').val($(this).data('name'));
                 $('#type-id').val($(this).data('type-id'));
-                $('#equipmentForm').attr('action', `{{ url('admin/equipments/update-equipment') }}/${id}`);
+                $('#equipmentForm').attr('action',
+                    `{{ url('kalibrasi/admin/equipments/update-equipment') }}/${id}`);
                 new bootstrap.Modal(document.getElementById('equipmentModal')).show();
             });
 
@@ -156,7 +157,7 @@
                 const id = $(this).data('id');
                 const name = $(this).data('name');
                 $('#deleteEquipmentForm').attr('action',
-                    `{{ url('admin/equipments/delete-equipment') }}/${id}`);
+                    `{{ url('kalibrasi/admin/equipments/delete-equipment') }}/${id}`);
                 $('#deleteEquipmentName').text(name);
             });
 

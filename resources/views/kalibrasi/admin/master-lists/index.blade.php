@@ -231,7 +231,7 @@
                 $('#pic').val($(this).data('pic'));
                 $('#location').val($(this).data('location'));
                 $('#masterlistForm').attr('action',
-                    `{{ url('admin/master-lists/update-master-list') }}/${id}`);
+                    `{{ url('kalibrasi/admin/master-lists/update-master-list') }}/${id}`);
                 new bootstrap.Modal(document.getElementById('masterlistModal')).show();
             });
 

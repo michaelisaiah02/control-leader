@@ -18,22 +18,23 @@ use App\Http\Controllers\Kalibrasi\Admin\MasterListController;
 use App\Http\Controllers\Kalibrasi\Input\RepairDataController;
 use App\Http\Controllers\Kalibrasi\Input\NewEquipmentController;
 use App\Http\Controllers\Kalibrasi\Input\CalibrationDataController;
+use App\Http\Middleware\CheckAppAuthentication;
 
-Route::get('/', function () {
-    return redirect('/dashboard');
-});
 Route::get('/ping', function () {
     return response()->json(['pong' => true]);
 })->name('ping');
 
 
 Route::middleware('guest')->group(function () {
+    Route::get('/', function () {
+        return view('welcome');
+    })->name('welcome');
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
 });
 
-Route::middleware('auth')->group(function () {
-    Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
+Route::middleware(CheckAppAuthentication::class)->group(function () {
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::middleware(CheckIncompleteInput::class)->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     });

@@ -145,7 +145,7 @@
                 $('#unit-id').val(id);
                 $('#name').val($(this).data('name'));
                 $('#symbol').val($(this).data('symbol'));
-                $('#unitForm').attr('action', `{{ url('admin/units/update-unit') }}/${id}`);
+                $('#unitForm').attr('action', `{{ url('kalibrasi/admin/units/update-unit') }}/${id}`);
                 new bootstrap.Modal(document.getElementById('unitModal')).show();
             });
 
@@ -153,7 +153,7 @@
             $(document).on('click', '.btn-delete-unit', function() {
                 const id = $(this).data('id');
                 const name = $(this).data('name');
-                $('#deleteUnitForm').attr('action', `{{ url('admin/units/delete-unit') }}/${id}`);
+                $('#deleteUnitForm').attr('action', `{{ url('kalibrasi/admin/units/delete-unit') }}/${id}`);
                 $('#deleteUnitName').text(name);
             });
 

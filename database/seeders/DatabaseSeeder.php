@@ -43,11 +43,12 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
+            ControlLeaderUserSeeder::class,
             EquipmentSeeder::class,
             UnitSeeder::class,
-            // MasterListSeeder::class,
-            // StandardSeeder::class,
-            // ResultSeeder::class,
+            MasterListSeeder::class,
+            StandardSeeder::class,
+            ResultSeeder::class,
         ]);
     }
 }

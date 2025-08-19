@@ -229,7 +229,8 @@
                 $('#param-08').val($(this).data('param08'));
                 $('#param-09').val($(this).data('param09'));
                 $('#param-10').val($(this).data('param10'));
-                $('#standardForm').attr('action', `{{ url('admin/standards/update-standard') }}/${id}`);
+                $('#standardForm').attr('action',
+                    `{{ url('kalibrasi/admin/standards/update-standard') }}/${id}`);
                 new bootstrap.Modal(document.getElementById('standardModal')).show();
             });
 
@@ -239,7 +240,7 @@
                 const idNum = $(this).data('id-num');
                 const equipment = $(this).data('equipment');
                 $('#deleteStandardForm').attr('action',
-                    `{{ url('admin/standards/delete-standard') }}/${id}`);
+                    `{{ url('kalibrasi/admin/standards/delete-standard') }}/${id}`);
                 $('#deleteEquipmentName').text(`${idNum} - ${equipment}`);
             });
 

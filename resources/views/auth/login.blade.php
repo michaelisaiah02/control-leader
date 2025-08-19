@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', $appName)
+
 @section('styles')
     <style>
         body {
@@ -7,38 +9,50 @@
             background-size: 100%;
             background-repeat: no-repeat;
         }
+
+        /* Penjelasan: Menambahkan style untuk judul agar lebih terlihat */
+        .login-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 1rem;
+        }
     </style>
 @endsection
 
 @section('content')
-    <div class="container" style="margin-top: 25vh">
+    <div class="container" style="padding-top: 25vh;">
         <div class="row justify-content-center">
             <div class="col-auto">
-                <div class="card bg-primary bg-opacity-50 shadow-sm border-0 rounded-5">
-                    <div class="card-body">
-                        <!-- Form login -->
+                <div class="card bg-primary bg-opacity-50 shadow-sm border-0 rounded-4">
+                    <div class="card-body p-4">
                         <form action="{{ route('login') }}" method="POST" id="loginForm">
                             @csrf
+
+                            <input type="hidden" name="app" value="{{ $appType ?? '' }}">
+
                             <div class="form-floating mb-3 mx-auto">
-                                <input type="text" class="form-control text-center" placeholder="" id="employeeID"
-                                    name="employeeID" value="{{ old('employeeID') }}" required autofocus>
+                                <input type="text" class="form-control text-center bg-light" placeholder="Employee ID"
+                                    id="employeeID" name="employeeID" value="{{ old('employeeID') }}" required autofocus>
                                 <label for="employeeID">Employee ID</label>
                             </div>
                             <div class="form-floating mb-3 mx-auto">
-                                <input type="password" class="form-control text-center" placeholder="" id="password"
-                                    name="password" required autocomplete="current-password">
+                                <input type="password" class="form-control text-center bg-light" placeholder="Password"
+                                    id="password" name="password" required autocomplete="current-password">
                                 <label for="password">Password</label>
                             </div>
-                            <div class="row justify-content-center mx-auto">
+                            <div class="row justify-content-center mx-auto px-2">
                                 @if ($errors->any())
-                                    <div class="alert alert-danger">
+                                    <div class="alert alert-danger py-2">
                                         @foreach ($errors->all() as $error)
                                             {{ $error }}
                                         @endforeach
                                     </div>
                                 @endif
-                                <button type="submit" class="btn btn-primary text-center mb-2 mx-auto">Login</button>
-                                <p class="text-center fst-italic text-light">If login fails, contact (IT)</p>
+                                <button type="submit"
+                                    class="btn btn-primary text-light fw-bold text-center mb-2 mx-auto">Login</button>
+                                <p class="text-center fst-italic text-light small">Jika login gagal, hubungi (IT)</p>
                             </div>
                         </form>
                     </div>
@@ -49,6 +63,7 @@
 @endsection
 
 @section('scripts')
+    {{-- Script idle-timeout Anda tetap di sini, tidak perlu diubah --}}
     <script>
         const MAX_IDLE_TIME = 15 * 60 * 1000; // 15 menit
         let lastActivity = Date.now();
