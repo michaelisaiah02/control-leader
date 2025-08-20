@@ -25,6 +25,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
     <link rel="manifest" href="/site.webmanifest" />
     @vite(['resources/css/app.css', 'resources/sass/app.scss', 'resources/js/app.js'])
     @yield('styles')

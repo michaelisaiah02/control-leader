@@ -1,3 +1,5 @@
+<!-- Static: Hanya digunakan slide 6 di PPT -->
+
 @extends('layouts.app')
 
 @push('subtitle')
