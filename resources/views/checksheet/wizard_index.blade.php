@@ -24,20 +24,22 @@
       </ul>
       <div class="mb-3">
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="status" id="status-absen" value="absen">
-          <label class="form-check-label" for="status-absen">0) Absen</label>
+          <input class="form-check-input" type="radio" name="status" id="status-absent" value="absent">
+          <label class="form-check-label" for="status-absent">0) Absen</label>
         </div>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="status" id="status-hadir" value="hadir">
-          <label class="form-check-label" for="status-hadir">1) Hadir</label>
+          <input class="form-check-input" type="radio" name="status" id="status-present" value="present">
+          <label class="form-check-label" for="status-present">1) Hadir</label>
         </div>
       </div>
 
     </div>
 
-    @foreach ($steps as $step)
-    <x-forms.wizard :id="$step['id']" :name="$step['name']" :type="$step['type']" :placeholder="$step['placeholder'] ?? ''" :label="$step['label']" :options="$step['options'] ?? []" />
-    @endforeach
+    <form action="" id="dynamic-forms">
+      @foreach ($steps as $step)
+      <x-forms.wizard :id="$step['id']" :name="$step['name']" :type="$step['type']" :placeholder="$step['placeholder'] ?? ''" :label="$step['label']" :options="$step['options'] ?? []" />
+      @endforeach
+    </form>
   </div>
 
   <div class="w-100 d-flex justify-content-end mt-3">
@@ -49,56 +51,58 @@
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const absenRadio = document.getElementById("status-absen");
-    const hadirRadio = document.getElementById("status-hadir");
+  const steps = @json($steps);
+  let currentMode = "";
+  let filteredSteps = [];
 
-    const steps = @json(array_column($steps, 'id'));
+  function filterSteps(mode) {
+    return steps.filter(step => step.id.includes(mode));
+  }
 
-    function hideAll() {
-      steps.forEach(id => document.getElementById(id).classList.add("d-none"));
+  function initForm(mode) {
+    currentMode = mode;
+    filteredSteps = filterSteps(mode);
+
+    steps.forEach(step => {
+      const el = document.getElementById(step.id);
+      if (el) el.classList.add("d-none");
+    });
+
+    if (filteredSteps.length > 0) {
+      document.getElementById(filteredSteps[0].id).classList.remove("d-none");
     }
+  }
 
-    absenRadio.addEventListener("change", function() {
-      if (this.checked) {
-        hideAll();
-        document.getElementById(steps[0]).classList.remove("d-none");
-      }
-    });
+  function showNextStep(index) {
+    if (index + 1 < filteredSteps.length) {
+      document.getElementById(filteredSteps[index + 1].id).classList.remove("d-none");
+    }
+  }
 
-    hadirRadio.addEventListener("change", function() {
-      if (this.checked) hideAll();
-    });
+  function attachListeners() {
+    steps.forEach((step, idx) => {
+      const el = document.getElementById(step.id);
+      if (!el) return;
 
-    steps.forEach((id, index) => {
-      const stepEl = document.getElementById(id);
-      const inputEl = stepEl.querySelector("input");
-
-      if (!inputEl) return;
-
-      inputEl.addEventListener("input", function() {
-        if (this.value.trim() !== "" || this.checked) {
-          if (steps[index + 1]) {
-            document.getElementById(steps[index + 1]).classList.remove("d-none");
+      const inputs = el.querySelectorAll("input");
+      inputs.forEach(input => {
+        input.addEventListener("change", () => {
+          const filteredIndex = filteredSteps.findIndex(s => s.id === step.id);
+          if (filteredIndex !== -1) {
+            showNextStep(filteredIndex);
           }
-        } else {
-          for (let i = index + 1; i < steps.length; i++) {
-            document.getElementById(steps[i]).classList.add("d-none");
-          }
-        }
-      });
-
-      // handle radio khusus (pilihan otomatis membuka next)
-      if (inputEl.type === "radio") {
-        stepEl.querySelectorAll("input[type=radio]").forEach(radio => {
-          radio.addEventListener("change", function() {
-            if (steps[index + 1]) {
-              document.getElementById(steps[index + 1]).classList.remove("d-none");
-            }
-          });
         });
-      }
+      });
+    });
+  }
+
+  document.querySelectorAll('input[name="status"]').forEach(radio => {
+    radio.addEventListener("change", function() {
+      initForm(this.value);
     });
   });
+
+  initForm("");
+  attachListeners();
 </script>
 @endsection

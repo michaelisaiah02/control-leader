@@ -1,4 +1,4 @@
-<div id="{{ $id }}" class="p-2 w-100 border border-2 border-primary rounded-2 d-none">
+<div id="{{ $id }}" class="mb-3 p-2 w-100 border border-2 border-primary rounded-2 d-none">
     <label class="form-label">{{ $label }}</label>
     @if ($type === 'text')
     <input type="text"
