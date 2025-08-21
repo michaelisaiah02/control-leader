@@ -118,5 +118,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
 });
 
 Route::controller(ChecksheetController::class)->group(function () {
+    Route::get('/checksheet', 'index')->name('checksheet.index');
+    Route::get('/checksheet/step-by-step', 'wizard_index')->name('checksheet.wizard_index');
     Route::get('/checksheet/create', 'create')->name('checksheet.create');
 });
