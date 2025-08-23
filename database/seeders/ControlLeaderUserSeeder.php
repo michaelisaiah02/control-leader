@@ -38,10 +38,10 @@ class ControlLeaderUserSeeder extends Seeder
 
         // Buat user Leader
         ControlLeaderUser::updateOrCreate(
-            ['employeeID' => '30001'],
+            ['employeeID' => '12025'],
             [
                 'name' => 'CL Leader',
-                'password' => Hash::make($password),
+                'password' => Hash::make("00000"),
                 'role' => 'leader',
             ]
         );

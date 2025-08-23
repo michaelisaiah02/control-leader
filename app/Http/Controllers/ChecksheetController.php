@@ -12,8 +12,9 @@ class ChecksheetController extends Controller
         return view("checksheet.index");
     }
 
-    public function wizard_index(): View
+    public function wizard_index(Request $request): View
     {
+        $type = $request->type;
         $steps = [
             [
                 'id' => 'step-1-absent',
@@ -45,7 +46,7 @@ class ChecksheetController extends Controller
             ]
         ];
 
-        return view("checksheet.wizard_index", compact(['steps']));
+        return view("checksheet.wizard_index", compact(['steps', 'type']));
     }
 
     public function create(): View
