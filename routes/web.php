@@ -120,7 +120,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
         Route::get('/input/production', [NewEquipmentController::class, 'create'])->name('input.production');
         Route::controller(ChecksheetController::class)->group(function () {
             Route::get('/checksheet', 'index')->name('checksheet.index');
-            Route::get('/checksheet/a', 'wizard_index')->name('checksheet.wizard_index');
+            Route::post('/checksheet/store', 'store')->name('checksheet.store');
         });
     });
 });

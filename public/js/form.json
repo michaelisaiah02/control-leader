@@ -1,0 +1,135 @@
+{
+    "bagianA_1": [
+        {
+            "id": "shift",
+            "label": "Shift",
+            "type": "radio",
+            "name": "shift",
+            "options": ["1", "2", "3"]
+        },
+        {
+            "id": "operator",
+            "label": "ID & Nama Operator",
+            "type": "select",
+            "name": "operator",
+            "options": ["OP001 - Budi", "OP002 - Andi", "OP003 - Siti"]
+        },
+        {
+            "id": "bagian",
+            "label": "Bagian",
+            "type": "text",
+            "name": "bagian",
+            "placeholder": "Masukkan Bagian"
+        }
+    ],
+    "bagianA_2": [
+        {
+            "id": "kehadiran",
+            "label": "Kehadiran Operator",
+            "type": "radio",
+            "name": "kehadiran",
+            "options": ["0) Absen", "1) Hadir"],
+            "conditional": {
+                "0) Absen": [
+                    {
+                        "id": "nama_pengganti",
+                        "label": "Nama Operator Pengganti",
+                        "type": "text",
+                        "placeholder": "Nama Lengkap",
+                        "name": "nama_pengganti"
+                    },
+                    {
+                        "id": "bagian_pengganti",
+                        "label": "Bagian Operator Pengganti",
+                        "type": "text",
+                        "placeholder": "Contoh: Finishing",
+                        "name": "bagian_pengganti"
+                    },
+                    {
+                        "id": "kondisi_pengganti",
+                        "label": "Kondisi Operator Pengganti",
+                        "type": "radio",
+                        "name": "kondisi_pengganti",
+                        "options": ["Sehat", "Sakit"]
+                    }
+                ],
+                "1) Hadir": [
+                    {
+                        "id": "kondisi",
+                        "label": "Kondisi Operator",
+                        "type": "radio",
+                        "name": "kondisi",
+                        "options": ["Sehat", "Sakit"]
+                    }
+                ]
+            }
+        }
+    ],
+    "bagianB_1": [
+        {
+            "id": "talk",
+            "label": "Apakah operator ikut 5 Minute Talk sampai selesai?",
+            "type": "radio",
+            "name": "talk",
+            "options": [
+                "0) Operator tidak mengikuti 5 minutes talk",
+                "1) Operator mengikuti namun tidak memperhatikan",
+                "2) Operator mengikuti sampai selesai"
+            ],
+            "conditional": {
+                "0) Operator tidak mengikuti 5 minutes talk": [
+                    {
+                        "id": "problem-operator-no-5-min",
+                        "label": "Problem",
+                        "type": "text",
+                        "name": "problem-no-5-min"
+                    },
+                    {
+                        "id": "countermeasure",
+                        "label": "Countermeasure",
+                        "type": "text",
+                        "name": "countermeasure"
+                    }
+                ],
+                "1) Operator mengikuti namun tidak memperhatikan": [
+                    {
+                        "id": "problem-operator-no-5-min",
+                        "label": "Problem",
+                        "type": "text",
+                        "name": "problem-no-5-min"
+                    },
+                    {
+                        "id": "countermeasure",
+                        "label": "Countermeasure",
+                        "type": "text",
+                        "name": "countermeasure"
+                    }
+                ],
+                "2) Operator mengikuti sampai selesai": []
+            }
+        }
+    ],
+    "bagianB_2": [
+        {
+            "id": "fiveR",
+            "label": "Apakah operator melakukan 5R sebelum bekerja?",
+            "type": "radio",
+            "name": "fiveR",
+            "options": [
+                "0) Operator tidak melakukan 5R di area kerja",
+                "1) Operator melakukan 5R dengan baik"
+            ]
+        },
+        {
+            "id": "fiveR",
+            "label": "Check kehadiran leader",
+            "type": "radio",
+            "name": "fiveR",
+            "options": [
+                "0) Selalu Absen",
+                "1) Ada di hari yang tidak hadir",
+                "2) Hadir selalu"
+            ]
+        }
+    ]
+}
