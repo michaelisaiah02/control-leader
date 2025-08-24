@@ -11,13 +11,13 @@
         {{-- Baris Pertama Tombol --}}
         <div class="row justify-content-center g-5 mb-4">
             <div class="col-12 col-md-4">
-                <a href="{{ route('checksheet.wizard_index', ['type' => 'awal_shift']) }}"
+                <a href="{{ route('checksheet.index', ['type' => 'awal_shift']) }}"
                     class="btn btn-primary btn-lg w-100 h-100 py-3 fs-3 align-content-center rounded-4">AWAL
                     SHIFT SEBELUM
                     BEKERJA</a>
             </div>
             <div class="col-12 col-md-4">
-                <a href="{{ route('checksheet.wizard_index', ['type' => 'saat_bekerja']) }}"
+                <a href="{{ route('checksheet.index', ['type' => 'saat_bekerja']) }}"
                     class="btn btn-primary btn-lg w-100 h-100 py-3 fs-3 align-content-center rounded-4">SAAT
                     BEKERJA</a>
             </div>
@@ -26,12 +26,12 @@
         {{-- Baris Kedua Tombol --}}
         <div class="row justify-content-center g-5 mb-4">
             <div class="col-12 col-md-4">
-                <a href="{{ route('checksheet.wizard_index', ['type' => 'setelah_istirahat']) }}"
+                <a href="{{ route('checksheet.index', ['type' => 'setelah_istirahat']) }}"
                     class="btn btn-primary btn-lg w-100 h-100 py-3 fs-3 align-content-center rounded-4">SETELAH
                     ISTIRAHAT</a>
             </div>
             <div class="col-12 col-md-4">
-                <a href="{{ route('checksheet.wizard_index', ['type' => 'akhir_shift']) }}"
+                <a href="{{ route('checksheet.index', ['type' => 'akhir_shift']) }}"
                     class="btn btn-primary btn-lg w-100 h-100 py-3 fs-3 align-content-center rounded-4">AKHIR
                     SHIFT
                     SEBELUM PULANG</a>
