@@ -6,19 +6,19 @@ use App\Http\Middleware\CheckRoleMinUser;
 use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\CheckIncompleteInput;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\ChecksheetController;
+use App\Http\Middleware\CheckAppAuthentication;
 use App\Http\Controllers\Kalibrasi\APIController;
 use App\Http\Controllers\Kalibrasi\PrintController;
 use App\Http\Controllers\Kalibrasi\ReportController;
 use App\Http\Controllers\Kalibrasi\Admin\UnitController;
 use App\Http\Controllers\Kalibrasi\Admin\UserController;
+use App\Http\Controllers\ControlLeader\ChecksheetController;
 use App\Http\Controllers\Kalibrasi\Admin\StandardController;
 use App\Http\Controllers\Kalibrasi\Admin\EquipmentController;
 use App\Http\Controllers\Kalibrasi\Admin\MasterListController;
 use App\Http\Controllers\Kalibrasi\Input\RepairDataController;
 use App\Http\Controllers\Kalibrasi\Input\NewEquipmentController;
 use App\Http\Controllers\Kalibrasi\Input\CalibrationDataController;
-use App\Http\Middleware\CheckAppAuthentication;
 
 Route::get('/ping', function () {
     return response()->json(['pong' => true]);
@@ -119,7 +119,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
     Route::prefix('control')->group(function () {
         Route::get('/input/production', [NewEquipmentController::class, 'create'])->name('input.production');
         Route::controller(ChecksheetController::class)->group(function () {
-            Route::get('/checksheet', 'index')->name('checksheet.index');
+            Route::get('/checksheet', 'soal_a')->name('checksheet.soal_a');
             Route::post('/checksheet/store', 'store')->name('checksheet.store');
         });
     });

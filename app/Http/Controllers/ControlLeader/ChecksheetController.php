@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\ControlLeader;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ChecksheetController extends Controller
 {
-    public function index(Request $request): View
+    public function soal_a(Request $request): View
     {
         $type = $request->type;
-        return view("checksheet.index", compact(['type']));
+        return view("checksheet.soal_a", compact(['type']));
     }
 
     public function create(): View
