@@ -2,58 +2,38 @@
 
 namespace Database\Seeders;
 
+use App\Models\ControlLeaderUser;
+use App\Models\Department; // Tambahkan ini
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\ControlLeaderUser; // <-- Gunakan model yang benar
 
 class ControlLeaderUserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Data login password akan sama untuk semua user agar mudah diingat
+        $hose = Department::where('department_name', 'Hose')->first();
+        $extrude = Department::where('department_name', 'Extrude')->first();
         $password = '00000';
 
-        // Buat user Admin
+        // Admin (tanpa departemen)
         ControlLeaderUser::updateOrCreate(
-            ['employeeID' => '10001'], // Kunci unik untuk mencari/membuat
-            [
-                'name' => 'CL Admin',
-                'password' => Hash::make($password),
-                'role' => 'admin',
-            ]
+            ['employeeID' => '10001'],
+            ['name' => 'CL Admin', 'password' => Hash::make($password), 'role' => 'admin', 'department_id' => null]
         );
-
-        // Buat user Supervisor
+        // Supervisor Dept. Hose
         ControlLeaderUser::updateOrCreate(
             ['employeeID' => '20001'],
-            [
-                'name' => 'CL Supervisor',
-                'password' => Hash::make($password),
-                'role' => 'supervisor',
-            ]
+            ['name' => 'CL Supervisor Hose', 'password' => Hash::make($password), 'role' => 'supervisor', 'department_id' => $hose->id]
         );
-
-        // Buat user Leader
+        // Leader Dept. Extrude
         ControlLeaderUser::updateOrCreate(
             ['employeeID' => '12025'],
-            [
-                'name' => 'CL Leader',
-                'password' => Hash::make("00000"),
-                'role' => 'leader',
-            ]
+            ['name' => 'CL Leader Extrude', 'password' => Hash::make($password), 'role' => 'leader', 'department_id' => $extrude->id]
         );
-
-        // Buat user Guest
+        // Guest (tanpa departemen)
         ControlLeaderUser::updateOrCreate(
             ['employeeID' => '90001'],
-            [
-                'name' => 'CL Guest',
-                'password' => Hash::make($password),
-                'role' => 'guest',
-            ]
+            ['name' => 'CL Guest', 'password' => Hash::make($password), 'role' => 'guest', 'department_id' => null]
         );
     }
 }

@@ -26,6 +26,12 @@ use Illuminate\Notifications\Notifiable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
+ * @property string $role
+ * @property int $approved
+ * @property int $checked
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereApproved($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereChecked($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRole($value)
  * @mixin \Eloquent
  */
 class User extends Authenticatable
