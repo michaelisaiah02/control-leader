@@ -6,6 +6,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property string $division_name
+ * @property int $department_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Department $department
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Division newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Division newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Division query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Division whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Division whereDepartmentId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Division whereDivisionName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Division whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Division whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Division extends Model
 {
     use HasFactory;

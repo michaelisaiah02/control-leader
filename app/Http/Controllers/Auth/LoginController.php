@@ -62,8 +62,26 @@ class LoginController extends Controller
         if ($guard->attempt($credentials)) {
             $request->session()->regenerate();
             $request->session()->put('active_app', $activeApp);
-
             $request->session()->forget('login_app_type');
+
+            // >>> Tambahan: single-device hanya untuk control_leader
+            if ($activeApp === 'control_leader') {
+                $user = $guard->user();
+                $sid = $request->session()->getId();
+
+                if (!empty($user->control_session_id) && $user->control_session_id !== $sid) {
+                    // ada sesi aktif di device lain -> tolak login baru
+                    $guard->logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+
+                    throw ValidationException::withMessages([
+                        'error' => 'Akun CONTROL LEADER sedang aktif di perangkat lain.',
+                    ]);
+                }
+
+                $user->forceFill(['control_session_id' => $sid])->save();
+            }
 
             return redirect()->intended('/dashboard');
         }
@@ -78,9 +96,21 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
-        // Penjelasan: INI BAGIAN KUNCI! Hapus session 'active_app' saat logout.
-        $request->session()->forget('active_app');
-        $request->session()->forget('login_app_type');
+        $activeApp = $request->session()->get('active_app');
+
+        // Larangan logout saat sedang isi checksheet (lihat bagian D)
+        if ($request->session()->get('cl_in_progress') === true && $activeApp === 'control_leader') {
+            return back()->with('error', 'Tidak bisa logout saat sedang mengisi checksheet.');
+        }
+
+        // bersihin flag
+        $request->session()->forget(['active_app', 'login_app_type', 'cl_in_progress']);
+
+        // kosongkan control_session_id kalau memang logout dari control_leader
+        if ($activeApp === 'control_leader' && Auth::guard('web_control_leader')->check()) {
+            optional(Auth::guard('web_control_leader')->user())
+                    ?->forceFill(['control_session_id' => null])->save();
+        }
 
         Auth::logout();
         Auth::guard('web')->logout();
@@ -91,4 +121,5 @@ class LoginController extends Controller
 
         return redirect('/');
     }
+
 }

@@ -31,6 +31,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ControlLeaderUser wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ControlLeaderUser whereRole($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ControlLeaderUser whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SchedulePlan> $createdSchedules
+ * @property-read int|null $created_schedules_count
+ * @property-read Department|null $department
  * @mixin \Eloquent
  */
 class ControlLeaderUser extends Authenticatable

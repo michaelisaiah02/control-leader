@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->foreignId('department_id')->nullable()->constrained('departments');
             $table->string('password');
             $table->enum('role', ['admin', 'guest', 'supervisor', 'leader']);
+            $table->string('control_session_id', 100)->nullable()->index();
             $table->timestamps();
         });
     }

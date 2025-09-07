@@ -7,6 +7,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 // app/Models/ScheduleDetail.php
+/**
+ * @property-read \App\Models\SchedulePlan|null $plan
+ * @property-read \App\Models\ControlLeaderUser|null $targetLeader
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail query()
+ * @mixin \Eloquent
+ */
 class ScheduleDetail extends Model
 {
     use HasFactory;
