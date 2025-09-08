@@ -1,15 +1,17 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\ControlLeader;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\ControlLeader\ScheduleDetail;
+use App\Models\ControlLeader\ChecksheetAnswer;
+use App\Models\ControlLeader\ControlLeaderModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 /**
  * @property int $id
- * @property int $schedule_id
+ * @property int $schedule_detail_id
  * @property string $type
  * @property int $stopwatch_duration Durasi dalam detik
  * @property string|null $part_a_answer_1
@@ -18,9 +20,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $part_a_answer_4
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ChecksheetAnswer> $answers
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ChecksheetAnswer> $answers
  * @property-read int|null $answers_count
- * @property-read \App\Models\ScheduleDetail|null $scheduleDetail
+ * @property-read ScheduleDetail $scheduleDetail
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet query()
@@ -30,16 +32,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet wherePartAAnswer2($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet wherePartAAnswer3($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet wherePartAAnswer4($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScheduleId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScheduleDetailId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereStopwatchDuration($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class Checksheet extends Model
+class Checksheet extends ControlLeaderModel
 {
     use HasFactory;
-    protected $connection = 'mysql_control_leader';
     protected $fillable = [
         'schedule_id',
         'type',

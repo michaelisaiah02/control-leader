@@ -99,10 +99,28 @@
         const form = document.getElementById('formAll');
         form.addEventListener('submit', () => {
             const partA = JSON.parse(sessionStorage.getItem(key('partA') || '{}') || '{}');
+
             form.elements['shift'].value = partA.shift ?? '';
-            form.elements['person_id'].value = partA.person_id ?? '';
             form.elements['division_id'].value = partA.division_id ?? '';
             form.elements['attendance'].value = partA.attendance ?? '';
+
+            @if ($detail->plan->type === 'leader_checks_operator')
+                // operator manual → kirim operator_id/operator_name, BUKAN person_id
+                const opId = document.createElement('input');
+                opId.type = 'hidden';
+                opId.name = 'operator_id';
+                opId.value = partA.operator_id ?? '';
+                form.appendChild(opId);
+
+                const opNm = document.createElement('input');
+                opNm.type = 'hidden';
+                opNm.name = 'operator_name';
+                opNm.value = partA.operator_name ?? '';
+                form.appendChild(opNm);
+            @else
+                // supervisor_checks_leader → kirim person_id (leader id)
+                form.elements['person_id'].value = partA.person_id ?? '';
+            @endif
 
             const startAt = Number(sessionStorage.getItem(key('startAt')) || Date.now());
             const elapsed = Math.max(0, Math.floor((Date.now() - startAt) / 1000));

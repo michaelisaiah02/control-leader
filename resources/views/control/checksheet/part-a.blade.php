@@ -2,7 +2,7 @@
 
 @push('subtitle')
     <p id="title" class="fs-2 w-75 p-0 my-auto sub-judul border-1 border-white rounded-2 text-uppercase">
-        @switch($type)
+        @switch($slot)
             @case('awal_shift')
                 AWAL SHIFT SEBELUM BEKERJA
             @break
@@ -26,16 +26,14 @@
 
 @section('content')
     <div class="px-4">
-        <div class="d-flex justify-content-between align-items-center my-3">
+        <div class="d-flex w-100 mt-2 justify-content-between align-items-center">
             <span class="badge text-bg-primary px-3 py-2">Bagian A (Fixed)</span>
-            <span class="border rounded px-3 py-2">Stopwatch:
-                <b id="stopwatch">00:00</b>
-            </span>
+            <span class="border rounded px-3 py-2">Stopwatch: <b id="stopwatch">00:00</b></span>
         </div>
 
         <form id="formPartA" onsubmit="return false;">
             @csrf
-            <div class="row g-3">
+            <div class="row g-3 mt-2">
                 <div class="col-md-3">
                     <label class="form-label">Shift</label>
                     <select name="shift" class="form-select" required>
@@ -46,23 +44,31 @@
                     </select>
                 </div>
 
-                <div class="col-md-5">
-                    <label class="form-label">
-                        @if ($planType === 'leader_checks_operator')
-                            Operator
-                        @else
-                            Leader
-                        @endif (ID & Nama)
-                    </label>
-                    <select name="person_id" class="form-select" required>
-                        <option value="">- pilih -</option>
-                        @foreach ($people as $p)
-                            <option value="{{ $p->id }}">{{ $p->id }} — {{ $p->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                @if ($planType === 'leader_checks_operator')
+                    {{-- Operator tidak punya akun: input manual --}}
+                    <div class="col-md-4">
+                        <label class="form-label">ID Operator</label>
+                        <input type="text" name="operator_id" class="form-control" required>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Nama Operator</label>
+                        <input type="text" name="operator_name" class="form-control" required>
+                    </div>
+                @else
+                    {{-- Supervisor menilai Leader: pilih dari users role=Leader --}}
+                    <div class="col-md-9">
+                        <label class="form-label">Leader (ID & Nama)</label>
+                        <select name="person_id" class="form-select" required>
+                            <option value="">- pilih -</option>
+                            @foreach ($leaders as $p)
+                                <option value="{{ $p->id }}">{{ $p->employeeID ?? 'LDR' . $p->id }} —
+                                    {{ $p->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
 
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Bagian / Divisi</label>
                     <select name="division_id" class="form-select" required>
                         <option value="">- pilih -</option>
@@ -74,12 +80,8 @@
 
                 <div class="col-12">
                     <label class="form-label d-block">Kehadiran</label>
-                    <label class="me-3">
-                        <input type="radio" name="attendance" value="1" required> Hadir
-                    </label>
-                    <label>
-                        <input type="radio" name="attendance" value="0"> Absen
-                    </label>
+                    <label class="me-3"><input type="radio" name="attendance" value="1" required> Hadir</label>
+                    <label><input type="radio" name="attendance" value="0"> Absen</label>
                 </div>
             </div>
 
@@ -92,9 +94,9 @@
 
 @push('scripts')
     <script>
-        // === Heartbeat anti auto-logout ===
+        // Heartbeat anti auto-logout
         const HEARTBEAT_MS = 45000;
-        const hb = setInterval(() => {
+        setInterval(() => {
             fetch("{{ route('control.heartbeat') }}", {
                 method: "POST",
                 headers: {
@@ -104,7 +106,7 @@
             }).catch(() => {});
         }, HEARTBEAT_MS);
 
-        // === Stopwatch nyala dari Part A, disimpan di sessionStorage ===
+        // Stopwatch (sessionStorage)
         const detailId = {{ $detail->id }};
         const key = (k) => `cl:${detailId}:${k}`;
 
@@ -113,34 +115,40 @@
         }
 
         function renderTimer() {
-            const startAt = Number(sessionStorage.getItem(key('startAt')));
-            const s = Math.max(0, Math.floor((Date.now() - startAt) / 1000));
-            const m = String(Math.floor(s / 60)).padStart(2, '0');
-            const sec = String(s % 60).padStart(2, '0');
-            document.getElementById('stopwatch').textContent = `${m}:${sec}`;
+            const s = Math.max(0, Math.floor((Date.now() - Number(sessionStorage.getItem(key('startAt')))) / 1000));
+            document.getElementById('stopwatch').textContent =
+                String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
         }
         setInterval(renderTimer, 1000);
         renderTimer();
 
-        // === Simpan Part A → pindah ke Part B
+        // Next → simpan Part A ke sessionStorage, lalu ke Part B
         document.getElementById('toPartB').addEventListener('click', () => {
-            const form = document.getElementById('formPartA');
-            const fd = new FormData(form);
+            const f = document.getElementById('formPartA');
+            const fd = new FormData(f);
 
-            const needed = ['shift', 'person_id', 'division_id', 'attendance'];
-            for (const n of needed) {
-                if (!fd.get(n)) {
-                    alert('Lengkapi semua isian Bagian A.');
-                    return;
-                }
-            }
+            const needBase = ['shift', 'division_id', 'attendance'];
+            for (const n of needBase)
+                if (!fd.get(n)) return alert('Lengkapi semua isian Bagian A.');
 
-            const data = {};
-            needed.forEach(n => data[n] = fd.get(n));
-            sessionStorage.setItem(key('partA'), JSON.stringify(data));
+            const payload = {
+                shift: fd.get('shift'),
+                division_id: fd.get('division_id'),
+                attendance: fd.get('attendance')
+            };
 
-            // Kirim attendance via querystring (opsional) biar Part B bisa filter pertanyaan
-            const attendance = encodeURIComponent(data.attendance);
+            @if ($planType === 'leader_checks_operator')
+                if (!fd.get('operator_id') || !fd.get('operator_name')) return alert('Isi ID & Nama Operator.');
+                payload.operator_id = fd.get('operator_id');
+                payload.operator_name = fd.get('operator_name');
+            @else
+                if (!fd.get('person_id')) return alert('Pilih Leader.');
+                payload.person_id = fd.get('person_id');
+            @endif
+
+            sessionStorage.setItem(key('partA'), JSON.stringify(payload));
+
+            const attendance = encodeURIComponent(payload.attendance);
             window.location.href = "{{ route('control.checksheets.partB', $detail) }}" +
             `?attendance=${attendance}`;
         });

@@ -2,98 +2,122 @@
 
 namespace App\Http\Controllers\ControlLeader;
 
-use App\Http\Controllers\Controller;
-use App\Models\Checksheet;
-use App\Models\ChecksheetAnswer;
-use App\Models\Division;
-use App\Models\Question;
-use App\Models\ScheduleDetail;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Illuminate\View\View;
+use Illuminate\Http\Request;
+use App\Models\ControlLeader\User;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\ControlLeader\Division;
+use App\Models\ControlLeader\Question;
+use App\Models\ControlLeader\Checksheet;
+use App\Models\ControlLeader\SchedulePlan;
+use App\Models\ControlLeader\ScheduleDetail;
+use App\Models\ControlLeader\ChecksheetAnswer;
 
 class ChecksheetController extends Controller
 {
     // ==== PART A ====
-    public function createPartA(ScheduleDetail $detail)
+    public function createPartAToday(Request $request)
     {
-        // Flag biar gak bisa logout auto / manual (kalau kamu pakai logika itu)
         session(['cl_in_progress' => true]);
 
-        // Ambil tipe plan: leader_checks_operator | supervisor_checks_leader
-        $type = $detail->plan->type ?? 'leader_checks_operator';
+        $slot = $request->query('type'); // awal_shift | saat_bekerja | setelah_istirahat | akhir_shift
+        $user = auth('web_control_leader')->user();
+        $today = Carbon::today();
+        $ptype = $this->inferPlanType($user); // 'leader_checks_operator' | 'supervisor_checks_leader'
 
-        // --- Data dropdown (SILAKAN SESUAIKAN QUERY) ---
-        if ($type === 'leader_checks_operator') {
-            // Ambil list operator aktif untuk pilihan "ID & Nama"
-            $people = User::query()
-                ->where('role', 'operator')       // TODO: sesuaikan field/relasi rolenya
-                ->orderBy('name')
-                ->get(['id', 'name']);
-        } else { // supervisor_checks_leader
-            $people = User::query()
-                ->where('role', 'leader')         // TODO: sesuaikan
-                ->orderBy('name')
-                ->get(['id', 'name']);
-        }
+        // Plan bulan ini (sederhana; tambah kolom periode kalau perlu)
+        $plan = SchedulePlan::firstOrCreate(
+            ['type' => $ptype],
+            ['name' => strtoupper($ptype) . ' ' . $today->format('F Y')]
+        );
 
-        $divisions = Division::query()->orderBy('name')->get(['id', 'name']); // kalau gak ada, kirim array kosong
+        // Detail untuk hari ini oleh evaluator = user sekarang.
+        // target_user_id hanya dipakai ketika supervisor menilai leader.
+        $defaultDivisionId = Division::orderBy('id')->value('id'); // boleh null kalau nggak ada
+        $targetLeader = ($ptype === 'supervisor_checks_leader')
+            ? User::where('role', 'Leader')->orderBy('id')->first()
+            : null; // leader_checks_operator: operator tak punya akun
 
-        // Judul sub-judul (opsional) — kamu sudah punya switch-case $type shift; kirim apa pun yang kamu butuh
-        $shiftTypes = ['awal_shift', 'saat_bekerja', 'setelah_istirahat', 'akhir_shift']; // contoh
+        $detail = ScheduleDetail::firstOrCreate(
+            [
+                'schedule_plan_id' => $plan->id,
+                'scheduled_date' => $today->toDateString(),
+                'evaluator_id' => $user->id,
+            ],
+            [
+                'target_user_id' => $targetLeader?->id, // null jika operator
+                'division_id' => $defaultDivisionId,
+            ]
+        );
+
+        // Dropdowns:
+        $leaders = User::where('role', 'Leader')->orderBy('name')->get(['id', 'name']); // hanya dipakai saat SCL
+        $divisions = Division::orderBy('name')->get(['id', 'name']);
 
         return view('control.checksheets.part-a', [
             'detail' => $detail,
-            'planType' => $type,
-            'people' => $people,
+            'planType' => $ptype,
+            'leaders' => $leaders,
             'divisions' => $divisions,
-            'shiftTypes' => $shiftTypes,
+            'slot' => $slot,
         ]);
     }
 
-    // ==== PART B ====
     public function showPartB(ScheduleDetail $detail, Request $request)
     {
-        session(['cl_in_progress' => true]); // tetap on
+        session(['cl_in_progress' => true]);
 
-        // Ambil “attendance” dari sessionStorage saat submit nanti.
-        // Di sini kita cuma butuh filter question berdasarkan type plan & (opsional) attendance.
-        $type = $detail->plan->type ?? 'leader_checks_operator';
-
-        // NOTE: kalau kamu perlu filter by attendance, kirimkan via querystring dari JS
+        $ptype = $detail->plan->type ?? 'leader_checks_operator';
         $attendance = $request->query('attendance'); // '0' | '1' | null
 
         $questions = Question::query()
             ->where('is_active', 1)
-            ->where('type', $type) // pastikan kolom type di questions cocok: leader_checks_operator / supervisor_checks_leader
+            ->where('type', $ptype)
             ->when($attendance !== null, function ($q) use ($attendance) {
                 $q->where(function ($p) use ($attendance) {
                     $p->whereNull('when_attendance')
-                        ->orWhere('when_attendance', (int) $attendance); // 0 atau 1
+                        ->orWhere('when_attendance', (int) $attendance);
                 });
             })
             ->orderBy('display_order')
             ->get(['id', 'code', 'prompt', 'display_order']);
 
-        return view('control.checksheets.part-b', [
-            'detail' => $detail,
-            'questions' => $questions,
-        ]);
+        return view('control.checksheets.part-b', compact('detail', 'questions'));
     }
 
-    // ==== FINAL SUBMIT (SAVE KE DB SEKALI) ====
     public function store(Request $request)
     {
-        // Validasi Part A (datang dari hidden inputs yang diisi JS Part B)
-        $dataA = $request->validate([
+        // Pertama, ambil detail untuk tahu plan type
+        $detail = ScheduleDetail::with('plan')->findOrFail($request->input('schedule_detail_id'));
+        $ptype = $detail->plan->type;
+
+        // Validasi Part A tergantung tipe plan:
+        // - leader_checks_operator  => butuh operator_id & operator_name (manual text)
+        // - supervisor_checks_leader => butuh leader_id (person_id dari users)
+        $baseA = $request->validate([
             'schedule_detail_id' => ['required', 'integer', 'exists:schedule_details,id'],
             'shift' => ['required', 'in:1,2,3'],
-            'person_id' => ['required', 'integer'], // operator_id / leader_id → disatukan: person_id
             'division_id' => ['required', 'integer'],
             'attendance' => ['required', 'in:0,1'],
             'stopwatch_duration' => ['required', 'integer', 'min:0'],
         ]);
+
+        if ($ptype === 'leader_checks_operator') {
+            $partAExtra = $request->validate([
+                'operator_id' => ['required', 'string', 'max:100'],
+                'operator_name' => ['required', 'string', 'max:200'],
+            ]);
+            // Gabungkan ID & Nama sesuai spesifikasi Part A (jawaban ke-2 adalah "ID & Nama")
+            $personCompound = trim($partAExtra['operator_id'] . ' - ' . $partAExtra['operator_name']);
+        } else { // supervisor_checks_leader
+            $partAExtra = $request->validate([
+                'person_id' => ['required', 'integer', 'exists:users,id'], // leader id
+            ]);
+            $leader = User::find($partAExtra['person_id']);
+            $personCompound = $leader ? ($leader->employeeID ?? ('LDR' . $leader->id)) . ' - ' . $leader->name : 'UNKNOWN';
+        }
 
         // Validasi Part B
         $dataB = $request->validate([
@@ -104,23 +128,20 @@ class ChecksheetController extends Controller
             'answers.*.countermeasure' => ['nullable', 'string'],
         ]);
 
-        DB::transaction(function () use ($dataA, $dataB) {
-            $detail = ScheduleDetail::with('plan')->findOrFail($dataA['schedule_detail_id']);
-
+        DB::transaction(function () use ($detail, $ptype, $baseA, $personCompound, $dataB) {
             $checksheet = Checksheet::create([
                 'schedule_detail_id' => $detail->id,
-                'type' => $detail->plan->type, // leader_checks_operator | supervisor_checks_leader
-                'stopwatch_duration' => $dataA['stopwatch_duration'],
+                'type' => $ptype,
+                'stopwatch_duration' => $baseA['stopwatch_duration'],
 
-                // Part A fixed:
-                'part_a_answer_1' => (int) $dataA['shift'],        // shift (1/2/3)
-                'part_a_answer_2' => (int) $dataA['person_id'],    // id & nama (ID saja; nama bisa join saat view)
-                'part_a_answer_3' => (int) $dataA['division_id'],  // division_id
-                'part_a_answer_4' => (int) $dataA['attendance'],   // hadir(1)/absen(0)
+                // Part A fixed fields:
+                'part_a_answer_1' => (int) $baseA['shift'],       // Shift 1/2/3
+                'part_a_answer_2' => $personCompound,            // "ID - Nama" (operator manual atau leader)
+                'part_a_answer_3' => (int) $baseA['division_id'], // Division ID
+                'part_a_answer_4' => (int) $baseA['attendance'],  // 1 hadir / 0 absen
             ]);
 
-            if (! empty($dataB['answers'])) {
-                // Sisipkan checksheet_id untuk setiap jawaban
+            if (!empty($dataB['answers'])) {
                 $payload = array_map(function ($row) use ($checksheet) {
                     return [
                         'checksheet_id' => $checksheet->id,
@@ -137,11 +158,19 @@ class ChecksheetController extends Controller
             }
         });
 
-        // selesai → clear flag anti-logout
         session()->forget('cl_in_progress');
 
-        return redirect()->route('control.checksheets.create', request('schedule_detail_id'))
+        return redirect()->route('control.checksheets.create', ['type' => $request->query('type')])
             ->with('ok', 'Checksheet tersimpan ✅');
+    }
+
+    private function inferPlanType($user): string
+    {
+        // mapping sederhana sesuai 4 role: Admin, Guest, Supervisor, Leader
+        return match (strtolower($user->role ?? '')) {
+            'supervisor' => 'supervisor_checks_leader',
+            default => 'leader_checks_operator', // Leader (atau lainnya) menilai Operator
+        };
     }
 
     public function finalize(Checksheet $checksheet)

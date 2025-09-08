@@ -1,19 +1,22 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\ControlLeader;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\ControlLeader\User;
+use App\Models\ControlLeader\Division;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ControlLeader\ControlLeaderModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @property int $id
  * @property string $department_name
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Division> $divisions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Division> $divisions
  * @property-read int|null $divisions_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ControlLeaderUser> $users
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
  * @property-read int|null $users_count
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Department newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Department newQuery()
@@ -24,10 +27,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Department whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class Department extends Model
+class Department extends ControlLeaderModel
 {
     use HasFactory;
-    protected $connection = 'mysql_control_leader';
     protected $fillable = ['department_name'];
 
     // Satu departemen punya banyak divisi
@@ -39,6 +41,6 @@ class Department extends Model
     // Satu departemen punya banyak user (leader/supervisor)
     public function users(): HasMany
     {
-        return $this->hasMany(ControlLeaderUser::class);
+        return $this->hasMany(User::class);
     }
 }

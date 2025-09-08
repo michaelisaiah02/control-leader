@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\ControlLeader;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ControlLeader\Department;
+use App\Models\ControlLeader\ControlLeaderModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @property int $id
@@ -12,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $department_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Department $department
+ * @property-read Department $department
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Division newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Division newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Division query()
@@ -23,10 +25,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Division whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class Division extends Model
+class Division extends ControlLeaderModel
 {
     use HasFactory;
-    protected $connection = 'mysql_control_leader';
     protected $fillable = ['division_name', 'department_id'];
 
     // Satu divisi dimiliki oleh satu departemen

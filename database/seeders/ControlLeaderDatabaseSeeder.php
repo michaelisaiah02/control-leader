@@ -12,6 +12,7 @@ class ControlLeaderDatabaseSeeder extends Seeder
             DepartmentSeeder::class,
             ControlLeaderUserSeeder::class,
             QuestionSeeder::class,
+            ScheduleSeeder::class,
             // Panggil seeder lain di sini jika ada, misal ScheduleSeeder
         ]);
     }

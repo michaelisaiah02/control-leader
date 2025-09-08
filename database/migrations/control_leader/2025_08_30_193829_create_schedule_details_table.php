@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->foreignId('schedule_plan_id')->constrained('schedule_plans')->onDelete('cascade');
             $table->foreignId('target_leader_id')->nullable()->constrained('users');
             $table->string('target_operator_id')->nullable(); // ID Operator (input manual)
-            $table->date('schedule_date');
+            $table->date('scheduled_date');
             $table->timestamps();
         });
     }
