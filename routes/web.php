@@ -144,11 +144,11 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
         // CHECKSHEET (2 step: Part A -> Part B)
         // =========================
 
-        // Part A
-        Route::get('details/{detail}/checksheets/create', [ChecksheetController::class, 'createPartA'])
+        // Part A → otomatis cari detail by today
+        Route::get('checksheets/create', [ChecksheetController::class, 'createPartAToday'])
             ->name('checksheets.create');
 
-        // Part B (masih pakai detail, belum bikin draft row)
+        // Part B tetap butuh {detail}, karena begitu Part A jalan, detail sudah ketemu
         Route::get('details/{detail}/checksheets/part-b', [ChecksheetController::class, 'showPartB'])
             ->name('checksheets.partB');
 
@@ -174,7 +174,12 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
             ->name('checksheets.destroy');
         Route::get('checksheets/{checksheet}/export', [ChecksheetController::class, 'export'])
             ->name('checksheets.export');
-        Route::post('/heartbeat', fn() => response()->noContent())->name('heartbeat');
+        Route::post('/heartbeat', function () {
+            if (auth('web_control_leader')->user())
+                auth('web_control_leader')->user()->forceFill(['cl_last_ping' => now()])->save();
+            return response()->noContent();
+        })->name('control.heartbeat');
+
 
         // =========================
         // API kecil buat dropdown schedule/target (AJAX)

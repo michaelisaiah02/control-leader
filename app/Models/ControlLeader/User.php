@@ -61,7 +61,7 @@ class User extends Authenticatable
     // User ini milik satu departemen
     public function department(): BelongsTo
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Department::class, 'department_id');
     }
 
     // User ini (sebagai scheduler) membuat banyak jadwal

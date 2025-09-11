@@ -15,6 +15,8 @@ return new class extends Migration {
             $table->string('password');
             $table->enum('role', ['admin', 'guest', 'supervisor', 'leader']);
             $table->string('control_session_id', 100)->nullable()->index();
+            $table->boolean('cl_in_progress')->default(false);
+            $table->timestamp('cl_last_ping')->nullable();
             $table->timestamps();
         });
     }

@@ -69,18 +69,40 @@ class LoginController extends Controller
                 $user = $guard->user();
                 $sid = $request->session()->getId();
 
-                if (!empty($user->control_session_id) && $user->control_session_id !== $sid) {
-                    // ada sesi aktif di device lain -> tolak login baru
+                // grace window berapa menit sejak heartbeat terakhir dianggap "aktif"
+                $LOCK_TTL_MIN = 3;
+
+                $lockActive = $user->cl_in_progress
+                    && $user->cl_last_ping
+                    && now()->diffInMinutes($user->cl_last_ping) < $LOCK_TTL_MIN;
+
+                if (!empty($user->control_session_id) && $user->control_session_id !== $sid && $lockActive) {
+                    // masih aktif mengisi → tolak login baru
                     $guard->logout();
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
 
                     throw ValidationException::withMessages([
-                        'error' => 'Akun CONTROL LEADER sedang aktif di perangkat lain.',
+                        'error' => 'Akun CONTROL LEADER sedang mengisi checksheet di perangkat lain.',
                     ]);
                 }
 
-                $user->forceFill(['control_session_id' => $sid])->save();
+                // kalau tidak sedang mengisi (atau lock kadaluarsa) → boleh takeover sesi lama
+                $oldSid = $user->control_session_id;
+
+                $user->forceFill([
+                    'control_session_id' => $sid,
+                    // reset flag biar gak "nyangkut"
+                    'cl_in_progress' => false,
+                    'cl_last_ping' => now(),
+                ])->save();
+
+                // (opsional) jika SESSION_DRIVER=database, hapus baris sesi lama
+                if (config('session.driver') === 'database' && $oldSid && $oldSid !== $sid) {
+                    \DB::connection(config('session.connection'))
+                        ->table(config('session.table', 'sessions'))
+                        ->where('id', $oldSid)->delete();
+                }
             }
 
             return redirect()->intended('/dashboard');

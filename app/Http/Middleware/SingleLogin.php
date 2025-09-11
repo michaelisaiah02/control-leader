@@ -14,23 +14,28 @@ class SingleLogin
      */
     public function handle(Request $request, Closure $next)
     {
-        $guard = auth('web_control_leader');
-
-        if ($guard->check()) {
-            $user = $guard->user();
+        $u = auth('web_control_leader')->user();
+        if ($u) {
             $sid = $request->session()->getId();
+            $lockActive = $u->cl_in_progress && $u->cl_last_ping
+                && now()->diffInMinutes($u->cl_last_ping) < 3;
 
-            if (empty($user->control_session_id) || $user->control_session_id !== $sid) {
-                // tendang kalau sesi tidak sah (mis. user login di device lain)
-                $guard->logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-                return redirect()->route('login')->withErrors([
-                    'error' => 'Sesi control leader tidak valid (mungkin aktif di perangkat lain).',
-                ]);
+            if ($u->control_session_id !== $sid) {
+                if ($lockActive) {
+                    // lagi ngisi di tempat lain → tendang
+                    auth('web_control_leader')->logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                    return redirect()->route('login')->withErrors([
+                        'error' => 'Sesi kamu tidak valid (akun sedang dipakai untuk checksheet).'
+                    ]);
+                } else {
+                    // tidak ngisi → adopsi sesi baru
+                    $u->forceFill(['control_session_id' => $sid])->save();
+                }
             }
         }
-
         return $next($request);
     }
+
 }
