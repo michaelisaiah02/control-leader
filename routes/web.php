@@ -21,6 +21,7 @@ use App\Http\Controllers\Kalibrasi\Input\RepairDataController;
 use App\Http\Controllers\ControlLeader\ScheduleDetailController;
 use App\Http\Controllers\Kalibrasi\Input\NewEquipmentController;
 use App\Http\Controllers\Kalibrasi\Input\CalibrationDataController;
+use App\Http\Middleware\SingleLogin;
 
 Route::get('/ping', function () {
     return response()->json(['pong' => true]);
@@ -118,7 +119,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
             });
         });
     });
-    Route::prefix('control')->as('control.')->middleware(['auth'])->group(function () {
+    Route::prefix('control')->as('control.')->middleware(SingleLogin::class)->group(function () {
 
         // (opsional) landing
         Route::view('/', 'control.dashboard')->name('dashboard');
@@ -178,7 +179,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
             if (auth('web_control_leader')->user())
                 auth('web_control_leader')->user()->forceFill(['cl_last_ping' => now()])->save();
             return response()->noContent();
-        })->name('control.heartbeat');
+        })->name('heartbeat');
 
 
         // =========================

@@ -26,19 +26,17 @@ class ChecksheetController extends Controller
         $slot = $request->query('type');                      // subjudul
         $dateQ = $request->query('date');                      // optional (YYYY-MM-DD) dari picker
         $me = auth('web_control_leader')->user();
-        $ptype = $this->inferPlanType($me);                    // leader_checks_operator | supervisor_checks_leader
-
-        // 1) CARI DETAIL HARI INI milik plan yang dibuat oleh user (scheduler_id = saya)
+        $ptype = $this->inferPlanType($me);
         $today = Carbon::today()->toDateString();
 
         $detailToday = ScheduleDetail::with(['plan.scheduler'])
             ->whereDate('scheduled_date', $today)
             ->whereHas('plan', function ($q) use ($ptype, $me) {
                 $q->where('type', $ptype)
-                    ->where('scheduler_id', $me->id);           // <-- hanya plan yang dibuat saya
+                    ->where('scheduler_id', $me->id);   // <= pembuat jadwal = user login
             })
-            ->where('evaluator_id', $me->id)                  // evaluator = user yang mengisi
             ->first();
+
 
         if ($detailToday && !$dateQ) {
             return $this->renderPartA($detailToday, $ptype, $slot);
@@ -51,11 +49,11 @@ class ChecksheetController extends Controller
                 $q->where('type', $ptype)
                     ->where('scheduler_id', $me->id);
             })
-            ->where('evaluator_id', $me->id)
             ->orderBy('scheduled_date', 'desc')
             ->pluck('scheduled_date')
             ->unique()
             ->values();
+
 
         // Kalau belum pilih tanggal & hari ini tidak ada → tampilkan picker terbatas
         if (!$dateQ && !$detailToday) {
@@ -74,8 +72,10 @@ class ChecksheetController extends Controller
         // 4) AMBIL/BUAT PLAN untuk saya sebagai scheduler
         $plan = SchedulePlan::firstOrCreate(
             ['type' => $ptype, 'scheduler_id' => $me->id],
-            ['name' => strtoupper($ptype) . ' ' . Carbon::parse($date)->format('F Y')]
+            ['name' => strtoupper($ptype) . ' ' . \Carbon\Carbon::parse($date)->format('F Y')]
         );
+
+
 
         // target_user_id (leader) hanya saat supervisor_checks_leader
         $targetLeader = $ptype === 'supervisor_checks_leader'
@@ -87,11 +87,10 @@ class ChecksheetController extends Controller
             [
                 'schedule_plan_id' => $plan->id,
                 'scheduled_date' => $date,
-                'evaluator_id' => $me->id,
             ],
             [
-                'target_user_id' => $targetLeader?->id,      // null jika operator
-                // department_id akan diambil dari $plan->scheduler saat simpan (bukan di sini)
+                'target_user_id' => $targetLeader?->id, // null kalau operator
+                // dept diambil saat simpan dari $plan->scheduler->department_id
             ]
         );
 
@@ -147,6 +146,7 @@ class ChecksheetController extends Controller
         ]);
 
         $detail = ScheduleDetail::with('plan.scheduler')->findOrFail($base['schedule_detail_id']);
+
         $ptype = $detail->plan->type;
 
         if ($ptype === 'leader_checks_operator') {
@@ -172,16 +172,16 @@ class ChecksheetController extends Controller
         ]);
 
         DB::transaction(function () use ($detail, $ptype, $base, $personField, $answers) {
-            $deptId = optional($detail->plan->scheduler)->department_id; // <-- ambil dari scheduler
+            $deptId = optional($detail->plan->scheduler)->department_id;
 
             $checksheet = Checksheet::create([
                 'schedule_detail_id' => $detail->id,
-                'type' => $ptype,
+                'type' => $detail->plan->type,
                 'stopwatch_duration' => $base['stopwatch_duration'],
-                'part_a_answer_1' => (int) $base['shift'],     // Shift
-                'part_a_answer_2' => $personField,            // ID & Nama
-                'part_a_answer_3' => (int) ($deptId ?? 0),     // Department ID dari scheduler
-                'part_a_answer_4' => (int) $base['attendance'],// Hadir/Absen
+                'part_a_answer_1' => (int) $base['shift'],
+                'part_a_answer_2' => $personField,        // "ID - Nama"
+                'part_a_answer_3' => (int) ($deptId ?? 0), // dept dari scheduler
+                'part_a_answer_4' => (int) $base['attendance'],
             ]);
 
             if (!empty($answers['answers'])) {
