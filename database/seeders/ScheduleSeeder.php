@@ -55,9 +55,21 @@ class ScheduleSeeder extends Seeder
             [
                 'schedule_plan_id' => $planLCO->id,
                 'scheduled_date' => $today->toDateString(),
+                'target_operator_id' => '57259',
             ],
             [
-                'target_operator_id' => '57259', // contoh ID operator (input manual
+                'target_operator_name' => 'Budi Santoso',
+            ]
+        );
+
+        ScheduleDetail::firstOrCreate(
+            [
+                'schedule_plan_id' => $planLCO->id,
+                'scheduled_date' => $today->toDateString(),
+                'target_operator_id' => '29837',
+            ],
+            [
+                'target_operator_name' => 'Zaenal Samsudin',
             ]
         );
 

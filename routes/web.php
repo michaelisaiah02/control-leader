@@ -180,6 +180,12 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
                 auth('web_control_leader')->user()->forceFill(['cl_last_ping' => now()])->save();
             return response()->noContent();
         })->name('heartbeat');
+        Route::post('details/{detail}/checksheets/commit-target', [ChecksheetController::class, 'commitTarget'])
+            ->name('checksheets.commitTarget');
+        Route::get(
+            'details/{detail}/checksheets/targets',
+            [ChecksheetController::class, 'targetsJson']
+        )->name('checksheets.targets');
 
 
         // =========================

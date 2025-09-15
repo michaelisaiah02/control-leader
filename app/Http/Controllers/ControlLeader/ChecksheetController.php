@@ -143,27 +143,6 @@ class ChecksheetController extends Controller
             'shift' => ['required', 'in:1,2,3'],
             'attendance' => ['required', 'in:0,1'],
             'stopwatch_duration' => ['required', 'integer', 'min:0'],
-        ]);
-
-        $detail = ScheduleDetail::with('plan.scheduler')->findOrFail($base['schedule_detail_id']);
-
-        $ptype = $detail->plan->type;
-
-        if ($ptype === 'leader_checks_operator') {
-            $extra = $request->validate([
-                'operator_id' => ['required', 'string', 'max:100'],
-                'operator_name' => ['required', 'string', 'max:200'],
-            ]);
-            $personField = trim($extra['operator_id'] . ' - ' . $extra['operator_name']);
-        } else {
-            $extra = $request->validate([
-                'person_id' => ['required', 'integer', 'exists:users,id'],
-            ]);
-            $ldr = User::find($extra['person_id']);
-            $personField = ($ldr->employeeID ?? ('LDR' . $ldr->id)) . ' - ' . $ldr->name;
-        }
-
-        $answers = $request->validate([
             'answers' => ['nullable', 'array'],
             'answers.*.question_id' => ['required', 'integer', 'exists:questions,id'],
             'answers.*.answer' => ['nullable', 'string'],
@@ -171,20 +150,35 @@ class ChecksheetController extends Controller
             'answers.*.countermeasure' => ['nullable', 'string'],
         ]);
 
-        DB::transaction(function () use ($detail, $ptype, $base, $personField, $answers) {
-            $deptId = optional($detail->plan->scheduler)->department_id;
+        $detail = ScheduleDetail::with(['plan.scheduler', 'targetLeader'])->findOrFail($base['schedule_detail_id']);
+        $ptype = $detail->plan->type;
 
+        // Tentukan personField dari detail (bukan dari request)
+        if ($ptype === 'supervisor_checks_leader') {
+            if (!$detail->targetLeader)
+                abort(422, 'Target Leader belum dipilih.');
+            $personField = ($detail->targetLeader->employeeID ?? ('LDR' . $detail->targetLeader->id)) . ' - ' . $detail->targetLeader->name;
+        } else {
+            if (!$detail->target_operator_id || !$detail->target_operator_name)
+                abort(422, 'Target Operator belum diisi.');
+            $personField = $detail->target_operator_id . ' - ' . $detail->target_operator_name;
+        }
+
+        $deptId = optional($detail->plan->scheduler)->department_id;
+
+        \DB::transaction(function () use ($detail, $ptype, $base, $personField, $deptId) {
             $checksheet = Checksheet::create([
                 'schedule_detail_id' => $detail->id,
-                'type' => $detail->plan->type,
+                'type' => $ptype,
                 'stopwatch_duration' => $base['stopwatch_duration'],
-                'part_a_answer_1' => (int) $base['shift'],
-                'part_a_answer_2' => $personField,        // "ID - Nama"
-                'part_a_answer_3' => (int) ($deptId ?? 0), // dept dari scheduler
-                'part_a_answer_4' => (int) $base['attendance'],
+                'part_a_answer_1' => (int) $base['shift'],       // Shift
+                'part_a_answer_2' => $personField,              // "ID - Nama"
+                'part_a_answer_3' => (int) ($deptId ?? 0),       // Department dari scheduler
+                'part_a_answer_4' => (int) $base['attendance'],  // Hadir/Absen
             ]);
 
-            if (!empty($answers['answers'])) {
+            $ans = $base['answers'] ?? [];
+            if (!empty($ans)) {
                 $payload = array_map(fn($row) => [
                     'checksheet_id' => $checksheet->id,
                     'question_id' => (int) $row['question_id'],
@@ -193,12 +187,11 @@ class ChecksheetController extends Controller
                     'countermeasure' => $row['countermeasure'] ?? null,
                     'created_at' => now(),
                     'updated_at' => now(),
-                ], $answers['answers']);
+                ], $ans);
                 ChecksheetAnswer::insert($payload);
             }
         });
 
-        // clear lock
         auth('web_control_leader')->user()?->forceFill(['cl_in_progress' => false])->save();
 
         return redirect()->route('control.checksheets.create', ['type' => $request->query('type')])
@@ -212,6 +205,125 @@ class ChecksheetController extends Controller
             'supervisor' => 'supervisor_checks_leader',
             default => 'leader_checks_operator', // Leader (atau lainnya) menilai Operator
         };
+    }
+
+    public function targetsJson(ScheduleDetail $detail)
+    {
+        $detail->load(['plan.scheduler', 'targetLeader']);
+        $scheduler = $detail->plan->scheduler;
+        $deptName = optional($scheduler?->department)->department_name ?? '—';
+        $date = $detail->scheduled_date;              // ← tanggal yang sedang dibuka
+        $planId = $detail->schedule_plan_id;
+
+        // SUPERVISOR → cek Leader, opsi = leader yang TERJADWAL di tanggal itu (dari schedule_details)
+        if ($scheduler?->role === 'Supervisor') {
+            // sudah terkunci?
+            if ($detail->target_leader_id && $detail->targetLeader) {
+                return response()->json([
+                    'mode' => 'locked_leader',
+                    'departmentName' => $deptName,
+                    'selected' => [
+                        'id' => (string) $detail->targetLeader->id,
+                        'label' => ($detail->targetLeader->employeeID ?? 'LDR' . $detail->targetLeader->id) . ' - ' . $detail->targetLeader->name,
+                    ],
+                ]);
+            }
+
+            // ambil semua detail “saudara” pada tanggal ini di plan yang sama yg SUDAH ada target_leader_id
+            $leaderIds = ScheduleDetail::query()
+                ->where('schedule_plan_id', $planId)
+                ->whereDate('scheduled_date', $date)
+                ->whereNotNull('target_leader_id')
+                ->pluck('target_leader_id')
+                ->unique()
+                ->values();
+
+            $leaders = User::whereIn('id', $leaderIds)
+                ->orderBy('name')->get(['id', 'name', 'employeeID']);
+
+            return response()->json([
+                'mode' => $leaders->isEmpty() ? 'select_leader_empty' : 'select_leader',
+                'departmentName' => $deptName,
+                'field' => ['name' => 'person_id', 'label' => 'Leader (ID & Nama)'],
+                'options' => $leaders->map(fn($u) => [
+                    'value' => (string) $u->id,
+                    'label' => ($u->employeeID ?? 'LDR' . $u->id) . ' - ' . $u->name,
+                ])->values(),
+            ]);
+        }
+
+        // default: LEADER → cek Operator, opsi = operator TERJADWAL di tanggal itu (dari schedule_details)
+        if ($detail->target_operator_id && $detail->target_operator_name) {
+            return response()->json([
+                'mode' => 'locked_operator',
+                'departmentName' => $deptName,
+                'selected' => [
+                    'id' => $detail->target_operator_id,
+                    'label' => $detail->target_operator_id . ' - ' . $detail->target_operator_name,
+                ],
+            ]);
+        }
+
+        $ops = ScheduleDetail::query()
+            ->where('schedule_plan_id', $planId)
+            ->whereDate('scheduled_date', $date)
+            ->whereNotNull('target_operator_id')
+            ->whereNotNull('target_operator_name')
+            ->select('target_operator_id', 'target_operator_name')
+            ->distinct()
+            ->orderBy('target_operator_name')
+            ->get();
+
+        if ($ops->isNotEmpty()) {
+            // value pakai delimiter supaya bisa di-split di JS → "ID@@Nama"
+            $options = $ops->map(fn($r) => [
+                'value' => $r->target_operator_id . '@@' . $r->target_operator_name,
+                'label' => $r->target_operator_id . ' - ' . $r->target_operator_name,
+            ])->values();
+
+            return response()->json([
+                'mode' => 'select_operator_from_schedule',
+                'departmentName' => $deptName,
+                'field' => ['name' => 'operator_pick', 'label' => 'ID & Nama Operator'],
+                'options' => $options,
+            ]);
+        }
+
+        // kalau tanggal itu belum ada operator di jadwal → manual
+        return response()->json([
+            'mode' => 'manual_operator',
+            'departmentName' => $deptName,
+            'field_id' => ['id' => 'operator_id', 'label' => 'ID Operator', 'placeholder' => 'OPxxx'],
+            'field_name' => ['id' => 'operator_name', 'label' => 'Nama Operator', 'placeholder' => 'Nama Lengkap'],
+        ]);
+    }
+
+    public function commitTarget(Request $request, ScheduleDetail $detail)
+    {
+        $detail->load('plan');
+        $ptype = $detail->plan->type;
+
+        if ($ptype === 'supervisor_checks_leader') {
+            $data = $request->validate(['person_id' => ['required', 'integer', 'exists:users,id']]);
+            // hanya set jika belum ada (jaga idempotensi)
+            if (!$detail->target_leader_id) {
+                $detail->forceFill(['target_leader_id' => $data['person_id']])->save();
+            }
+            return response()->json(['ok' => true]);
+        }
+
+        // leader_checks_operator
+        $data = $request->validate([
+            'operator_id' => ['required', 'string', 'max:100'],
+            'operator_name' => ['required', 'string', 'max:200'],
+        ]);
+        if (!$detail->target_operator_id || !$detail->target_operator_name) {
+            $detail->forceFill([
+                'target_operator_id' => $data['operator_id'],
+                'target_operator_name' => $data['operator_name'],
+            ])->save();
+        }
+        return response()->json(['ok' => true]);
     }
 
     public function finalize(Checksheet $checksheet)

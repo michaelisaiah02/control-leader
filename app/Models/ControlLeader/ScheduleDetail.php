@@ -34,7 +34,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class ScheduleDetail extends ControlLeaderModel
 {
     use HasFactory;
-    protected $fillable = ['schedule_plan_id', 'target_leader_id', 'target_operator_id', 'schedule_date'];
+    protected $table = 'schedule_details';
+    protected $fillable = [
+        'schedule_plan_id',
+        'target_leader_id',
+        'target_operator_id',
+        'target_operator_name',
+        'scheduled_date'
+    ];
 
     public function plan(): BelongsTo
     {
