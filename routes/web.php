@@ -146,7 +146,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
         // =========================
 
         // Part A → otomatis cari detail by today
-        Route::get('checksheets/create', [ChecksheetController::class, 'createPartAToday'])
+        Route::get('checksheets/create', [ChecksheetController::class, 'createPartA'])
             ->name('checksheets.create');
 
         // Part B tetap butuh {detail}, karena begitu Part A jalan, detail sudah ketemu
