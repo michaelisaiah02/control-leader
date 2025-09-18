@@ -12,18 +12,31 @@ return new class extends Migration {
     {
         Schema::connection('mysql_control_leader')->create('checksheet_answers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('checksheet_id')->constrained('checksheets')->onDelete('cascade');
-            // FK ini tetap penting untuk menghubungkan ke konsep pertanyaan
-            $table->foreignId('question_id')->constrained('questions');
-            $table->string('answer');
 
-            // Snapshot dari teks pertanyaan saat dijawab
-            $table->text('question_text_snapshot');
-            // Snapshot dari opsi jawaban saat itu (jika ada)
-            $table->json('question_options_snapshot')->nullable();
+            // Relasi ke checksheet utama
+            $table->foreignId('checksheet_id')
+                ->constrained('checksheets')
+                ->onDelete('cascade');
 
+            // Relasi ke pertanyaan master (supaya tau pertanyaan mana, walaupun snapshot tetap disimpan)
+            $table->foreignId('question_id')
+                ->nullable()
+                ->constrained('questions')
+                ->onDelete('set null');
+
+            // Snapshot data pertanyaan → aman kalau pertanyaan diubah / dihapus
+            $table->text('question_text');
+            $table->enum('answer_type', ['a', 'b', 'c'])->default('a');
+            $table->json('choices')->nullable();
+
+            // Jawaban utama
+            $table->string('answer_value')->nullable();  // ex: 0,1,2
+            $table->string('answer_label')->nullable();  // ex: "Operator mengikuti sampai selesai"
+
+            // Extra field kalau required
             $table->text('problem')->nullable();
             $table->text('countermeasure')->nullable();
+
             $table->timestamps();
         });
     }

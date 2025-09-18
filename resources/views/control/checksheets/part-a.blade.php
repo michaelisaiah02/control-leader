@@ -2,7 +2,7 @@
 
 @push('subtitle')
     <p class="fs-2 w-75 p-0 my-auto sub-judul border-1 border-white rounded-2 text-uppercase">
-        @switch($type)
+        @switch($phase)
             @case('awal_shift')
                 AWAL SHIFT SEBELUM BEKERJA
             @break
@@ -30,7 +30,8 @@
         <div class="d-flex w-100 mt-2 justify-content-between align-items-center">
             <p class="border border-2 border-white bg-primary rounded-2 text-white py-2 px-4 shadow">Bagian A</p>
             <p class="border border-2 border-primary rounded-2 px-2 py-2 shadow">Stopwatch:
-                <span id="stopwatch" class="py-1 px-2 text-danger bg-danger-subtle">00:00</span>
+                <span id="stopwatch" class="py-1 px-2 text-danger bg-danger-subtle"
+                    data-start="{{ $startedAtMs }}">00:00</span>
             </p>
         </div>
 
@@ -140,13 +141,16 @@
             const key = k => `cl:${detailId}:${k}`;
 
             // Stopwatch persist
-            if (!sessionStorage.getItem(key('startAt'))) sessionStorage.setItem(key('startAt'), Date.now());
-            setInterval(function() {
-                const s = Math.floor((Date.now() - Number(sessionStorage.getItem(key('startAt')))) / 1000);
-                const m = String(Math.floor(s / 60)).padStart(2, '0');
-                const sec = String(s % 60).padStart(2, '0');
-                $('#stopwatch').text(`${m}:${sec}`);
-            }, 1000);
+            let startedAt = parseInt($("#stopwatch").data("start"));
+
+            function tick() {
+                let sec = Math.floor((Date.now() - startedAt) / 1000);
+                let m = String(Math.floor(sec / 60)).padStart(2, '0');
+                let s = String(sec % 60).padStart(2, '0');
+                $("#stopwatch").text(`${m}:${s}`);
+            }
+            setInterval(tick, 1000);
+            tick();
 
             // Heartbeat
             setInterval(function() {

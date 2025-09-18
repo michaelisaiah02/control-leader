@@ -31,8 +31,33 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Question extends ControlLeaderModel
 {
     use HasFactory;
-    protected $fillable = ['question_text', 'options', 'is_active'];
-    protected $casts = [
-        'options' => 'array', // Otomatis konversi JSON ke array
+    protected $table = 'questions';
+
+    protected $fillable = [
+        'package',
+        'question_text',
+        'answer_type',
+        'choices',
+        'require_problem_when',
+        'problem_label',
+        'countermeasure_label',
+        'display_order',
+        'is_active',
     ];
+
+    protected $casts = [
+        'choices' => 'array',
+        'require_problem_when' => 'array',
+        'is_active' => 'boolean',
+    ];
+
+    // scopes
+    public function scopeForPackage($q, string $package)
+    {
+        return $q->where('package', $package);
+    }
+    public function scopeActiveOrdered($q)
+    {
+        return $q->where('is_active', true)->orderBy('display_order');
+    }
 }

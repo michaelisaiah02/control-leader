@@ -1,32 +1,31 @@
 @extends('layouts.app')
 
 @push('subtitle')
-    <p class="fs-5 m-0">Pilih Tanggal Checksheet</p>
+    <p class="fs-2 w-75 p-0 my-auto sub-judul border-1 border-white rounded-2 text-uppercase">
+        Pilih Tanggal Checksheet
+    </p>
 @endpush
 
 @section('content')
-    <div class="px-4">
-        <div class="alert alert-info">Tidak ada jadwal untuk <b>hari ini</b>. Pilih salah satu tanggal yang tersedia di bawah
-            ini.</div>
+    <div class="px-5">
+        @if (session('info'))
+            <div class="alert alert-warning">{{ session('info') }}</div>
+        @endif
 
-        @if ($allowedDates->isEmpty())
-            <div class="alert alert-warning">Belum ada jadwal yang dibuat oleh Anda sebagai scheduler.</div>
+        @if ($dates->isEmpty())
+            <div class="alert alert-danger">Belum ada jadwal untuk akun ini.</div>
         @else
-            <form method="GET" action="{{ route('control.checksheets.create') }}" class="row g-3">
-                <input type="hidden" name="type" value="{{ $slot }}">
-                <div class="col-md-6">
-                    <label class="form-label">Tanggal</label>
-                    <select name="date" class="form-select" required>
-                        @foreach ($allowedDates as $d)
-                            <option value="{{ $d }}">{{ \Carbon\Carbon::parse($d)->translatedFormat('d F Y') }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-12">
-                    <button class="btn btn-primary">Lanjut</button>
-                </div>
-            </form>
+            <div class="mb-3">Silakan pilih tanggal yang tersedia:</div>
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+                @foreach ($dates as $d)
+                    <div class="col">
+                        <a class="btn btn-outline-primary w-100 py-3"
+                            href="{{ route('control.checksheets.create', ['type' => $type, 'date' => $d]) }}">
+                            {{ \Illuminate\Support\Carbon::parse($d)->translatedFormat('d M Y') }}
+                        </a>
+                    </div>
+                @endforeach
+            </div>
         @endif
     </div>
 @endsection

@@ -34,9 +34,11 @@ class DashboardController extends Controller
                 return redirect()->route('dashboard')->with(['key' => $request->key]);
             }
 
-            $equipments = MasterList::with(['results' => function ($q) {
-                $q->latest('calibration_date')->limit(1);
-            }])->get();
+            $equipments = MasterList::with([
+                'results' => function ($q) {
+                    $q->latest('calibration_date')->limit(1);
+                }
+            ])->get();
 
             $warnings = []; // utk soon & NG
             $dangers = []; // utk overdue
@@ -45,7 +47,7 @@ class DashboardController extends Controller
                 $latest = $eq->results->first();
 
                 // jika belum pernah ada result, gunakan first_used & treat as OK
-                if (! $latest) {
+                if (!$latest) {
                     $lastCal = Carbon::parse($eq->first_used);
                     $judg = 'OK';
                 } else {

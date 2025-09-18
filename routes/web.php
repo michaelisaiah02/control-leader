@@ -66,17 +66,22 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
 
         // hanya user ke atas
         Route::middleware(CheckRoleMinUser::class)->middleware(CheckIncompleteInput::class)->group(function () {
-            Route::get('/input/new-equipment', [NewEquipmentController::class, 'create'])->name('input.new.equipment');
-            Route::post('/input/new-equipment', [NewEquipmentController::class, 'store'])->name('store.equipment');
+            Route::controller(NewEquipmentController::class)->group(function () {
+                Route::get('/input/new-equipment', 'create')->name('input.new.equipment');
+                Route::post('/input/new-equipment', 'store')->name('store.equipment');
+            });
 
-            Route::get('/input/calibration-data', [CalibrationDataController::class, 'create'])->name('input.calibration.data');
-            Route::post('/input/calibration-data', [CalibrationDataController::class, 'store'])->name('store.calibration');
-            Route::post('/input/calibration-data/{id}', [CalibrationDataController::class, 'edit'])->name('edit.calibration');
+            Route::controller(CalibrationDataController::class)->group(function () {
+                Route::get('/input/calibration-data', 'create')->name('input.calibration.data');
+                Route::post('/input/calibration-data', 'store')->name('store.calibration');
+                Route::post('/input/calibration-data/{id}', 'edit')->name('edit.calibration');
+            });
 
-            Route::get('/input/repair-data', [RepairDataController::class, 'create'])->name('input.repair');
-            Route::post('/input/repair-data', [RepairDataController::class, 'store'])->name('store.repair');
-            Route::post('/input/repair-data/{id}', [RepairDataController::class, 'edit'])->name('edit.repair');
-
+            Route::controller(RepairDataController::class)->group(function () {
+                Route::get('/input/repair-data', 'create')->name('input.repair');
+                Route::post('/input/repair-data', 'store')->name('store.repair');
+                Route::post('/input/repair-data/{id}', 'edit')->name('edit.repair');
+            });
             Route::post('/standards/store', [DashboardController::class, 'store'])->name('standards.store');
 
             // hanya admin
@@ -165,21 +170,19 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
             ->name('checksheets.approve'); // control.checksheets.approve
 
         // Lain-lain (lihat/ubah/hapus/export)
-        Route::get('checksheets/{checksheet}', [ChecksheetController::class, 'show'])
-            ->name('checksheets.show');
-        Route::get('checksheets/{checksheet}/edit', [ChecksheetController::class, 'edit'])
-            ->name('checksheets.edit');
-        Route::patch('checksheets/{checksheet}', [ChecksheetController::class, 'update'])
-            ->name('checksheets.update');
-        Route::delete('checksheets/{checksheet}', [ChecksheetController::class, 'destroy'])
-            ->name('checksheets.destroy');
-        Route::get('checksheets/{checksheet}/export', [ChecksheetController::class, 'export'])
-            ->name('checksheets.export');
-        Route::post('/heartbeat', function () {
-            if (auth('web_control_leader')->user())
-                auth('web_control_leader')->user()->forceFill(['cl_last_ping' => now()])->save();
-            return response()->noContent();
-        })->name('heartbeat');
+        // Route::get('checksheets/{checksheet}', [ChecksheetController::class, 'show'])
+        //     ->name('checksheets.show');
+        // Route::get('checksheets/{checksheet}/edit', [ChecksheetController::class, 'edit'])
+        //     ->name('checksheets.edit');
+        // Route::patch('checksheets/{checksheet}', [ChecksheetController::class, 'update'])
+        //     ->name('checksheets.update');
+        // Route::delete('checksheets/{checksheet}', [ChecksheetController::class, 'destroy'])
+        //     ->name('checksheets.destroy');
+        // Route::get('checksheets/{checksheet}/export', [ChecksheetController::class, 'export'])
+        //     ->name('checksheets.export');
+        Route::post('/heartbeat', [ChecksheetController::class, 'heartbeat'])->name('heartbeat');
+        Route::get('checksheets/pick-date', [ChecksheetController::class, 'pickDate'])
+            ->name('checksheets.pickDate');
         Route::post('details/{detail}/checksheets/commit-target', [ChecksheetController::class, 'commitTarget'])
             ->name('checksheets.commitTarget');
         Route::get(

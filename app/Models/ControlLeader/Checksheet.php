@@ -41,9 +41,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Checksheet extends ControlLeaderModel
 {
     use HasFactory;
+    protected $table = 'checksheets';
+
     protected $fillable = [
-        'schedule_id',
+        'schedule_detail_id',
         'type',
+        'phase',
         'stopwatch_duration',
         'part_a_answer_1',
         'part_a_answer_2',
@@ -51,15 +54,13 @@ class Checksheet extends ControlLeaderModel
         'part_a_answer_4',
     ];
 
-    // Checksheet ini milik satu jadwal (Detail)
-    public function scheduleDetail(): BelongsTo
+    public function answers()
     {
-        return $this->belongsTo(ScheduleDetail::class);
+        return $this->hasMany(ChecksheetAnswer::class, 'checksheet_id');
     }
 
-    // Checksheet ini punya banyak jawaban (Bagian B)
-    public function answers(): HasMany
+    public function detail()
     {
-        return $this->hasMany(ChecksheetAnswer::class);
+        return $this->belongsTo(ScheduleDetail::class, 'schedule_detail_id');
     }
 }

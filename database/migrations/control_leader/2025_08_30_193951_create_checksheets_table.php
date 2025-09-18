@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->foreignId('schedule_detail_id')->constrained('schedule_details');
             $table->enum('type', ['awal_shift', 'saat_bekerja', 'setelah_istirahat', 'akhir_shift']);
             $table->unsignedInteger('stopwatch_duration')->comment('Durasi dalam detik');
+            $table->string('phase')->default('awal_shift');
 
             // Kolom untuk 4 jawaban Bagian A yang tetap
             $table->string('part_a_answer_1')->nullable();
@@ -24,6 +25,8 @@ return new class extends Migration {
             $table->string('part_a_answer_4')->nullable();
 
             $table->timestamps();
+
+            $table->index(['phase']);
         });
     }
 
