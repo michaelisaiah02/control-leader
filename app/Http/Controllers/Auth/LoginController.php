@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ControlLeader\ChecksheetDraft;
 use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
@@ -69,33 +70,47 @@ class LoginController extends Controller
                 $user = $guard->user();
                 $sid = $request->session()->getId();
 
-                // grace window berapa menit sejak heartbeat terakhir dianggap "aktif"
+                // LOCK: hanya block takeover kalau user masih mengisi (ping < 3 menit)
                 $LOCK_TTL_MIN = 3;
-
                 $lockActive = $user->cl_in_progress
                     && $user->cl_last_ping
                     && now()->diffInMinutes($user->cl_last_ping) < $LOCK_TTL_MIN;
 
                 if (!empty($user->control_session_id) && $user->control_session_id !== $sid && $lockActive) {
-                    // masih aktif mengisi → tolak login baru
                     $guard->logout();
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
-
-                    throw ValidationException::withMessages([
+                    throw \Illuminate\Validation\ValidationException::withMessages([
                         'error' => 'Akun CONTROL LEADER sedang mengisi checksheet di perangkat lain.',
+                    ]);
+                }
+
+                // takeover OK (kalau tidak sedang aktif)
+                $user->forceFill([
+                    'control_session_id' => $sid,
+                    'cl_in_progress' => false,     // reset flag nyangkut
+                    'cl_last_ping' => now(),
+                ])->save();
+
+                $draft = ChecksheetDraft::where('user_id', $user->id)
+                    ->where('is_active', true)    // ← tanpa TTL
+                    ->latest('updated_at')
+                    ->first();
+
+                if ($draft) {
+                    $draft->forceFill([
+                        'session_id' => $request->session()->getId(),
+                        'last_ping' => now(),
+                    ])->save();
+
+                    return redirect()->route('control.checksheets.partA', [
+                        'detail' => $draft->schedule_detail_id,
+                        'type' => $draft->phase,
                     ]);
                 }
 
                 // kalau tidak sedang mengisi (atau lock kadaluarsa) → boleh takeover sesi lama
                 $oldSid = $user->control_session_id;
-
-                $user->forceFill([
-                    'control_session_id' => $sid,
-                    // reset flag biar gak "nyangkut"
-                    'cl_in_progress' => false,
-                    'cl_last_ping' => now(),
-                ])->save();
 
                 // (opsional) jika SESSION_DRIVER=database, hapus baris sesi lama
                 if (config('session.driver') === 'database' && $oldSid && $oldSid !== $sid) {

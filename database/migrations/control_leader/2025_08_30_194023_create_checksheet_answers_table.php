@@ -18,12 +18,6 @@ return new class extends Migration {
                 ->constrained('checksheets')
                 ->onDelete('cascade');
 
-            // Relasi ke pertanyaan master (supaya tau pertanyaan mana, walaupun snapshot tetap disimpan)
-            $table->foreignId('question_id')
-                ->nullable()
-                ->constrained('questions')
-                ->onDelete('set null');
-
             // Snapshot data pertanyaan → aman kalau pertanyaan diubah / dihapus
             $table->text('question_text');
             $table->enum('answer_type', ['a', 'b', 'c'])->default('a');

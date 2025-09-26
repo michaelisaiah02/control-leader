@@ -21,6 +21,7 @@ use App\Http\Controllers\Kalibrasi\Input\RepairDataController;
 use App\Http\Controllers\ControlLeader\ScheduleDetailController;
 use App\Http\Controllers\Kalibrasi\Input\NewEquipmentController;
 use App\Http\Controllers\Kalibrasi\Input\CalibrationDataController;
+use App\Http\Middleware\ResumeDraft;
 use App\Http\Middleware\SingleLogin;
 
 Route::get('/ping', function () {
@@ -124,11 +125,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
             });
         });
     });
-    Route::prefix('control')->as('control.')->middleware(SingleLogin::class)->group(function () {
-
-        // (opsional) landing
-        Route::view('/', 'control.dashboard')->name('dashboard');
-
+    Route::prefix('control')->as('control.')->middleware(SingleLogin::class)->middleware(ResumeDraft::class)->group(function () {
         // Rencana & Detail (biar lengkap, bisa kamu tambah belakangan)
         Route::resource('schedule-plans', SchedulePlanController::class)->only([
             'index',
@@ -150,46 +147,25 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
         // CHECKSHEET (2 step: Part A -> Part B)
         // =========================
 
-        // Part A → otomatis cari detail by today
-        Route::get('checksheets/create', [ChecksheetController::class, 'createPartA'])
-            ->name('checksheets.create');
+        // Bagian A
+        Route::get('/checksheets/create', [ChecksheetController::class, 'createPartA'])
+            ->name('checksheets.create'); // ?type=awal_shift|saat_bekerja|setelah_istirahat|akhir_shift
 
-        // Part B tetap butuh {detail}, karena begitu Part A jalan, detail sudah ketemu
-        Route::get('details/{detail}/checksheets/part-b', [ChecksheetController::class, 'showPartB'])
-            ->name('checksheets.partB');
+        // Commit target dari Part A (idempotent – hanya nyimpen pilihan target di session)
+        Route::post('/checksheets/commit-target', [ChecksheetController::class, 'commitTarget'])
+            ->name('checksheets.commitTarget');
 
-        // Final submit (save ke DB)
-        Route::post('checksheets', [ChecksheetController::class, 'store'])
+        // Bagian B
+        Route::get('/checksheets/part-b', [ChecksheetController::class, 'showPartB'])
+            ->name('checksheets.partB'); // ambil dari session Part A
+
+        // Final submit
+        Route::post('/checksheets', [ChecksheetController::class, 'store'])
             ->name('checksheets.store');
 
-        // Finalisasi & Approve
-        Route::post('checksheets/{checksheet}/finalize', [ChecksheetController::class, 'finalize'])
-            ->name('checksheets.finalize'); // control.checksheets.finalize
-
-        Route::post('checksheets/{checksheet}/approve', [ChecksheetController::class, 'approve'])
-            ->name('checksheets.approve'); // control.checksheets.approve
-
-        // Lain-lain (lihat/ubah/hapus/export)
-        // Route::get('checksheets/{checksheet}', [ChecksheetController::class, 'show'])
-        //     ->name('checksheets.show');
-        // Route::get('checksheets/{checksheet}/edit', [ChecksheetController::class, 'edit'])
-        //     ->name('checksheets.edit');
-        // Route::patch('checksheets/{checksheet}', [ChecksheetController::class, 'update'])
-        //     ->name('checksheets.update');
-        // Route::delete('checksheets/{checksheet}', [ChecksheetController::class, 'destroy'])
-        //     ->name('checksheets.destroy');
-        // Route::get('checksheets/{checksheet}/export', [ChecksheetController::class, 'export'])
-        //     ->name('checksheets.export');
-        Route::post('/heartbeat', [ChecksheetController::class, 'heartbeat'])->name('heartbeat');
-        Route::get('checksheets/pick-date', [ChecksheetController::class, 'pickDate'])
-            ->name('checksheets.pickDate');
-        Route::post('details/{detail}/checksheets/commit-target', [ChecksheetController::class, 'commitTarget'])
-            ->name('checksheets.commitTarget');
-        Route::get(
-            'details/{detail}/checksheets/targets',
-            [ChecksheetController::class, 'targetsJson']
-        )->name('checksheets.targets');
-
+        // Heartbeat (biar yang lama tetep-compatible)
+        Route::post('/heartbeat', [ChecksheetController::class, 'heartbeat'])
+            ->name('heartbeat');
 
         // =========================
         // API kecil buat dropdown schedule/target (AJAX)

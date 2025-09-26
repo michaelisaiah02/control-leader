@@ -37,19 +37,31 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class ChecksheetAnswer extends ControlLeaderModel
 {
-    use HasFactory;
+    protected $table = 'checksheet_answers';
 
-    protected $fillable = ['checksheet_id', 'question_id', 'answer', 'problem', 'countermeasure'];
+    protected $fillable = [
+        'checksheet_id',
+        'question_id',
+        'question_text',
+        'answer_type',
+        'choices',
+        'answer_value',
+        'answer_label',
+        'problem',
+        'countermeasure',
+    ];
 
-    // Jawaban ini milik satu checksheet
-    public function checksheet(): BelongsTo
+    protected $casts = [
+        'choices' => 'array',
+    ];
+
+    public function checksheet()
     {
-        return $this->belongsTo(Checksheet::class);
+        return $this->belongsTo(Checksheet::class, 'checksheet_id');
     }
 
-    // Jawaban ini untuk satu pertanyaan
-    public function question(): BelongsTo
+    public function question()
     {
-        return $this->belongsTo(Question::class);
+        return $this->belongsTo(Question::class, 'question_id');
     }
 }
