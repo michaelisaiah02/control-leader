@@ -6,6 +6,7 @@ use App\Http\Middleware\CheckRoleMinUser;
 use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\CheckIncompleteInput;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ChecksheetFormController;
 use App\Http\Middleware\CheckAppAuthentication;
 use App\Http\Controllers\Kalibrasi\APIController;
 use App\Http\Controllers\Kalibrasi\PrintController;
@@ -197,4 +198,12 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
         Route::get('api/schedules', [ScheduleDetailController::class, 'options'])
             ->name('api.schedules.options'); // ?type=leader_checks_operator&date=YYYY-MM-DD&shift=1
     });
+});
+
+// Checksheet CRUD (Sementara)
+Route::controller(ChecksheetFormController::class)->group(function () {
+    Route::get("/checksheet/add", 'create')->name('form.checksheet.create');
+    Route::post("/checksheet/add", 'store')->name('form.checksheet.create.store');
+    Route::get("/checksheet/{id}/edit", 'edit')->name('form.checksheet.edit');
+    Route::put("/checksheet/{id}/edit", 'update')->name('form.checksheet.edit.update');
 });
