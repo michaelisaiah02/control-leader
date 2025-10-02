@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Kalibrasi;
 
-use App\Models\User;
+use App\Http\Controllers\Controller;
+use App\Models\MasterList;
 use App\Models\Repair;
 use App\Models\Result;
-use App\Models\MasterList;
-use App\Http\Controllers\Controller;
+use App\Models\User;
 
 class PrintController extends Controller
 {

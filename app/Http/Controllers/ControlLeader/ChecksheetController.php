@@ -3,315 +3,206 @@
 namespace App\Http\Controllers\ControlLeader;
 
 use App\Http\Controllers\Controller;
+use App\Models\ControlLeader\Checksheet;
+use App\Models\ControlLeader\ChecksheetAnswer;
+use App\Models\ControlLeader\ChecksheetDraft;
+use App\Models\ControlLeader\Question;
+use App\Models\ControlLeader\ScheduleDetail;
+use App\Models\ControlLeader\SchedulePlan;
+use App\Models\ControlLeader\User;
 use Illuminate\Http\Request;
-use App\Models\ControlLeader\{
-    ScheduleDetail,
-    Checksheet,
-    ChecksheetDraft,
-    Question,
-    ChecksheetAnswer,
-    User
-};
-use App\Support\ControlLeader as CL;
-use Illuminate\Validation\ValidationException;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class ChecksheetController extends Controller
 {
-    private function phaseToPackage(string $phase, string $direction): string
+    // map phase -> package untuk Question
+    private function packageFor(string $phase, string $direction): string
     {
-        if ($direction === 'supervisor_checks_leader')
+        if ($direction === 'supervisor_checks_leader') {
             return 'leader';
+        }
+
         return match ($phase) {
             'awal_shift' => 'op_awal',
             'saat_bekerja' => 'op_bekerja',
             'setelah_istirahat' => 'op_istirahat',
             'akhir_shift' => 'op_akhir',
-            default => 'op_awal',
+            default => 'op_awal'
         };
     }
 
-    /** Arah penilaian diambil dari role user login */
-    private function evalDirection(User $me): string
+    private function directionFor($me)
     {
-        return $me->role === 'Supervisor'
-            ? 'supervisor_checks_leader'
-            : 'leader_checks_operator';
+        // bila role supervisor → dia menilai leader, selain itu leader menilai operator
+        return $me->role === 'Supervisor' ? 'supervisor_checks_leader' : 'leader_checks_operator';
     }
 
-    /** ===== HEARTBEAT (opsional) ===== */
-    public function heartbeat()
-    {
-        return response()->json(['ok' => true]);
-    }
-
-    /** ===== BAGIAN A ===== */
     public function createPartA(Request $req)
     {
         $me = auth('web_control_leader')->user();
         $phase = $req->query('type', 'awal_shift');
-        $dir = $this->evalDirection($me);
 
-        // Stopwatch start time di-session (per-phase)
-        $sessKey = "cl.started_at.$phase";
-        if (!$req->session()->has($sessKey)) {
-            $req->session()->put($sessKey, now()->getTimestampMs());
+        // Ambil plan paling baru milik scheduler=me untuk direction sesuai role
+        $direction = $this->directionFor($me);
+        $plan = SchedulePlan::where('scheduler_id', $me->id)
+            ->where('type', $direction)
+            ->orderByDesc('year')->orderByDesc('month')->first();
+
+        if (! $plan) {
+            return back()->with('error', 'Belum ada Schedule Plan untuk Anda.');
         }
-        $startedAtMs = (int) $req->session()->get($sessKey);
 
-        // Dept label
-        $deptName = optional($me->department)->department_name ?? '';
-
-        // Build opsi target BERDASARKAN scheduler=me, tanpa peduli tanggal (distinct)
-        if ($dir === 'supervisor_checks_leader') {
-            $targetLabel = 'ID & Nama Leader';
-            $leaderIds = ScheduleDetail::query()
-                ->whereHas('plan', fn($q) => $q->where('scheduler_id', $me->id))
+        // Opsi target dari DETAILS plan terbaru (tanpa tanggal di label)
+        if ($direction === 'supervisor_checks_leader') {
+            $leaderIds = ScheduleDetail::where('schedule_plan_id', $plan->id)
                 ->whereNotNull('target_leader_id')
-                ->distinct()
-                ->pluck('target_leader_id');
-
-            $leaders = User::whereIn('id', $leaderIds)->orderBy('name')->get(['id', 'employeeID', 'name']);
-
-            $options = $leaders->map(fn($u) => [
+                ->pluck('target_leader_id')->unique();
+            $leaders = User::whereIn('id', $leaderIds)->orderBy('name')->get();
+            $targetLabel = 'ID & Nama Leader';
+            $options = $leaders->map(fn ($u) => [
                 'value' => "L::{$u->id}",
-                'label' => ($u->employeeID ?? "LDR{$u->id}") . ' - ' . $u->name,
+                'label' => ($u->employeeID ?? "LDR{$u->id}").' - '.$u->name,
             ])->values()->all();
         } else {
-            $targetLabel = 'ID & Nama Operator';
-            $ops = ScheduleDetail::query()
-                ->whereHas('plan', fn($q) => $q->where('scheduler_id', $me->id))
+            $ops = ScheduleDetail::where('schedule_plan_id', $plan->id)
                 ->whereNotNull('target_operator_id')
                 ->whereNotNull('target_operator_name')
                 ->select('target_operator_id', 'target_operator_name')
-                ->distinct()
-                ->orderBy('target_operator_name')
-                ->get();
-
-            $options = $ops->map(fn($r) => [
+                ->distinct()->orderBy('target_operator_name')->get();
+            $targetLabel = 'ID & Nama Operator';
+            $options = $ops->map(fn ($r) => [
                 'value' => "O::{$r->target_operator_id}::{$r->target_operator_name}",
                 'label' => "{$r->target_operator_id} - {$r->target_operator_name}",
             ])->values()->all();
         }
 
-        // Prefill dari session (kalau balik dari B → A)
-        $draftKey = "cl.partA.$phase";
-        $prefill = $req->session()->get($draftKey, []);
+        // Draft (key: user_id + plan + phase)
+        $draft = ChecksheetDraft::firstOrCreate(
+            ['user_id' => $me->id, 'schedule_plan_id' => $plan->id, 'phase' => $phase],
+            ['session_id' => session()->getId(), 'started_at' => now(), 'last_ping' => now(), 'is_active' => true]
+        );
+        $draft->forceFill(['session_id' => session()->getId(), 'last_ping' => now(), 'is_active' => true])->save();
 
         return view('control.checksheets.part-a', [
             'phase' => $phase,
-            'type' => $phase, // biar blade lama aman
-            'startedAtMs' => $startedAtMs,
-            'deptName' => $deptName,
+            'plan' => $plan,
+            'deptName' => optional($plan->scheduler?->department)->department_name ?? '',
+            'startedAtMs' => $draft->started_at?->getTimestampMs() ?? now()->getTimestampMs(),
             'targetLabel' => $targetLabel,
             'options' => $options,
-            'prefill' => $prefill,
         ]);
     }
 
-    /** Simpan pilihan target & page-1/2 Part A ke session */
-    public function commitTarget(Request $req)
+    public function startDraft(Request $r)
     {
         $me = auth('web_control_leader')->user();
-        $phase = $req->input('phase');
-
-        $data = $req->validate([
+        $data = $r->validate([
+            'schedule_plan_id' => 'required|exists:mysql_control_leader.schedule_plans,id',
             'phase' => 'required|string',
-            'shift' => 'required|in:1,2,3',
-            'target_pick' => 'required|string', // O::id::name | L::id
-            'bagian' => 'required|string',
-            'attendance' => 'required|in:0,1',
-            'nama_pengganti' => 'nullable|string',
-            'bagian_pengganti' => 'nullable|string',
-            'kondisi_pengganti' => 'nullable|in:Sehat,Sakit',
-            'kondisi' => 'nullable|in:Sehat,Sakit',
         ]);
+        $draft = ChecksheetDraft::updateOrCreate(
+            ['user_id' => $me->id, 'schedule_plan_id' => $data['schedule_plan_id'], 'phase' => $data['phase']],
+            ['session_id' => session()->getId(), 'is_active' => true, 'last_ping' => now()]
+        );
+        if (! $draft->started_at) {
+            $draft->started_at = now();
+            $draft->save();
+        }
 
-        // Simpan Part A ke session
-        $req->session()->put("cl.partA.$phase", $data);
+        return response()->json(['ok' => true, 'started_at_ms' => $draft->started_at->getTimestampMs()]);
+    }
+
+    public function heartbeat()
+    {
+        $me = auth('web_control_leader')->user();
+        ChecksheetDraft::where('user_id', $me->id)->where('session_id', session()->getId())
+            ->update(['last_ping' => now()]);
 
         return response()->json(['ok' => true]);
     }
 
-    /** ===== BAGIAN B ===== */
     public function showPartB(Request $req)
     {
         $me = auth('web_control_leader')->user();
         $phase = $req->query('type', 'awal_shift');
-        $dir = $this->evalDirection($me);
 
-        // Harus punya Part A di session
-        $partA = $req->session()->get("cl.partA.$phase");
-        if (!$partA) {
-            return redirect()->route('control.checksheets.create', ['type' => $phase])
-                ->with('info', 'Lengkapi Bagian A terlebih dahulu.');
-        }
+        $planId = (int) $req->query('plan');
+        $plan = SchedulePlan::findOrFail($planId);
 
-        // Stopwatch dari session (tetap dari start awal)
-        $startedAtMs = (int) $req->session()->get("cl.started_at.$phase", now()->getTimestampMs());
+        $direction = $this->directionFor($me);
+        $package = $this->packageFor($phase, $direction);
 
-        // Ambil paket pertanyaan
-        $package = $this->phaseToPackage($phase, $dir);
-        $questions = Question::where('package', $package)
-            ->where('is_active', true)
-            ->orderBy('display_order')
-            ->get();
+        $questions = Question::where('package', $package)->where('is_active', true)
+            ->orderBy('display_order')->get();
 
         return view('control.checksheets.part-b', [
             'phase' => $phase,
-            'type' => $phase,
-            'dir' => $dir,
-            'startedAtMs' => $startedAtMs,
-            'partA' => $partA,
+            'plan' => $plan,
             'questions' => $questions,
         ]);
     }
 
-    /** ===== FINAL SUBMIT ===== */
     public function store(Request $req)
     {
         $me = auth('web_control_leader')->user();
-        $phase = $req->input('phase');
+        $phase = $req->query('type', 'awal_shift');
 
-        // Pastikan ada Part A di session
-        $partA = $req->session()->get("cl.partA.$phase");
-        if (!$partA)
-            return back()->with('error', 'Session Bagian A hilang, ulangi dari awal.');
-
-        // Validasi jawaban B
-        $validated = $req->validate([
-            'phase' => 'required|string',
-            'answers' => 'required|array', // answers[question_id] = value
+        $data = $req->validate([
+            'schedule_plan_id' => 'required|exists:mysql_control_leader.schedule_plans,id',
+            'part_a.shift' => 'required|in:1,2,3',
+            'part_a.target' => 'required|string', // "O::id::name" / "L::id"
+            'part_a.division' => 'required|string',
+            'part_a.attendance' => 'required|in:0,1',
+            'part_a.condition' => 'nullable|string',
+            'part_a.replacement_name' => 'nullable|string',
+            'part_a.replacement_division' => 'nullable|string',
+            'part_a.replacement_condition' => 'nullable|string',
+            'answers' => 'array',
             'problems' => 'array',
             'countermeasures' => 'array',
         ]);
+        // ambil duration dari draft
+        $draft = ChecksheetDraft::where('user_id', $me->id)
+            ->where('schedule_plan_id', $data['schedule_plan_id'])
+            ->where('phase', $phase)->first();
+        $duration = $draft && $draft->started_at ? $draft->started_at->diffInSeconds(now()) : 0;
 
-        // Hitung durasi dari started_at (ms)
-        $startedAtMs = (int) $req->session()->get("cl.started_at.$phase", now()->getTimestampMs());
-        $duration = max(0, floor((now()->getTimestampMs() - $startedAtMs) / 1000));
-
-        // Determine direction
-        $dir = $this->evalDirection($me);
-
-        // Cari/BUAT schedule_detail untuk target + TODAY (bebas pilih)
-        [$kind, $id, $name] = explode('::', $partA['target_pick'] . '::::'); // safe explode
-
-        DB::connection('mysql_control_leader')->beginTransaction();
-        try {
-            // Pastikan ada plan untuk scheduler ini + type (dir)
-            $plan = SchedulePlan::firstOrCreate(
-                [
-                    'scheduler_id' => $me->id,
-                    'type' => $dir,
-                    'month' => now()->month,
-                    'year' => now()->year,
-                ],
-                ['display_order' => 0]
-            );
-
-            // Cari detail by target + today, kalau tidak, buat
-            $detailQuery = ScheduleDetail::where('schedule_plan_id', $plan->id)
-                ->whereDate('scheduled_date', now()->toDateString());
-
-            if ($dir === 'supervisor_checks_leader') {
-                $detailQuery->where('target_leader_id', $id);
-            } else {
-                $detailQuery->where('target_operator_id', $id)
-                    ->where('target_operator_name', $name);
-            }
-
-            $detail = $detailQuery->first();
-
-            if (!$detail) {
-                $detail = ScheduleDetail::create([
-                    'schedule_plan_id' => $plan->id,
-                    'target_leader_id' => $dir === 'supervisor_checks_leader' ? $id : null,
-                    'target_operator_id' => $dir === 'leader_checks_operator' ? $id : null,
-                    'target_operator_name' => $dir === 'leader_checks_operator' ? $name : null,
-                    'scheduled_date' => now()->toDateString(),
-                ]);
-            }
-
-            // Cegah double submit untuk hari ini & phase yang sama & target yg sama
-            $already = Checksheet::where('schedule_detail_id', $detail->id)
-                ->where('phase', $phase)->exists();
-            if ($already) {
-                DB::rollBack();
-                return redirect()->route('control.checksheets.create', ['type' => $phase])
-                    ->with('info', 'Checksheet hari ini untuk target & fase ini sudah ada.');
-            }
-
-            // Simpan header
-            $cs = Checksheet::create([
-                'schedule_detail_id' => $detail->id,
-                'type' => $dir,
-                'phase' => $phase,
-                'stopwatch_duration' => $duration,
-                // part A (4 kolom fix – mapping dari requirement kamu)
-                'part_a_answer_1' => $partA['shift'] ?? null,
-                'part_a_answer_2' => $partA['target_pick'] ?? null, // simpan string pick
-                'part_a_answer_3' => $partA['bagian'] ?? null,
-                'part_a_answer_4' => $partA['attendance'] ?? null,
-            ]);
-
-            // Simpan detail jawaban B
-            $answers = $validated['answers'] ?? [];
-            $probs = $validated['problems'] ?? [];
-            $cms = $validated['countermeasures'] ?? [];
-
-            foreach ($answers as $qid => $val) {
-                ChecksheetAnswer::create([
-                    'checksheet_id' => $cs->id,
-                    'question_id' => $qid,
-                    'answer' => is_array($val) ? json_encode($val) : (string) $val,
-                    'problem' => $probs[$qid] ?? null,
-                    'countermeasure' => $cms[$qid] ?? null,
-                ]);
-            }
-
-            DB::commit();
-
-            // Clear session draft phase
-            $req->session()->forget("cl.partA.$phase");
-            $req->session()->forget("cl.started_at.$phase");
-
-            return redirect()->route('control.dashboard')->with('ok', 'Checksheet tersimpan.');
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            report($e);
-            return back()->with('error', 'Gagal menyimpan checksheet.');
-        }
-    }
-
-    public function startDraft(Request $request)
-    {
-        $user = auth('web_control_leader')->user();
-
-        $data = $request->validate([
-            'schedule_detail_id' => 'required|exists:mysql_control_leader.schedule_details,id',
-            'phase' => 'required|string|in:awal_shift,saat_bekerja,setelah_istirahat,akhir_shift',
-            'started_at_ms' => 'nullable|numeric', // dari sessionStorage
+        // simpan checksheet (Part A snapshot + durasi)
+        $cs = Checksheet::create([
+            'schedule_plan_id' => $data['schedule_plan_id'],
+            'phase' => $phase,
+            'user_id' => $me->id,
+            'stopwatch_duration' => $duration,
+            'shift' => $data['part_a']['shift'],
+            'target' => $data['part_a']['target'],
+            'division' => $data['part_a']['division'],
+            'attendance' => $data['part_a']['attendance'],
+            'condition' => $data['part_a']['condition'] ?? null,
+            'replacement_name' => $data['part_a']['replacement_name'] ?? null,
+            'replacement_division' => $data['part_a']['replacement_division'] ?? null,
+            'replacement_condition' => $data['part_a']['replacement_condition'] ?? null,
         ]);
 
-        $startedAt = isset($data['started_at_ms'])
-            ? Carbon::createFromTimestampMs((int) $data['started_at_ms'])
-            : now();
+        // hapus session draft
 
-        $draft = ChecksheetDraft::updateOrCreate(
-            [
-                'user_id' => $user->id,
-                'schedule_detail_id' => $data['schedule_detail_id'],
-                'phase' => $data['phase'],
-            ],
-            [
-                'session_id' => session()->getId(),
-                'started_at' => $startedAt,
-                'last_ping' => now(),
-                'is_active' => true,
-            ]
-        );
+        // simpan jawaban B
+        $answers = $data['answers'] ?? [];
+        $probs = $data['problems'] ?? [];
+        $cms = $data['countermeasures'] ?? [];
 
-        return response()->json(['ok' => true, 'draft_id' => $draft->id]);
+        foreach ($answers as $qid => $val) {
+            ChecksheetAnswer::create([
+                'checksheet_id' => $cs->id,
+                'question_text' => Question::find($qid)?->question_text ?? '',
+                'answer' => (string) $val,
+                'problem' => $probs[$qid] ?? null,
+                'countermeasure' => $cms[$qid] ?? null,
+            ]);
+        }
+
+        if ($draft) {
+            $draft->update(['is_active' => false]);
+        }
+
+        return redirect()->route('dashboard')->with('ok', 'Checksheet tersimpan.');
     }
 }

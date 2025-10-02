@@ -2,13 +2,8 @@
 
 namespace App\Models\ControlLeader;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Models\ControlLeader\ScheduleDetail;
-use App\Models\ControlLeader\ChecksheetAnswer;
-use App\Models\ControlLeader\ControlLeaderModel;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 /**
  * @property int $id
  * @property int $schedule_detail_id
@@ -23,6 +18,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ChecksheetAnswer> $answers
  * @property-read int|null $answers_count
  * @property-read ScheduleDetail $scheduleDetail
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet query()
@@ -36,22 +32,34 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereStopwatchDuration($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereUpdatedAt($value)
+ *
+ * @property int $schedule_plan_id
+ * @property string $phase
+ * @property-read ScheduleDetail|null $detail
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet wherePhase($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereSchedulePlanId($value)
+ *
  * @mixin \Eloquent
  */
 class Checksheet extends ControlLeaderModel
 {
     use HasFactory;
+
     protected $table = 'checksheets';
 
     protected $fillable = [
-        'schedule_detail_id',
-        'type',
-        'phase',
+        'schedule_plan_id',
         'stopwatch_duration',
-        'part_a_answer_1',
-        'part_a_answer_2',
-        'part_a_answer_3',
-        'part_a_answer_4',
+        'phase',
+        'shift',
+        'target',
+        'division',
+        'attendance',
+        'condition',
+        'replacement_name',
+        'replacement_division',
+        'replacement_condition',
     ];
 
     public function answers()

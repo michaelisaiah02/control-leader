@@ -2,12 +2,9 @@
 
 namespace App\Models\ControlLeader;
 
-use App\Models\ControlLeader\User;
-use App\Models\ControlLeader\ScheduleDetail;
-use App\Models\ControlLeader\ControlLeaderModel;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -20,6 +17,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ScheduleDetail> $details
  * @property-read int|null $details_count
  * @property-read User $scheduler
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SchedulePlan newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SchedulePlan newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SchedulePlan query()
@@ -30,17 +28,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SchedulePlan whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SchedulePlan whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SchedulePlan whereYear($value)
+ *
  * @mixin \Eloquent
  */
 class SchedulePlan extends ControlLeaderModel
 {
     use HasFactory;
+
     protected $fillable = ['scheduler_id', 'month', 'year', 'type'];
 
     public function scheduler(): BelongsTo
     {
         return $this->belongsTo(User::class, 'scheduler_id');
     }
+
     public function details(): HasMany
     {
         return $this->hasMany(ScheduleDetail::class);

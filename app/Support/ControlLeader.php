@@ -9,8 +9,9 @@ class ControlLeader
      */
     public static function packageFor(string $direction, string $phase): string
     {
-        if ($direction === 'supervisor_checks_leader')
+        if ($direction === 'supervisor_checks_leader') {
             return 'leader';
+        }
 
         return match ($phase) {
             'awal_shift' => 'op_awal',

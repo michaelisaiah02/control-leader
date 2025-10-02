@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Kalibrasi;
 
-use App\Models\Repair;
+use App\Http\Controllers\Controller;
 use App\Models\Equipment;
 use App\Models\MasterList;
+use App\Models\Repair;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
 class ReportController extends Controller
 {

@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\MasterList $masterList
+ *
  * @method static \Database\Factories\StandardFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Standard newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Standard newQuery()
@@ -39,6 +40,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Standard whereParam09($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Standard whereParam10($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Standard whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Standard extends Model

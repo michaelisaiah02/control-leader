@@ -2,16 +2,16 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ControlLeader\ChecksheetDraft;
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\ControlLeader\ChecksheetDraft;
 
 class RedirectToActiveDraft
 {
     public function handle(Request $request, Closure $next)
     {
         $user = auth('web_control_leader')->user();
-        if (!$user) {
+        if (! $user) {
             return $next($request);
         }
 

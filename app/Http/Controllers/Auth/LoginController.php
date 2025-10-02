@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use App\Models\ControlLeader\ChecksheetDraft;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
@@ -25,7 +25,7 @@ class LoginController extends Controller
         $appType = $request->session()->get('login_app_type');
 
         // Jika session-nya pun tidak ada, baru lempar ke welcome
-        if (!$appType || !in_array($appType, ['kalibrasi', 'control_leader'])) {
+        if (! $appType || ! in_array($appType, ['kalibrasi', 'control_leader'])) {
             return redirect()->route('welcome');
         }
 
@@ -76,7 +76,7 @@ class LoginController extends Controller
                     && $user->cl_last_ping
                     && now()->diffInMinutes($user->cl_last_ping) < $LOCK_TTL_MIN;
 
-                if (!empty($user->control_session_id) && $user->control_session_id !== $sid && $lockActive) {
+                if (! empty($user->control_session_id) && $user->control_session_id !== $sid && $lockActive) {
                     $guard->logout();
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
@@ -103,7 +103,7 @@ class LoginController extends Controller
                         'last_ping' => now(),
                     ])->save();
 
-                    return redirect()->route('control.checksheets.partA', [
+                    return redirect()->route('control.checksheets.create', [
                         'detail' => $draft->schedule_detail_id,
                         'type' => $draft->phase,
                     ]);
@@ -137,7 +137,7 @@ class LoginController extends Controller
 
         if (Auth::guard('web_control_leader')->check()) {
             Auth::guard('web_control_leader')->user()
-                    ?->forceFill(['control_session_id' => null, 'cl_in_progress' => false])
+                ?->forceFill(['control_session_id' => null, 'cl_in_progress' => false])
                 ->save();
         }
 
@@ -151,5 +151,4 @@ class LoginController extends Controller
         // Arahkan ke halaman login netral
         return redirect('/');
     }
-
 }
