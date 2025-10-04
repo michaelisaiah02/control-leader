@@ -53,4 +53,6 @@
             <button type="submit" class="btn btn-primary fs-5 fw-medium">Logout</button>
         </form>
     </div>
+
+    <x-toast />
 @endsection

@@ -30,7 +30,8 @@
         <div class="d-flex w-100 mt-2 justify-content-between align-items-center">
             <p class="border border-2 border-white bg-primary rounded-2 text-white py-1 mb-1 px-4 shadow">Bagian B</p>
             <p class="border border-2 border-primary rounded-2 px-2 py-1 mb-1 shadow">Stopwatch:
-                <span id="stopwatch" class="mb-1 px-2 text-danger bg-danger-subtle">00:00</span>
+                <span id="stopwatch" class="mb-1 px-2 text-danger bg-danger-subtle"
+                    data-start="{{ $startedAtMs }}">00:00</span>
             </p>
         </div>
 
@@ -93,9 +94,9 @@
             <div class="d-flex justify-content-between">
                 <span id="pageInfo" class="me-3">{{ count($questions) ? '1 / ' . count($questions) : '' }}</span>
                 <div>
-                    <button type="button" id="prevQ" class="btn btn-outline-secondary">Back</button>
+                    <button type="button" id="prevQ" class="btn btn-outline-primary">Back</button>
                     <button type="button" id="nextQ" class="btn btn-primary">Next</button>
-                    <button type="submit" id="submitBtn" class="btn btn-success d-none">Submit</button>
+                    <button type="submit" id="submitBtn" class="btn btn-primary d-none">Submit</button>
                 </div>
             </div>
         </form>
@@ -109,8 +110,7 @@
             const PLAN = {{ $plan->id }};
             const key = (k) => `cl:plan:${PLAN}:phase:${PHASE}:${k}`;
             // Stopwatch: pakai started_at_ms yang disimpan di Part A (server draft)
-            // Ambil dari sessionStorage backup kalau ada
-            let started = Number(sessionStorage.getItem(key('started_ms')) || 0);
+            let started = parseInt($('#stopwatch').data('start'), 0);
             if (!started) {
                 started = Date.now();
             } // fallback
@@ -124,7 +124,6 @@
             // inject Part A hidden dari sessionStorage
             try {
                 const a = JSON.parse(sessionStorage.getItem(key('partA')) || 'null');
-                console.log('a=', a);
                 if (a) {
                     $('[name="part_a[shift]"]').val(a.shift);
                     $('[name="part_a[target]"]').val(a.target);
@@ -134,7 +133,6 @@
                     $('[name="part_a[replacement_name]"]').val(a.nama_pengganti);
                     $('[name="part_a[replacement_division]"]').val(a.bagian_pengganti);
                     $('[name="part_a[replacement_condition]"]').val(a.kondisi_pengganti);
-                    sessionStorage.setItem(key('started_ms'), String(started)); // keep
                 }
             } catch (e) {}
 
@@ -242,7 +240,6 @@
                 }
                 // hapus session draft
                 sessionStorage.removeItem(key('partA'));
-                sessionStorage.removeItem(key('started_ms'));
             });
         });
     </script>

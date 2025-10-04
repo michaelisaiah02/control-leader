@@ -157,7 +157,7 @@
                 });
 
             function tick() {
-                const started = parseInt($('#stopwatch').data('start') || '{{ $startedAtMs }}', 10);
+                const started = parseInt($('#stopwatch').data('start'), 10);
                 const sec = Math.floor((Date.now() - started) / 1000);
                 const m = String(Math.floor(sec / 60)).padStart(2, '0');
                 const s = String(sec % 60).padStart(2, '0');
