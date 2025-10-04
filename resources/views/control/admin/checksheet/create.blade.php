@@ -88,7 +88,10 @@
                           ${(options.length ? options : ["Option 1", "Option 2"]).map(opt => `
                               <div class="input-group mb-1">
                                   <div class="input-group-text">
-                                      <input type="radio" disabled>
+                                      <input type="radio" disabled
+                                        data-bs-toggle="tooltip" 
+                                        data-bs-placement="top" 
+                                        title="Klik untuk memilih opsi ini">
                                   </div>
                                   <input type="text" class="form-control radio-input" value="${opt}">
                                   <button type="button" class="btn btn-outline-danger btn-sm remove-radio">✕</button>
