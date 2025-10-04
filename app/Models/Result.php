@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\Storage;
  * @property-read \App\Models\MasterList|null $calibrator
  * @property-read \App\Models\User $creator
  * @property-read \App\Models\MasterList $masterList
+ *
  * @method static \Database\Factories\ResultFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Result newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Result newQuery()
@@ -52,6 +53,7 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam09($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam10($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Result extends Model

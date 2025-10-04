@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -17,12 +18,6 @@ return new class extends Migration {
             $table->foreignId('checksheet_id')
                 ->constrained('checksheets')
                 ->onDelete('cascade');
-
-            // Relasi ke pertanyaan master (supaya tau pertanyaan mana, walaupun snapshot tetap disimpan)
-            $table->foreignId('question_id')
-                ->nullable()
-                ->constrained('questions')
-                ->onDelete('set null');
 
             // Snapshot data pertanyaan → aman kalau pertanyaan diubah / dihapus
             $table->text('question_text');

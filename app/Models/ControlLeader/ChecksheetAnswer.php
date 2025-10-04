@@ -2,11 +2,6 @@
 
 namespace App\Models\ControlLeader;
 
-use App\Models\ControlLeader\Question;
-use App\Models\ControlLeader\Checksheet;
-use App\Models\ControlLeader\ControlLeaderModel;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 /**
  * @property int $id
  * @property int $checksheet_id
@@ -20,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read Checksheet $checksheet
  * @property-read Question $question
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer query()
@@ -33,23 +29,48 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereQuestionOptionsSnapshot($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereQuestionTextSnapshot($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereUpdatedAt($value)
+ *
+ * @property string $question_text
+ * @property string $answer_type
+ * @property array<array-key, mixed>|null $choices
+ * @property string|null $answer_value
+ * @property string|null $answer_label
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereAnswerLabel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereAnswerType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereAnswerValue($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereChoices($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereQuestionText($value)
+ *
  * @mixin \Eloquent
  */
 class ChecksheetAnswer extends ControlLeaderModel
 {
-    use HasFactory;
+    protected $table = 'checksheet_answers';
 
-    protected $fillable = ['checksheet_id', 'question_id', 'answer', 'problem', 'countermeasure'];
+    protected $fillable = [
+        'checksheet_id',
+        'question_id',
+        'question_text',
+        'answer_type',
+        'choices',
+        'answer_value',
+        'answer_label',
+        'problem',
+        'countermeasure',
+    ];
 
-    // Jawaban ini milik satu checksheet
-    public function checksheet(): BelongsTo
+    protected $casts = [
+        'choices' => 'array',
+    ];
+
+    public function checksheet()
     {
-        return $this->belongsTo(Checksheet::class);
+        return $this->belongsTo(Checksheet::class, 'checksheet_id');
     }
 
-    // Jawaban ini untuk satu pertanyaan
-    public function question(): BelongsTo
+    public function question()
     {
-        return $this->belongsTo(Question::class);
+        return $this->belongsTo(Question::class, 'question_id');
     }
 }

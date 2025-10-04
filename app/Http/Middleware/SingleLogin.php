@@ -26,8 +26,9 @@ class SingleLogin
                     auth('web_control_leader')->logout();
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
+
                     return redirect()->route('login')->withErrors([
-                        'error' => 'Sesi kamu tidak valid (akun sedang dipakai untuk checksheet).'
+                        'error' => 'Sesi kamu tidak valid (akun sedang dipakai untuk checksheet).',
                     ]);
                 } else {
                     // tidak ngisi → adopsi sesi baru
@@ -35,7 +36,7 @@ class SingleLogin
                 }
             }
         }
+
         return $next($request);
     }
-
 }

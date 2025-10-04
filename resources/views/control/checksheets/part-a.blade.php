@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @push('subtitle')
-    <p class="fs-2 w-75 p-0 my-auto sub-judul border-1 border-white rounded-2 text-uppercase">
+    <p class="fs-2 w-75 p-0 my-auto sub-judul border border-1 border-white rounded-2 text-uppercase">
         @switch($phase)
             @case('awal_shift')
                 AWAL SHIFT SEBELUM BEKERJA
@@ -27,62 +27,63 @@
 
 @section('content')
     <div class="px-5">
-        <div class="d-flex w-100 mt-2 justify-content-between align-items-center">
-            <p class="border border-2 border-white bg-primary rounded-2 text-white py-2 px-4 shadow">Bagian A</p>
-            <p class="border border-2 border-primary rounded-2 px-2 py-2 shadow">Stopwatch:
-                <span id="stopwatch" class="py-1 px-2 text-danger bg-danger-subtle"
+        <div class="d-flex w-100 mt-1 justify-content-between align-items-center">
+            <p class="border border-2 border-white bg-primary rounded-2 text-white py-1 mb-1 px-4 shadow">Bagian A</p>
+            <p class="border border-2 border-primary rounded-2 px-2 py-1 mb-1 shadow">Stopwatch:
+                <span id="stopwatch" class="mb-1 px-2 text-danger bg-danger-subtle"
                     data-start="{{ $startedAtMs }}">00:00</span>
             </p>
         </div>
 
         <form id="partA" onsubmit="return false;">
             @csrf
-            <input type="hidden" name="schedule_detail_id" value="{{ $detail->id }}">
+            <input type="hidden" name="schedule_plan_id" value="{{ $plan->id }}">
 
-            {{-- ====== PAGE 1 ====== --}}
+            {{-- PAGE 1 --}}
             <div id="page1">
-                <div class="mb-3 p-3 border border-2 rounded-4">
-                    <div class="fw-semibold mb-2">1. Shift</div>
+                <div class="mb-1 p-2 border border-2 rounded-4">
+                    <div class="fw-semibold mb-1">1. Shift</div>
                     <div class="ms-3">
-                        <div class="form-check"><input class="form-check-input" type="radio" name="shift" value="1"
-                                id="shift1"> <label class="form-check-label" for="shift1">1</label></div>
-                        <div class="form-check"><input class="form-check-input" type="radio" name="shift" value="2"
-                                id="shift2"> <label class="form-check-label" for="shift2">2</label></div>
-                        <div class="form-check"><input class="form-check-input" type="radio" name="shift" value="3"
-                                id="shift3"> <label class="form-check-label" for="shift3">3</label></div>
+                        @foreach ([1, 2, 3] as $s)
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="shift" value="{{ $s }}"
+                                    id="shift{{ $s }}">
+                                <label class="form-check-label" for="shift{{ $s }}">{{ $s }}</label>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
 
-                <div class="mb-3 p-3 border border-2 rounded-4">
-                    <div class="fw-semibold mb-2">2. {{ $targetLabel }}</div>
-                    <select name="target_pick" class="form-select bg-warning-subtle" required>
-                        <option value="">Nama Lengkap</option>
+                <div class="mb-1 p-2 border border-2 rounded-4">
+                    <div class="fw-semibold mb-1">2. {{ $targetLabel }}</div>
+                    <select id="selectize" name="target_pick" class="form-select bg-warning-subtle" required>
+                        <option value="">Pilih...</option>
                         @foreach ($options as $opt)
                             <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                <div class="mb-3 p-3 border border-2 rounded-4">
-                    <div class="fw-semibold mb-2">3. Bagian</div>
-                    <input type="text" name="bagian" class="form-control bg-warning-subtle"
-                        placeholder="Contoh : Cutting" value="{{ $deptName }}">
+                <div class="mb-1 p-2 border border-2 rounded-4">
+                    <div class="fw-semibold mb-1">3. Bagian</div>
+                    <input type="text" name="bagian" class="form-control bg-warning-subtle" value="{{ $deptName }}"
+                        placeholder="Contoh : Cutting">
                 </div>
             </div>
 
-            {{-- ====== PAGE 2 ====== --}}
+            {{-- PAGE 2 --}}
             <div id="page2" class="d-none">
-                <div class="mb-3 p-3 border border-2 rounded-4">
-                    <div class="fw-semibold mb-2">4. Check <u>kehadiran</u> operator</div>
+                <div class="mb-1 p-2 border border-2 rounded-4">
+                    <div class="fw-semibold mb-1">4. Check <u>kehadiran</u> operator</div>
                     <div class="ms-3 mb-3 small">
                         <div><u>Apabila operator tidak masuk</u> :</div>
-                        <ul class="mb-2">
+                        <ul class="mb-1">
                             <li>Isi perubahan Man Power di Henkaten Board</li>
                             <li>Operator pengganti harus sesuai Skill Map</li>
                             <li>Konfirmasi hasil awal untuk operator pengganti (Hasil awal kerja OK)</li>
                         </ul>
-                        <div>0) <a class="text-decoration-underline" href="javascript:void(0)">Absen</a></div>
-                        <div>1) <a class="text-decoration-underline" href="javascript:void(0)">Hadir</a></div>
+                        <div>0) <span class="text-decoration-underline">Absen</span></div>
+                        <div>1) <span class="text-decoration-underline">Hadir</span></div>
                     </div>
 
                     <div class="ms-2">
@@ -91,20 +92,19 @@
                     </div>
                 </div>
 
-                {{-- Kondisional muncul sesuai pilihan --}}
                 <div id="absenWrap" class="d-none">
                     <div class="mb-3 p-3 border border-2 rounded-4">
-                        <div class="fw-semibold mb-2">Nama Operator <u>Pengganti</u></div>
+                        <div class="fw-semibold mb-1">Nama Operator <u>Pengganti</u></div>
                         <input type="text" class="form-control bg-warning-subtle" name="nama_pengganti"
                             placeholder="Nama Lengkap">
                     </div>
                     <div class="mb-3 p-3 border border-2 rounded-4">
-                        <div class="fw-semibold mb-2">Bagian Operator <u>Pengganti</u></div>
+                        <div class="fw-semibold mb-1">Bagian Operator <u>Pengganti</u></div>
                         <input type="text" class="form-control bg-warning-subtle" name="bagian_pengganti"
                             placeholder="Contoh : Finishing">
                     </div>
                     <div class="mb-3 p-3 border border-2 rounded-4">
-                        <div class="fw-semibold mb-2"><u>Kondisi</u> Operator Pengganti</div>
+                        <div class="fw-semibold mb-1"><u>Kondisi</u> Operator Pengganti</div>
                         <div class="ms-2">
                             <label class="me-4"><input type="radio" name="kondisi_pengganti" value="Sehat">
                                 Sehat</label>
@@ -114,8 +114,8 @@
                 </div>
 
                 <div id="hadirWrap" class="d-none">
-                    <div class="mb-3 p-3 border border-2 rounded-4">
-                        <div class="fw-semibold mb-2"><u>Kondisi</u> Operator</div>
+                    <div class="mb-3 p-3 border rounded-4">
+                        <div class="fw-semibold mb-1"><u>Kondisi</u> Operator</div>
                         <div class="ms-2">
                             <label class="me-4"><input type="radio" name="kondisi" value="Sehat"> Sehat</label>
                             <label><input type="radio" name="kondisi" value="Sakit"> Sakit</label>
@@ -125,7 +125,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-3 mt-3">
-                <button type="button" class="btn btn-primary" id="prevBtn">Back</button>
+                <button type="button" class="btn btn-primary d-none" id="prevBtn">Back</button>
                 <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
             </div>
         </form>
@@ -135,122 +135,133 @@
 @section('scripts')
     <script type="module">
         $(function() {
-            const detailId = {{ $detail->id }};
-            const PARTB_URL = "{{ route('control.checksheets.partB', $detail) }}";
-            const COMMIT_URL = "{{ route('control.checksheets.commitTarget', $detail) }}";
-            const key = k => `cl:${detailId}:${k}`;
+            const PHASE = @json($phase);
+            const PLAN = {{ $plan->id }};
+            const PARTB_URL = @json(route('control.checksheets.partB'));
+            const START_URL = @json(route('control.drafts.start'));
+            const HEART_URL = @json(route('control.heartbeat'));
+            const key = (k) => `cl:plan:${PLAN}:phase:${PHASE}:${k}`;
 
-            // Stopwatch persist
-            let startedAt = parseInt($("#stopwatch").data("start"));
+            // start draft (server) → dapat started_at_ms
+            $.post(START_URL, {
+                    _token: '{{ csrf_token() }}',
+                    schedule_plan_id: PLAN,
+                    phase: PHASE
+                })
+                .done(r => {
+                    if (r.started_at_ms) {
+                        $('#stopwatch').data('start', r.started_at_ms);
+                    }
+                    tick();
+                    setInterval(tick, 1000);
+                });
 
             function tick() {
-                let sec = Math.floor((Date.now() - startedAt) / 1000);
-                let m = String(Math.floor(sec / 60)).padStart(2, '0');
-                let s = String(sec % 60).padStart(2, '0');
-                $("#stopwatch").text(`${m}:${s}`);
+                const started = parseInt($('#stopwatch').data('start') || '{{ $startedAtMs }}', 10);
+                const sec = Math.floor((Date.now() - started) / 1000);
+                const m = String(Math.floor(sec / 60)).padStart(2, '0');
+                const s = String(sec % 60).padStart(2, '0');
+                $('#stopwatch').text(`${m}:${s}`);
             }
-            setInterval(tick, 1000);
-            tick();
 
-            // Heartbeat
-            setInterval(function() {
-                $.post("{{ route('control.heartbeat') }}", {
-                    _token: '{{ csrf_token() }}'
-                });
-            }, 45000);
+            setInterval(() => $.post(HEART_URL, {
+                _token: '{{ csrf_token() }}'
+            }), 45000);
 
-            // Pager
             let page = 1;
-            $('#prevBtn').hide();
+            $('#prevBtn').toggleClass('d-none', page === 1);
 
-            $('#nextBtn').on('click', function() {
-                if (page === 1) {
-                    // Validasi halaman 1
-                    const shift = $('input[name="shift"]:checked').val();
-                    const pick = $('[name="target_pick"]').val();
-                    const bagian = $('[name="bagian"]').val();
-                    if (!shift || !pick || !bagian) {
-                        alert('Lengkapi Shift, Target, dan Bagian.');
-                        return;
-                    }
-
-                    // simpan sementara (buat part B)
-                    sessionStorage.setItem(key('partA_tmp'), JSON.stringify({
-                        shift,
-                        target_pick: pick,
-                        bagian
-                    }));
-
-                    // ke page 2
-                    $('#page1').addClass('d-none');
-                    $('#page2').removeClass('d-none');
-                    $('#prevBtn').show();
-                    page = 2;
-                    return;
-                }
-
-                // page 2 → validasi kehadiran + commit target → redirect Part B
-                const att = $('input[name="attendance"]:checked').val();
-                if (!att) {
-                    alert('Pilih Kehadiran.');
-                    return;
-                }
-
-                // commit target (idempotent) agar detail punya target yg dipilih
-                const pick = JSON.parse(sessionStorage.getItem(key('partA_tmp')) || '{}').target_pick;
-                $.ajax({
-                    url: COMMIT_URL,
-                    method: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        target_pick: pick
-                    },
-                    success: function() {
-                        // simpan Part A final ke sessionStorage
-                        const tmp = JSON.parse(sessionStorage.getItem(key('partA_tmp')) ||
-                            '{}');
-                        const payload = {
-                            shift: tmp.shift,
-                            target_pick: tmp.target_pick,
-                            bagian: tmp.bagian,
-                            attendance: att,
-                            // kondisional
-                            nama_pengganti: $('input[name="nama_pengganti"]').val() || null,
-                            bagian_pengganti: $('input[name="bagian_pengganti"]').val() ||
-                                null,
-                            kondisi_pengganti: $('input[name="kondisi_pengganti"]:checked')
-                                .val() || null,
-                            kondisi: $('input[name="kondisi"]:checked').val() || null,
-                        };
-                        sessionStorage.setItem(key('partA'), JSON.stringify(payload));
-
-                        const q = new URLSearchParams({
-                            attendance: att
-                        });
-                        window.location.href = PARTB_URL + '?' + q.toString();
-                    },
-                    error: function(xhr) {
-                        alert('Gagal menetapkan target: ' + xhr.status + ' ' + xhr
-                            .responseText);
-                    }
-                });
+            $('[name="attendance"]').on('change', function() {
+                const v = $(this).val();
+                $('#absenWrap').toggleClass('d-none', v !== '0');
+                $('#hadirWrap').toggleClass('d-none', v !== '1');
             });
 
             $('#prevBtn').on('click', function() {
                 if (page === 2) {
                     $('#page2').addClass('d-none');
                     $('#page1').removeClass('d-none');
-                    $('#prevBtn').hide();
                     page = 1;
+                    $('#prevBtn').toggleClass('d-none', page === 1);
                 }
             });
 
-            // Conditional blocks
-            $('input[name="attendance"]').on('change', function() {
-                const v = $(this).val();
-                $('#absenWrap').toggleClass('d-none', v !== '0');
-                $('#hadirWrap').toggleClass('d-none', v !== '1');
+            $('#nextBtn').on('click', function() {
+                const shift = $('input[name="shift"]:checked').val();
+                const target = $('[name="target_pick"]').val();
+                const bagian = $('[name="bagian"]').val();
+                const attend = $('input[name="attendance"]:checked').val();
+                if (page === 1) {
+                    if (!shift || !target || !bagian) {
+                        return alert('Lengkapi form.');
+                    }
+                    $('#page1').addClass('d-none');
+                    $('#page2').removeClass('d-none');
+                    page = 2;
+                    $('#prevBtn').toggleClass('d-none', page === 1);
+                    return;
+                }
+
+                // simpan Part A (client)
+                if (!attend) {
+                    return alert('Lengkapi form.');
+                }
+                const payload = {
+                    shift,
+                    target,
+                    bagian,
+                    attendance: attend,
+                    nama_pengganti: $('input[name="nama_pengganti"]').val() || null,
+                    bagian_pengganti: $('input[name="bagian_pengganti"]').val() || null,
+                    kondisi_pengganti: $('input[name="kondisi_pengganti"]:checked').val() || null,
+                    kondisi: $('input[name="kondisi"]:checked').val() || null,
+                };
+                sessionStorage.setItem(key('partA'), JSON.stringify(payload));
+
+                // ke Part B
+                const url = `${PARTB_URL}?type=${encodeURIComponent(PHASE)}&plan=${PLAN}`;
+                window.location.href = url;
+            });
+
+            // restore bila balik dari Part B
+            try {
+                const earlier = JSON.parse(sessionStorage.getItem(key('partA')) || 'null');
+                if (earlier) {
+                    $(`input[name="shift"][value="${earlier.shift}"]`).prop('checked', true);
+                    $('[name="target_pick"]').val(earlier.target);
+                    $('[name="bagian"]').val(earlier.bagian);
+                    $(`input[name="attendance"][value="${earlier.attendance}"]`).prop('checked', true)
+                        .trigger(
+                            'change');
+                    if (earlier.nama_pengganti) $('input[name="nama_pengganti"]').val(earlier
+                        .nama_pengganti);
+                    if (earlier.bagian_pengganti) $('input[name="bagian_pengganti"]').val(earlier
+                        .bagian_pengganti);
+                    if (earlier.kondisi_pengganti) $(
+                        `input[name="kondisi_pengganti"][value="${earlier.kondisi_pengganti}"]`).prop(
+                        'checked',
+                        true);
+                    if (earlier.kondisi) $(`input[name="kondisi"][value="${earlier.kondisi}"]`).prop(
+                        'checked',
+                        true);
+                }
+            } catch (e) {}
+        });
+        $(document).ready(function() {
+            $('#selectize').selectize({
+                theme: 'bootstrap5'
             });
         });
     </script>
+    @session('info')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const toastLiveExample = document.getElementById('infoNotification');
+                if (toastLiveExample) {
+                    const toast = new bootstrap.Toast(toastLiveExample);
+                    toast.show();
+                }
+            });
+        </script>
+    @endsession
 @endsection

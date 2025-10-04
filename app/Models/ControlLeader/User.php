@@ -1,13 +1,12 @@
 <?php
+
 namespace App\Models\ControlLeader;
 
-use App\Models\ControlLeader\Department;
-use Illuminate\Notifications\Notifiable;
-use App\Models\ControlLeader\SchedulePlan;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 /**
  * @property int $id
@@ -24,6 +23,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property-read Department|null $department
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
@@ -36,12 +36,21 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRole($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
+ *
+ * @property int $cl_in_progress
+ * @property string|null $cl_last_ping
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereClInProgress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereClLastPing($value)
+ *
  * @mixin \Eloquent
  */
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+
     protected $connection = 'mysql_control_leader'; // override juga di sini
+
     /**
      * Beri tahu model ini nama tabelnya adalah 'users'.
      */

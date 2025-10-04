@@ -1,34 +1,36 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\CheckRoleIsAdmin;
-use App\Http\Middleware\CheckRoleMinUser;
-use App\Http\Controllers\DashboardController;
-use App\Http\Middleware\CheckIncompleteInput;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ChecksheetFormController;
-use App\Http\Middleware\CheckAppAuthentication;
-use App\Http\Controllers\Kalibrasi\APIController;
-use App\Http\Controllers\Kalibrasi\PrintController;
-use App\Http\Controllers\Kalibrasi\ReportController;
+use App\Http\Controllers\ControlLeader\ChecksheetController;
+use App\Http\Controllers\ControlLeader\ScheduleDetailController;
+use App\Http\Controllers\ControlLeader\SchedulePlanController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Kalibrasi\Admin\EquipmentController;
+use App\Http\Controllers\Kalibrasi\Admin\MasterListController;
+use App\Http\Controllers\Kalibrasi\Admin\StandardController;
 use App\Http\Controllers\Kalibrasi\Admin\UnitController;
 use App\Http\Controllers\Kalibrasi\Admin\UserController;
-use App\Http\Controllers\ControlLeader\ChecksheetController;
-use App\Http\Controllers\Kalibrasi\Admin\StandardController;
-use App\Http\Controllers\Kalibrasi\Admin\EquipmentController;
-use App\Http\Controllers\ControlLeader\SchedulePlanController;
-use App\Http\Controllers\Kalibrasi\Admin\MasterListController;
-use App\Http\Controllers\Kalibrasi\Input\RepairDataController;
-use App\Http\Controllers\ControlLeader\ScheduleDetailController;
-use App\Http\Controllers\Kalibrasi\Input\NewEquipmentController;
+use App\Http\Controllers\Kalibrasi\APIController;
 use App\Http\Controllers\Kalibrasi\Input\CalibrationDataController;
+use App\Http\Controllers\Kalibrasi\Input\NewEquipmentController;
+use App\Http\Controllers\Kalibrasi\Input\RepairDataController;
+use App\Http\Controllers\Kalibrasi\PrintController;
+use App\Http\Controllers\Kalibrasi\ReportController;
+use App\Http\Middleware\CheckAppAuthentication;
+use App\Http\Middleware\CheckIncompleteInput;
+use App\Http\Middleware\CheckLogin;
+use App\Http\Middleware\CheckRoleIsAdmin;
+use App\Http\Middleware\CheckRoleMinUser;
+use App\Http\Middleware\ResumeDraft;
 use App\Http\Middleware\SingleLogin;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/ping', function () {
     return response()->json(['pong' => true]);
 })->name('ping');
 
-Route::middleware('guest')->group(function () {
+Route::middleware(CheckLogin::class)->group(function () {
     Route::get('/', function () {
         return view('welcome');
     })->name('welcome');
@@ -125,11 +127,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
             });
         });
     });
-    Route::prefix('control')->as('control.')->middleware(SingleLogin::class)->group(function () {
-
-        // (opsional) landing
-        Route::view('/', 'control.dashboard')->name('dashboard');
-
+    Route::prefix('control')->as('control.')->middleware(SingleLogin::class)->middleware(ResumeDraft::class)->group(function () {
         // Rencana & Detail (biar lengkap, bisa kamu tambah belakangan)
         Route::resource('schedule-plans', SchedulePlanController::class)->only([
             'index',
@@ -138,7 +136,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
             'show',
             'edit',
             'update',
-            'destroy'
+            'destroy',
         ]);
 
         Route::scopeBindings()->group(function () {
@@ -151,46 +149,17 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
         // CHECKSHEET (2 step: Part A -> Part B)
         // =========================
 
-        // Part A → otomatis cari detail by today
-        Route::get('checksheets/create', [ChecksheetController::class, 'createPartA'])
-            ->name('checksheets.create');
+        Route::get('/checksheets/create', [ChecksheetController::class, 'createPartA'])->name('checksheets.create'); // ?type=awal_shift
 
-        // Part B tetap butuh {detail}, karena begitu Part A jalan, detail sudah ketemu
-        Route::get('details/{detail}/checksheets/part-b', [ChecksheetController::class, 'showPartB'])
-            ->name('checksheets.partB');
-
-        // Final submit (save ke DB)
-        Route::post('checksheets', [ChecksheetController::class, 'store'])
-            ->name('checksheets.store');
-
-        // Finalisasi & Approve
-        Route::post('checksheets/{checksheet}/finalize', [ChecksheetController::class, 'finalize'])
-            ->name('checksheets.finalize'); // control.checksheets.finalize
-
-        Route::post('checksheets/{checksheet}/approve', [ChecksheetController::class, 'approve'])
-            ->name('checksheets.approve'); // control.checksheets.approve
-
-        // Lain-lain (lihat/ubah/hapus/export)
-        // Route::get('checksheets/{checksheet}', [ChecksheetController::class, 'show'])
-        //     ->name('checksheets.show');
-        // Route::get('checksheets/{checksheet}/edit', [ChecksheetController::class, 'edit'])
-        //     ->name('checksheets.edit');
-        // Route::patch('checksheets/{checksheet}', [ChecksheetController::class, 'update'])
-        //     ->name('checksheets.update');
-        // Route::delete('checksheets/{checksheet}', [ChecksheetController::class, 'destroy'])
-        //     ->name('checksheets.destroy');
-        // Route::get('checksheets/{checksheet}/export', [ChecksheetController::class, 'export'])
-        //     ->name('checksheets.export');
+        // draft/timer
+        Route::post('/checksheets/drafts/start', [ChecksheetController::class, 'startDraft'])->name('drafts.start');
         Route::post('/heartbeat', [ChecksheetController::class, 'heartbeat'])->name('heartbeat');
-        Route::get('checksheets/pick-date', [ChecksheetController::class, 'pickDate'])
-            ->name('checksheets.pickDate');
-        Route::post('details/{detail}/checksheets/commit-target', [ChecksheetController::class, 'commitTarget'])
-            ->name('checksheets.commitTarget');
-        Route::get(
-            'details/{detail}/checksheets/targets',
-            [ChecksheetController::class, 'targetsJson']
-        )->name('checksheets.targets');
 
+        // ke Part B
+        Route::get('/checksheets/part-b', [ChecksheetController::class, 'showPartB'])->name('checksheets.partB');
+
+        // submit final
+        Route::post('/checksheets', [ChecksheetController::class, 'store'])->name('checksheets.store');
 
         // =========================
         // API kecil buat dropdown schedule/target (AJAX)

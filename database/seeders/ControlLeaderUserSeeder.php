@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\ControlLeader\User;
-use Illuminate\Support\Facades\Hash;
 use App\Models\ControlLeader\Department;
+use App\Models\ControlLeader\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class ControlLeaderUserSeeder extends Seeder
 {

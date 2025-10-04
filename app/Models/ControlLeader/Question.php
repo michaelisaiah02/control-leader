@@ -2,8 +2,6 @@
 
 namespace App\Models\ControlLeader;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Models\ControlLeader\ControlLeaderModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
@@ -15,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int $is_active
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Question newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Question newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Question query()
@@ -26,11 +25,29 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereQuestionCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereQuestionText($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereUpdatedAt($value)
+ *
+ * @property string $package
+ * @property string $answer_type
+ * @property array<array-key, mixed>|null $choices
+ * @property array<array-key, mixed>|null $require_problem_when
+ * @property string|null $problem_label
+ * @property string|null $countermeasure_label
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question activeOrdered()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question forPackage(string $package)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereAnswerType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereChoices($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereCountermeasureLabel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question wherePackage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereProblemLabel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereRequireProblemWhen($value)
+ *
  * @mixin \Eloquent
  */
 class Question extends ControlLeaderModel
 {
     use HasFactory;
+
     protected $table = 'questions';
 
     protected $fillable = [
@@ -56,6 +73,7 @@ class Question extends ControlLeaderModel
     {
         return $q->where('package', $package);
     }
+
     public function scopeActiveOrdered($q)
     {
         return $q->where('is_active', true)->orderBy('display_order');

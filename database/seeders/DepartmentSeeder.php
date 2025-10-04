@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\ControlLeader\Division;
 use App\Models\ControlLeader\Department;
+use App\Models\ControlLeader\Division;
+use Illuminate\Database\Seeder;
 
 class DepartmentSeeder extends Seeder
 {

@@ -6,8 +6,13 @@ use App\Models\ControlLeader\ChecksheetDraft;
 use Closure;
 use Illuminate\Http\Request;
 
-class RedirectToActiveDraft
+class ResumeDraft
 {
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
     public function handle(Request $request, Closure $next)
     {
         $user = auth('web_control_leader')->user();
@@ -15,18 +20,27 @@ class RedirectToActiveDraft
             return $next($request);
         }
 
-        // jangan loop redirect sendiri
-        if ($request->routeIs('control.checksheets.*')) {
+        // Hindari loop kalau sudah di route checksheet
+        if (
+            $request->routeIs('control.checksheets.*') ||
+            $request->is('control/details/*/checksheets/*')
+        ) {
             return $next($request);
         }
 
-        // cek draft aktif
+        // Tanpa TTL: selama is_active = 1, auto-resume
         $draft = ChecksheetDraft::where('user_id', $user->id)
             ->where('is_active', true)
             ->latest('updated_at')
             ->first();
 
         if ($draft) {
+            // takeover sesi sekarang, JANGAN ubah started_at
+            $draft->forceFill([
+                'session_id' => $request->session()->getId(),
+                'last_ping' => now(),
+            ])->save();
+
             return redirect()->route('control.checksheets.create', [
                 'detail' => $draft->schedule_detail_id,
                 'type' => $draft->phase,

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\ControlLeader\ChecksheetDraft;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -24,7 +25,7 @@ class LoginController extends Controller
         $appType = $request->session()->get('login_app_type');
 
         // Jika session-nya pun tidak ada, baru lempar ke welcome
-        if (!$appType || !in_array($appType, ['kalibrasi', 'control_leader'])) {
+        if (! $appType || ! in_array($appType, ['kalibrasi', 'control_leader'])) {
             return redirect()->route('welcome');
         }
 
@@ -69,33 +70,47 @@ class LoginController extends Controller
                 $user = $guard->user();
                 $sid = $request->session()->getId();
 
-                // grace window berapa menit sejak heartbeat terakhir dianggap "aktif"
+                // LOCK: hanya block takeover kalau user masih mengisi (ping < 3 menit)
                 $LOCK_TTL_MIN = 3;
-
                 $lockActive = $user->cl_in_progress
                     && $user->cl_last_ping
                     && now()->diffInMinutes($user->cl_last_ping) < $LOCK_TTL_MIN;
 
-                if (!empty($user->control_session_id) && $user->control_session_id !== $sid && $lockActive) {
-                    // masih aktif mengisi → tolak login baru
+                if (! empty($user->control_session_id) && $user->control_session_id !== $sid && $lockActive) {
                     $guard->logout();
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
-
-                    throw ValidationException::withMessages([
+                    throw \Illuminate\Validation\ValidationException::withMessages([
                         'error' => 'Akun CONTROL LEADER sedang mengisi checksheet di perangkat lain.',
+                    ]);
+                }
+
+                // takeover OK (kalau tidak sedang aktif)
+                $user->forceFill([
+                    'control_session_id' => $sid,
+                    'cl_in_progress' => false,     // reset flag nyangkut
+                    'cl_last_ping' => now(),
+                ])->save();
+
+                $draft = ChecksheetDraft::where('user_id', $user->id)
+                    ->where('is_active', true)    // ← tanpa TTL
+                    ->latest('updated_at')
+                    ->first();
+
+                if ($draft) {
+                    $draft->forceFill([
+                        'session_id' => $request->session()->getId(),
+                        'last_ping' => now(),
+                    ])->save();
+
+                    return redirect()->route('control.checksheets.create', [
+                        'detail' => $draft->schedule_detail_id,
+                        'type' => $draft->phase,
                     ]);
                 }
 
                 // kalau tidak sedang mengisi (atau lock kadaluarsa) → boleh takeover sesi lama
                 $oldSid = $user->control_session_id;
-
-                $user->forceFill([
-                    'control_session_id' => $sid,
-                    // reset flag biar gak "nyangkut"
-                    'cl_in_progress' => false,
-                    'cl_last_ping' => now(),
-                ])->save();
 
                 // (opsional) jika SESSION_DRIVER=database, hapus baris sesi lama
                 if (config('session.driver') === 'database' && $oldSid && $oldSid !== $sid) {
@@ -122,7 +137,7 @@ class LoginController extends Controller
 
         if (Auth::guard('web_control_leader')->check()) {
             Auth::guard('web_control_leader')->user()
-                    ?->forceFill(['control_session_id' => null, 'cl_in_progress' => false])
+                ?->forceFill(['control_session_id' => null, 'cl_in_progress' => false])
                 ->save();
         }
 
@@ -136,5 +151,4 @@ class LoginController extends Controller
         // Arahkan ke halaman login netral
         return redirect('/');
     }
-
 }

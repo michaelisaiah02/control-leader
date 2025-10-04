@@ -58,7 +58,7 @@ class EquipmentController extends Controller
                 // Ambil nomor urutnya dari id_num (misal: TIM-005 → 005)
                 $no = substr($ml->id_num, -3);
                 $ml->type_id = $equipment->type_id;
-                $ml->id_num = $equipment->type_id . '-' . $no;
+                $ml->id_num = $equipment->type_id.'-'.$no;
                 $ml->save();
             }
         }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ControlLeader\ChecksheetDraft;
 use App\Models\IncompleteInput;
 use App\Models\MasterList;
 use App\Models\Standard;
@@ -22,6 +23,15 @@ class DashboardController extends Controller
             $leaderName = $user->name;
             $leaderRole = $user->role; // Ganti dengan data bagian/role yang sebenarnya
 
+            // Kalau ada draft checksheet yang belum selesai, redirect ke sana
+            $draft = ChecksheetDraft::where('user_id', $user->id)
+                ->where('is_active', true)
+                ->first();
+            if ($draft) {
+                return redirect()->route('control.checksheets.create', ['type' => $draft->phase])
+                    ->with('info', 'Anda belum menyelesaikan pengisian checksheet sebelumnya.');
+            }
+
             return view('dashboards.control_leader', [
                 'leaderName' => $leaderName,
                 'leaderRole' => $leaderRole,
@@ -37,7 +47,7 @@ class DashboardController extends Controller
             $equipments = MasterList::with([
                 'results' => function ($q) {
                     $q->latest('calibration_date')->limit(1);
-                }
+                },
             ])->get();
 
             $warnings = []; // utk soon & NG
@@ -47,7 +57,7 @@ class DashboardController extends Controller
                 $latest = $eq->results->first();
 
                 // jika belum pernah ada result, gunakan first_used & treat as OK
-                if (!$latest) {
+                if (! $latest) {
                     $lastCal = Carbon::parse($eq->first_used);
                     $judg = 'OK';
                 } else {
@@ -73,7 +83,7 @@ class DashboardController extends Controller
                     $warnings[] = $msg;
                 } elseif ($now->gt($dueDate)) {
                     // sudah lewat due date
-                    $dangers[] = $msg . " (should be calibrated before: {$dueDate->format('d-m-Y')})";
+                    $dangers[] = $msg." (should be calibrated before: {$dueDate->format('d-m-Y')})";
                 }
             }
 

@@ -4,11 +4,15 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckAppAuthentication
+class CheckLogin
 {
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
     public function handle(Request $request, Closure $next): Response
     {
         // 1. Cek aplikasi apa yang aktif dari session
@@ -16,14 +20,12 @@ class CheckAppAuthentication
 
         // 2. Tentukan guard mana yang harus digunakan
         $guard = $activeApp === 'control_leader' ? 'web_control_leader' : 'web';
-
-        // 3. Periksa apakah user sudah login MENGGUNAKAN GUARD YANG BENAR
-        if (! Auth::guard($guard)->check()) {
-            // 4. Jika belum, lempar ke halaman login
-            return redirect()->route('welcome');
+        // Cek apakah user sudah login
+        if (auth()->guard($guard)->check()) {
+            // Jika belum, lempar ke halaman login
+            return redirect()->route('dashboard');
         }
 
-        // 5. Jika sudah, lanjutkan ke halaman yang dituju (misal: dashboard)
         return $next($request);
     }
 }

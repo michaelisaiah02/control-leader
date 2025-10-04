@@ -1,11 +1,11 @@
 /* @import 'tailwindcss'; */
 @import "bootstrap-icons";
 @import "../../node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.css";
+@import "../../node_modules/@selectize/selectize/dist/css/selectize.bootstrap5.css";
 
 @font-face {
     font-family: "Montserrat";
-    src: url("/public/fonts/Montserrat-VariableFont_wght.ttf")
-        format("truetype");
+    src: url("/public/fonts/Montserrat-VariableFont_wght.ttf") format("truetype");
     font-weight: 100 900;
     font-style: normal;
     font-display: swap;
@@ -37,28 +37,35 @@ img.icon:hover {
         width: 95% !important;
         font-size: 0.8rem !important;
     }
+
     .main-title,
     .company-name {
         font-size: 1rem;
     }
+
     .logo,
     .icon {
         width: 30px;
         height: 40.5px;
     }
+
     .btn1 {
         font-size: 1.5rem;
     }
+
     .btn2 {
         font-size: 1rem;
     }
+
     .width-label-1 {
         width: 50%;
     }
+
     .width-label-2 {
         width: 50%;
     }
 }
+
 @media only screen and (min-width: 1081px) {
     .sub-judul {
         width: 75% !important;
@@ -69,6 +76,7 @@ img.icon:hover {
         -ms-transform: translateY(-20px);
         -o-transform: translateY(-20px);
     }
+
     .main-title {
         font-size: 44pt;
         transform: translateY(-10px);
@@ -77,6 +85,7 @@ img.icon:hover {
         -ms-transform: translateY(-10px);
         -o-transform: translateY(-10px);
     }
+
     .company-name {
         font-size: 2rem;
         transform: translateY(-30px);
@@ -85,20 +94,25 @@ img.icon:hover {
         -ms-transform: translateY(-30px);
         -o-transform: translateY(-30px);
     }
+
     .logo,
     .icon {
         width: 75px;
         height: 90.5px;
     }
+
     .btn1 {
         font-size: 2.2rem !important;
     }
+
     .btn2 {
         font-size: 1.4rem !important;
     }
+
     .width-label-1 {
         width: 25%;
     }
+
     .width-label-2 {
         width: 30%;
     }

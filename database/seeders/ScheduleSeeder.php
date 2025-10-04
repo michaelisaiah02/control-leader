@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\ControlLeader\ScheduleDetail;
+use App\Models\ControlLeader\SchedulePlan;
+use App\Models\ControlLeader\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use App\Models\ControlLeader\User;
 use Illuminate\Support\Facades\DB;
-use App\Models\ControlLeader\SchedulePlan;
-use App\Models\ControlLeader\ScheduleDetail;
 
 class ScheduleSeeder extends Seeder
 {
@@ -19,8 +19,9 @@ class ScheduleSeeder extends Seeder
         $leader = User::where('role', 'leader')->orderBy('id')->first();
         $supervisor = User::where('role', 'supervisor')->orderBy('id')->first();
 
-        if (!$leader || !$supervisor) {
+        if (! $leader || ! $supervisor) {
             $this->command->warn('⚠️ Tidak menemukan user Leader/Supervisor. Pastikan ControlLeaderUserSeeder jalan.');
+
             return;
         }
 
@@ -36,7 +37,7 @@ class ScheduleSeeder extends Seeder
             [
                 'scheduler_id' => $leader->id, // biasanya supervisor yang buat plan LCO
                 'month' => $today->format('m'),
-                'year' => $today->format('Y')
+                'year' => $today->format('Y'),
             ]
         );
 
@@ -45,7 +46,7 @@ class ScheduleSeeder extends Seeder
             [
                 'scheduler_id' => $supervisor->id,
                 'month' => $today->format('m'),
-                'year' => $today->format('Y')
+                'year' => $today->format('Y'),
             ]
         );
 

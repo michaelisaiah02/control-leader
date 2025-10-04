@@ -9,16 +9,21 @@ use Illuminate\View\Component;
 class Wizard extends Component
 {
     public $id;
+
     public $label;
+
     public $type;
+
     public $placeholder;
+
     public $options;
+
     public $name;
 
     /**
      * Create a new component instance.
      */
-    public function __construct($id, $label, $type = 'text', $placeholder, $options, $name)
+    public function __construct($id, $label, $type, $placeholder, $options, $name)
     {
         $this->id = $id;
         $this->label = $label;
