@@ -2,7 +2,7 @@
 
 @push('subtitle')
 <p class="fs-2 w-75 p-0 my-auto sub-judul border border-white rounded-2 text-uppercase">
-  add checksheet
+  add question
 </p>
 @endpush
 
@@ -10,11 +10,11 @@
 <div class="px-5">
   <div class="d-flex gap-5 w-100 mt-2 justify-content-between align-items-center my-2">
     <div class="d-flex align-items-center gap-2 w-100">
-      <label for="name" class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Nama Checksheet</label>
-      <input id="name" type="text" placeholder="Nama" class="form-control bg-warning-subtle">
+      <label for="name" class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Pertanyaan</label>
+      <input id="name" type="text" class="form-control bg-warning-subtle">
     </div>
     <div class="d-flex align-items-center gap-2 w-100">
-      <label for="category" class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Category</label>
+      <label for="category" class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Type</label>
       <select name="" id="category" class="form-control bg-warning-subtle">
         <option value="" selected>Production/Finishing</option>
         <option value=""></option>
@@ -32,9 +32,8 @@
     <!-- Kolom Kanan -->
     <div class="col-md-4">
       <div class="d-grid gap-2 border border-primary p-3 rounded h-100">
-        <button class="btn btn-outline-primary add-field" data-type="text">Text Field</button>
-        <button class="btn btn-outline-primary add-field" data-type="textarea">Text Area</button>
-        <button class="btn btn-outline-primary add-field" data-type="radio">Radio Group</button>
+        <button class="btn btn-outline-primary add-field" data-type="toggle">Toggle (Boolean)</button>
+        <button class="btn btn-outline-primary add-field" data-type="radio">Tambah Pilihan</button>
       </div>
     </div>
   </div>
@@ -55,7 +54,8 @@
 <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    let count = 1;
+    let count = 0;
+    let options = [];
     const builder = document.getElementById("builder");
     const saveBtn = document.getElementById("saveBtn");
 
@@ -66,37 +66,90 @@
 
     function addField(type) {
       let fieldHtml = "";
-      const label = `Field ${count}`;
+      const label = `Field`;
 
       switch (type) {
-        case "text":
+        case "toggle":
           fieldHtml = `
                     <div class="mb-3 field-block">
-                        <label contenteditable="true">${count}. ${label}</label>
+                        <label contenteditable="true">Problem</label>
+                        <input type="text" class="form-control">
+                    </div>
+                    <div class="mb-3 field-block">
+                        <label contenteditable="true">Countermeasture</label>
                         <input type="text" class="form-control">
                     </div>`;
           break;
-
-        case "textarea":
-          fieldHtml = `
-                    <div class="mb-3 field-block">
-                        <label contenteditable="true">${count}. ${label}</label>
-                        <textarea class="form-control"></textarea>
-                    </div>`;
-          break;
-
         case "radio":
           fieldHtml = `
-                    <div class="mb-3 field-block">
-                        <label contenteditable="true">${count}. ${label}</label>
-                        <div><input type="radio" name="opt${count}"> Option 1</div>
-                        <div><input type="radio" name="opt${count}"> Option 2</div>
+                    <div class="mb-3 field-block" data-type="radio">
+                        <label contenteditable="true">${label}</label>
+                        <div class="radio-options">
+                          ${(options.length ? options : ["Option 1", "Option 2"]).map(opt => `
+                              <div class="input-group mb-1">
+                                  <div class="input-group-text">
+                                      <input type="radio" disabled>
+                                  </div>
+                                  <input type="text" class="form-control radio-input" value="${opt}">
+                                  <button type="button" class="btn btn-outline-danger btn-sm remove-radio">✕</button>
+                              </div>
+                          `).join("")}
+                      </div>
+                      <button type="button" class="btn btn-outline-primary btn-sm add-radio mt-1">+ Add Radio</button>
                     </div>`;
           break;
       }
 
       builder.insertAdjacentHTML("beforeend", fieldHtml);
       count++;
+    }
+
+    // Add Radio
+    builder.addEventListener("click", e => {
+      if (e.target.classList.contains("add-radio")) {
+        const container = e.target.closest(".field-block").querySelector(".radio-options");
+        const index = container.querySelectorAll(".radio-input").length + 1;
+
+        container.insertAdjacentHTML("beforeend", `
+            <div class="input-group mb-1">
+                <div class="input-group-text">
+                    <input type="radio" disabled>
+                </div>
+                <input type="text" class="form-control radio-input" value="Option ${index}">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-radio">✕</button>
+            </div>
+        `);
+      }
+
+      // Remove Radio
+      if (e.target.classList.contains("remove-radio")) {
+        e.target.closest(".input-group").remove();
+      }
+    });
+
+    function collectFields() {
+      let fields = [];
+      builder.querySelectorAll(".field-block").forEach(div => {
+        const label = div.querySelector("label").innerText;
+        const type = div.dataset.type || "text";
+
+        if (type === "radio") {
+          let options = [];
+          div.querySelectorAll(".radio-input").forEach(input => options.push(input.value));
+          fields.push({
+            label,
+            type,
+            options
+          });
+        } else {
+          fields.push({
+            label,
+            type,
+            options: null
+          });
+        }
+      });
+      return fields;
     }
 
     // Save Fields
