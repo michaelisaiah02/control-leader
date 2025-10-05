@@ -2,7 +2,7 @@
 
 @push('subtitle')
 <p class="fs-2 w-75 p-0 my-auto sub-judul border border-white rounded-2 text-uppercase">
-  add question
+  {{ isset($question) ? 'edit question' : 'add question' }}
 </p>
 @endpush
 
@@ -11,14 +11,16 @@
   <div class="d-flex gap-5 w-100 mt-2 justify-content-between align-items-center my-2">
     <div class="d-flex align-items-center gap-2 w-100">
       <label for="name" class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Pertanyaan</label>
-      <input id="name" type="text" class="form-control bg-warning-subtle">
+      <input id="name" type="text" name="" class="form-control bg-warning-subtle">
     </div>
     <div class="d-flex align-items-center gap-2 w-100">
       <label for="category" class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Type</label>
       <select name="" id="category" class="form-control bg-warning-subtle">
-        <option value="" selected>Production/Finishing</option>
-        <option value=""></option>
-        <option value=""></option>
+        <option value="" selected disabled>-- Pilih</option>
+        <option value="op_awal">Awal Shift</option>
+        <option value="op_kerja">Saat Bekerja</option>
+        <option value="op_istirahat">Setelah Istirahat</option>
+        <option value="op_akhir">Akhir Shift</option>
       </select>
     </div>
   </div>
@@ -64,6 +66,34 @@
       btn.addEventListener("click", () => addField(btn.dataset.type));
     });
 
+    // Tooltips
+    function initTooltips() {
+      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      tooltipTriggerList.map(el => new bootstrap.Tooltip(el))
+    }
+
+    document.addEventListener("DOMContentLoaded", initTooltips);
+
+    function addRadio(btn) {
+      const container = btn.previousElementSibling;
+      const index = container.querySelectorAll(".radio-input").length + 1;
+      container.insertAdjacentHTML("beforeend", `
+        <div class="input-group mb-1">
+            <span class="input-group-text cursor-grab">☰</span>
+            <div class="input-group-text">
+                <input type="radio" disabled 
+                       data-bs-toggle="tooltip" 
+                       data-bs-placement="top" 
+                       title="Klik untuk memilih opsi ini">
+            </div>
+            <input type="text" class="form-control radio-input" value="Option ${index}">
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRadio(this)">✕</button>
+        </div>
+    `);
+      enableSortable();
+      initTooltips(); // refresh tooltip
+    }
+
     function addField(type) {
       let fieldHtml = "";
       const label = `Field`;
@@ -84,13 +114,13 @@
           fieldHtml = `
                     <div class="mb-3 field-block" data-type="radio">
                         <label contenteditable="true">${label}</label>
-                        <div class="radio-options">
+                        <div class="radio-opjtions">
                           ${(options.length ? options : ["Option 1", "Option 2"]).map(opt => `
                               <div class="input-group mb-1">
                                   <div class="input-group-text">
                                       <input type="radio" disabled
                                         data-bs-toggle="tooltip" 
-                                        data-bs-placement="top" 
+                                        data-bs-placement="top"
                                         title="Klik untuk memilih opsi ini">
                                   </div>
                                   <input type="text" class="form-control radio-input" value="${opt}">
