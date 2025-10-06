@@ -6,6 +6,19 @@
 </p>
 @endpush
 
+@section('styles')
+<style>
+  .cursor-grab {
+    cursor: grab;
+  }
+
+  .sortable-ghost {
+    opacity: 0.4;
+    background: #f0f0f0;
+  }
+</style>
+@endsection
+
 @section('content')
 <div class="px-5">
   <div class="d-flex gap-5 w-100 mt-2 justify-content-between align-items-center my-2">
@@ -27,7 +40,7 @@
   <div class="row my-4">
     <!-- Kolom Kiri -->
     <div class="col-md-8">
-      <div id="builder" class="border border-primary p-3 rounded" style="min-height:300px;">
+      <div id="builder" class="border border-primary p-3 overflow-y-scroll" style="height: 300px; max-height:300px;">
       </div>
     </div>
 
@@ -54,6 +67,7 @@
 
 @section('scripts')
 <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     let count = 0;
@@ -67,31 +81,26 @@
     });
 
     // Tooltips
-    function initTooltips() {
-      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-      tooltipTriggerList.map(el => new bootstrap.Tooltip(el))
-    }
-
-    document.addEventListener("DOMContentLoaded", initTooltips);
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 
     function addRadio(btn) {
       const container = btn.previousElementSibling;
       const index = container.querySelectorAll(".radio-input").length + 1;
       container.insertAdjacentHTML("beforeend", `
-        <div class="input-group mb-1">
+        <div class="input-group mb-1 border border-1 border-primary p-4">
             <span class="input-group-text cursor-grab">☰</span>
             <div class="input-group-text">
-                <input type="radio" disabled 
-                       data-bs-toggle="tooltip" 
-                       data-bs-placement="top" 
-                       title="Klik untuk memilih opsi ini">
+                <input type="radio" disabled>
             </div>
-            <input type="text" class="form-control radio-input" value="Option ${index}">
+            <input 
+              type="text"
+              class="form-control border border-1 border-primary radio-input" 
+              value="Option ${index}">
             <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRadio(this)">✕</button>
         </div>
     `);
       enableSortable();
-      initTooltips(); // refresh tooltip
     }
 
     function addField(type) {
@@ -101,34 +110,37 @@
       switch (type) {
         case "toggle":
           fieldHtml = `
-                    <div class="mb-3 field-block">
+                    <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
                         <label contenteditable="true">Problem</label>
-                        <input type="text" class="form-control">
+                        <input type="text" name="" class="form-control border border-1 border-primary">
                     </div>
-                    <div class="mb-3 field-block">
+                    <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
                         <label contenteditable="true">Countermeasture</label>
-                        <input type="text" class="form-control">
+                        <input type="text" name="" class="form-control border border-1 border-primary">
                     </div>`;
           break;
         case "radio":
           fieldHtml = `
-                    <div class="mb-3 field-block" data-type="radio">
+                    <div class="mb-3 border border-1 border-primary p-3 rounded field-block" data-type="radio">
                         <label contenteditable="true">${label}</label>
-                        <div class="radio-opjtions">
+                        <div class="radio-options sortable-radio">
                           ${(options.length ? options : ["Option 1", "Option 2"]).map(opt => `
                               <div class="input-group mb-1">
-                                  <div class="input-group-text">
-                                      <input type="radio" disabled
-                                        data-bs-toggle="tooltip" 
-                                        data-bs-placement="top"
-                                        title="Klik untuk memilih opsi ini">
+                                  <span class="input-group-text cursor-grab">☰</span>
+                                  <div class="input-group-text cursor-grab">
+                                      <input type="radio" disabled>
                                   </div>
-                                  <input type="text" class="form-control radio-input" value="${opt}">
+                                  <input
+                                    type="text" 
+                                    class="form-control border border-1 border-primary radio-input" 
+                                    value="${opt}"
+                                  >
                                   <button type="button" class="btn btn-outline-danger btn-sm remove-radio">✕</button>
                               </div>
                           `).join("")}
                       </div>
-                      <button type="button" class="btn btn-outline-primary btn-sm add-radio mt-1">+ Add Radio</button>
+                      <p class="text-warning-emphasis">Urutkan dari terburuk ke terbaik!</p>
+                      <button type="button" class="btn btn-outline-primary btn-sm add-radio mt-1">+ Tambah</button>
                     </div>`;
           break;
       }
@@ -136,6 +148,17 @@
       builder.insertAdjacentHTML("beforeend", fieldHtml);
       count++;
     }
+
+    function enableSortable() {
+      document.querySelectorAll(".sortable-radio").forEach(container => {
+        Sortable.create(container, {
+          animation: 150,
+          handle: ".cursor-grab",
+          ghostClass: "sortable-ghost"
+        });
+      });
+    }
+
 
     // Add Radio
     builder.addEventListener("click", e => {
@@ -145,14 +168,17 @@
 
         container.insertAdjacentHTML("beforeend", `
             <div class="input-group mb-1">
-                <div class="input-group-text">
-                    <input type="radio" disabled>
+                <span class="input-group-text cursor-grab">☰</span>
+                <div class="input-group-text cursor-grab">
+                  <input type="radio" disabled>
                 </div>
-                <input type="text" class="form-control radio-input" value="Option ${index}">
+                <input type="text" class="form-control border border-1 border-primary radio-input" value="Option ${index}">
                 <button type="button" class="btn btn-outline-danger btn-sm remove-radio">✕</button>
             </div>
         `);
       }
+
+      enableSortable();
 
       // Remove Radio
       if (e.target.classList.contains("remove-radio")) {
