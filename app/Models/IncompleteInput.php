@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\MasterList|null $masterList
  * @property-read \App\Models\User $user
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IncompleteInput atStage($stage)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IncompleteInput forCurrentUser()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IncompleteInput newModelQuery()
@@ -25,7 +24,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IncompleteInput whereStage($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IncompleteInput whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IncompleteInput whereUserId($value)
- *
  * @mixin \Eloquent
  */
 class IncompleteInput extends Model

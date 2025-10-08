@@ -49,7 +49,8 @@
             <a class="navbar-brand mx-0 mx-md-4" href="/">
                 <img src="{{ asset('image/logo-pt.png') }}" alt="Logo" class="mt-0 logo">
             </a>
-            <div class="row text-center justify-content-center text-bg-primary" id="title-section">
+            <div class="row text-center justify-content-center @if (request()->is('login')) text-light @else text-bg-primary @endif"
+                id="title-section">
                 <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
                     @yield('title', $pageTitle)</p>
                 <p class="align-self-center company-name p-0 m-0">PT. CATURINDO AGUNGJAYA RUBBER</p>

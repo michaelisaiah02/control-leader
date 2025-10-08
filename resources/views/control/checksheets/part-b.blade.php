@@ -42,10 +42,10 @@
             <input type="hidden" name="part_a[target]">
             <input type="hidden" name="part_a[division]">
             <input type="hidden" name="part_a[attendance]">
-            <input type="hidden" name="part_a[condition]">
-            <input type="hidden" name="part_a[replacement_name]">
-            <input type="hidden" name="part_a[replacement_division]">
-            <input type="hidden" name="part_a[replacement_condition]">
+            <input type="hidden" name="part_a[kondisi]">
+            <input type="hidden" name="part_a[nama_pengganti]">
+            <input type="hidden" name="part_a[bagian_pengganti]">
+            <input type="hidden" name="part_a[kondisi_pengganti]">
 
             @foreach ($questions as $i => $q)
                 @php $idx = $i+1; @endphp
@@ -68,7 +68,7 @@
                                 <div class="form-check">
                                     <input class="form-check-input answer-radio" type="radio"
                                         name="answers[{{ $q->id }}]" id="q{{ $q->id }}_{{ $v }}"
-                                        value="{{ $v }}" data-type="{{ $q->answer_type }}"
+                                        value="{{ $v }}" data-extra="{{ $q->extra_fields }}"
                                         data-qid="{{ $q->id }}">
                                     <label class="form-check-label"
                                         for="q{{ $q->id }}_{{ $v }}">{{ $lbl }}</label>
@@ -217,17 +217,20 @@
             });
             go(1);
 
-            // tampilkan problem/countermeasure sesuai rule:
-            // - type A (3 pilihan): jika value 0 atau 1 → tampilkan keduanya
-            // - type B (2 pilihan): jika value 0 → tampilkan keduanya
-            // - type C (3 pilihan, tanpa prob/cm) → tidak ada (biarin)
+            // tampilkan problem/countermeasure sesuai rule
             $('.answer-radio').on('change', function() {
-                const type = $(this).data('type'); // a|b|c
+                const extra = $(this).data('extra'); // 1 atau 0
                 const qid = $(this).data('qid');
-                const val = $(this).val();
+                const val = parseInt($(this).val());
                 const card = $(this).closest('.card-body');
-                const show = (type === 'a' && (val === '0' || val === '1')) || (type === 'b' && val ===
-                    '0');
+                const totalOptions = card.find('.answer-radio[data-qid="' + qid + '"]').length;
+                // Tampilkan problem/countermeasure jika:
+                // - extra-fields = 1 (true) DAN
+                // - bukan pilihan terakhir (val !== totalOptions - 1)
+                const show = extra === 1 && val !== (totalOptions - 1);
+                console.log('extra:', extra, 'val:', val, 'totalOptions-1:', totalOptions - 1, 'show:',
+                    show);
+
                 card.find('.problem-wrap').toggleClass('d-none', !show);
                 card.find('.counter-wrap').toggleClass('d-none', !show);
             });

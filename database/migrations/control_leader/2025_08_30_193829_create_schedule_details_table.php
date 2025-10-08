@@ -17,8 +17,8 @@ return new class extends Migration
             $table->foreignId('target_leader_id')->nullable()->constrained('users');
             $table->string('target_operator_id')->nullable(); // ID Operator (input manual)
             $table->string('target_operator_name')->nullable(); // Nama Operator (input manual)
+            $table->string('division')->nullable();
             $table->date('scheduled_date');
-            $table->timestamp('started_at')->nullable();
             $table->timestamps();
 
             $table->index(['schedule_plan_id', 'scheduled_date'], 'sd_plan_date_idx');

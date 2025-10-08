@@ -25,14 +25,11 @@ return new class extends Migration
 
             $table->text('question_text'); // pertanyaan inti
 
-            // tipe soal: A, B, atau C (lihat mockup kamu)
-            $table->enum('answer_type', ['a', 'b', 'c'])->default('a');
-
             // pilihan jawaban (JSON array [{value,label}])
             $table->json('choices')->nullable();
 
-            // kalau memilih value tertentu → wajib isi problem/countermeasure
-            $table->json('require_problem_when')->nullable();
+            // true = wajib isi problem/countermeasure, false = tidak perlu
+            $table->boolean('extra_fields');
 
             // label field tambahan
             $table->string('problem_label')->nullable();

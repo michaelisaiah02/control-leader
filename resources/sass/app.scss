@@ -5,9 +5,13 @@
 // Atau pakai map (lebih fleksibel):
 $theme-colors: (
     "primary": #181d3d,
-    // bisa sekalian ganti yg lain
-    // "success": #00E676,
-    // "danger": #FF1744
+    "light": #f8f9fa,
+    "dark": #212529,
+    "secondary": #6c757d,
+    "info": #17a2b8,
+    "warning": #ffc107,
+    "success": #4caf50,
+    "danger": #f44336
 );
 
 // 3) Lanjut import sisa partial Bootstrap

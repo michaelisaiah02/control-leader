@@ -21,12 +21,11 @@ return new class extends Migration
 
             // Snapshot data pertanyaan → aman kalau pertanyaan diubah / dihapus
             $table->text('question_text');
-            $table->enum('answer_type', ['a', 'b', 'c'])->default('a');
-            $table->json('choices')->nullable();
+            $table->json('choices')->nullable()->comment('Pilihan jawaban dalam JSON array');
 
             // Jawaban utama
-            $table->string('answer_value')->nullable();  // ex: 0,1,2
-            $table->string('answer_label')->nullable();  // ex: "Operator mengikuti sampai selesai"
+            $table->integer('answer_value', false, true)->nullable()
+                ->comment('Jawaban pilihan sesuai index array, ex: 0,1,2');
 
             // Extra field kalau required
             $table->text('problem')->nullable();

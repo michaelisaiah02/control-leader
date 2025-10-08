@@ -30,7 +30,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $results_count
  * @property-read \App\Models\Standard|null $standard
  * @property-read \App\Models\Unit|null $unit
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList query()
@@ -51,7 +50,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereTypeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereUnitId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereUpdatedAt($value)
- *
  * @mixin \Eloquent
  */
 class MasterList extends Model

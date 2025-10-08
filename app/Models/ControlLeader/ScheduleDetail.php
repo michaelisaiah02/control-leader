@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read SchedulePlan $plan
  * @property-read User|null $targetLeader
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail query()
@@ -26,15 +25,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail whereTargetLeaderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail whereTargetOperatorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail whereUpdatedAt($value)
- *
  * @property string|null $target_operator_name
  * @property string $scheduled_date
  * @property string|null $started_at
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail whereScheduledDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail whereStartedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail whereTargetOperatorName($value)
- *
+ * @property string|null $division
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail whereDivision($value)
  * @mixin \Eloquent
  */
 class ScheduleDetail extends ControlLeaderModel
@@ -48,6 +46,7 @@ class ScheduleDetail extends ControlLeaderModel
         'target_leader_id',
         'target_operator_id',
         'target_operator_name',
+        'division',
         'scheduled_date',
     ];
 
