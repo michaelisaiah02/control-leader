@@ -14,7 +14,7 @@ class ReportController extends Controller
     {
         return view('kalibrasi.report.menu', [
             'title' => 'REPORT',
-            'equipments' => Equipment::all(),
+            'equipments' => Equipment::all()->sortBy('name'),
         ]);
     }
 
@@ -61,6 +61,9 @@ class ReportController extends Controller
                     $q->where('judgement', $judg);
                 });
             }
+
+            // sort id_num ascending
+            $query->orderBy('id_num', 'asc');
 
             $results = $query->paginate(5)->withQueryString();
 

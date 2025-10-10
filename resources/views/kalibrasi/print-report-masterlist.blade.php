@@ -51,14 +51,43 @@
             page-break-inside: avoid;
         }
 
+        .signature-area-wrapper {
+            position: relative;
+            /* Ini yang akan mengurung si Buzz Lightyear */
+            /* Pastikan lebarnya sesuai dengan tabelnya */
+            width: 40%;
+            float: right;
+            /* atau margin-left: auto; untuk membuatnya di kanan */
+        }
+
+        .already-sign-overlay {
+            display: none;
+            position: absolute;
+
+            /* Posisikan di tengah-tengah area TTD (bukan tengah-tengah total) */
+            /* Kita turunkan sedikit dari atas */
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* Trik centering modern */
+
+            width: 95%;
+            /* Sedikit lebih kecil dari kandang biar ada napas */
+            background-color: white;
+            border: 2px solid black;
+            font-weight: bold;
+            text-align: center;
+            padding: 8px 0;
+            z-index: 10;
+        }
+
         /* Hide print button during printing */
         @media print {
-            button.print-button {
-                display: none;
-            }
 
-            button.back-button {
-                display: none;
+            button.print-button,
+            button.back-button,
+            .sign-checkbox-container {
+                display: none !important;
             }
 
             @page {
@@ -70,6 +99,10 @@
             body {
                 margin: 0;
                 padding: 0;
+            }
+
+            body.show-sign-on-print .already-sign-overlay {
+                display: block;
             }
         }
     </style>
@@ -155,9 +188,9 @@
                                 <td colspan="2">-</td>
                                 <td>-</td>
                             @else
-                                <td colspan="2">{{ $std }}</td>
-                                <td colspan="2">{{ $val }}</td>
-                                <td>{{ $val - $std }}</td>
+                                <td colspan="2">{{ floatval($std) }}</td>
+                                <td colspan="2">{{ floatval($val) }}</td>
+                                <td>{{ floatval($val - $std) }}</td>
                             @endif
 
                             @if ($i == 1)
@@ -168,47 +201,79 @@
                 </tbody>
             </table>
         </div>
-        <div class="row justify-content-end" style="display: flex; justify-content: end;">
-            <div class="col-4" style="width: 40%;">
-                <table class="table table-bordered text-center">
-                    <thead>
-                        <tr>
-                            <th scope="col" style="width: 33%;">Disetujui</th>
-                            <th scope="col" style="width: 33%;">Diperiksa</th>
-                            <th scope="col" style="width: 33%;">Dibuat</th>
-                        </tr>
-                        <tr>
-                            <th scope="col" style="height: 50px">&nbsp;</th>
-                            <th scope="col" style="height: 50px">&nbsp;</th>
-                            <th scope="col" style="height: 50px">&nbsp;</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{{ $approved->name }}</td>
-                            <td>{{ $checked->name }}</td>
-                            <td>{{ $result->creator->name }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="signature-area-wrapper">
+
+            <div class="already-sign-overlay">ALREADY SIGN</div>
+
+            <div class="row justify-content-end" style="display: flex; justify-content: end;">
+                <div class="col-4" style="width: 100%;">
+                    <table class="table table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width: 33%;">Disetujui</th>
+                                <th scope="col" style="width: 33%;">Diperiksa</th>
+                                <th scope="col" style="width: 33%;">Dibuat</th>
+                            </tr>
+                            <tr class="signature-space-row">
+                                <th scope="col" style="height: 50px;">&nbsp;</th>
+                                <th scope="col" style="height: 50px;">&nbsp;</th>
+                                <th scope="col" style="height: 50px;">&nbsp;</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="signature-names-row">
+                                <td>{{ $approved->name }}</td>
+                                <td>{{ $checked->name }}</td>
+                                <td>{{ $result->creator->name }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
         </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // --- MEMBUAT CHECKBOX ---
+            const signCheckboxContainer = document.createElement('div');
+            signCheckboxContainer.classList.add('sign-checkbox-container');
+            signCheckboxContainer.style.position = 'fixed';
+            signCheckboxContainer.style.bottom = '20px';
+            signCheckboxContainer.style.left = '20px';
+            signCheckboxContainer.innerHTML = `
+            <input type="checkbox" id="already-sign-checkbox" style="margin-right: 5px;">
+            <label for="already-sign-checkbox" style="color: #333; font-size: 14px;">Already Sign Print</label>
+        `;
+            document.body.appendChild(signCheckboxContainer);
+
+            // --- EVENT LISTENER UNTUK CHECKBOX ---
+            const alreadySignCheckbox = document.getElementById('already-sign-checkbox');
+            alreadySignCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Jika dicentang, tambahkan class ke body
+                    document.body.classList.add('show-sign-on-print');
+                } else {
+                    // Jika tidak dicentang, hapus class dari body
+                    document.body.classList.remove('show-sign-on-print');
+                }
+            });
+
+            // --- KODE TOMBOL BACK & PRINT KAMU (TETAP SAMA) ---
             const printButton = document.createElement('button');
             printButton.textContent = 'Print';
             printButton.style.position = 'fixed';
             printButton.style.bottom = '20px';
             printButton.style.left = '50%';
             printButton.style.transform = 'translateX(-50%)';
-            printButton.style.cursor = 'pointer';
             printButton.classList.add('print-button');
+            // (style lainnya tetap sama)
             printButton.style.padding = '10px 20px';
             printButton.style.backgroundColor = '#181d3d';
             printButton.style.color = '#fff';
             printButton.style.border = 'none';
             printButton.style.borderRadius = '5px';
+            printButton.style.cursor = 'pointer';
 
             printButton.addEventListener('click', function() {
                 window.print();
@@ -216,7 +281,6 @@
                     window.location.href = "{{ route('kalibrasi.report.menu') }}";
                 }, 1000);
             });
-
             document.body.appendChild(printButton);
 
             const backButton = document.createElement('button');
@@ -225,20 +289,20 @@
             backButton.style.bottom = '20px';
             backButton.style.left = '50%';
             backButton.style.transform = 'translateX(-180%)';
-            backButton.style.cursor = 'pointer';
             backButton.classList.add('back-button');
+            // (style lainnya tetap sama)
             backButton.style.padding = '10px 20px';
             backButton.style.backgroundColor = '#181d3d';
             backButton.style.color = '#fff';
             backButton.style.border = 'none';
             backButton.style.borderRadius = '5px';
+            backButton.style.cursor = 'pointer';
 
             backButton.addEventListener('click', function() {
                 setTimeout(() => {
                     window.location.href = "{{ route('kalibrasi.report.menu') }}";
                 }, 1000);
             });
-
             document.body.appendChild(backButton);
         });
     </script>

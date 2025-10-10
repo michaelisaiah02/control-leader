@@ -67,6 +67,13 @@
 @endsection
 
 @section('scripts')
+    <script type="module">
+        $(document).ready(function() {
+            $('[name="type_id"]').selectize({
+                theme: 'bootstrap5'
+            })[0].selectize;
+        });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const dateFrom = document.getElementById('date-from');

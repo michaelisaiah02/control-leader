@@ -30,7 +30,8 @@
         <div class="d-flex w-100 mt-2 justify-content-between align-items-center">
             <p class="border border-2 border-white bg-primary rounded-2 text-white py-1 mb-1 px-4 shadow">Bagian B</p>
             <p class="border border-2 border-primary rounded-2 px-2 py-1 mb-1 shadow">Stopwatch:
-                <span id="stopwatch" class="mb-1 px-2 text-danger bg-danger-subtle">00:00</span>
+                <span id="stopwatch" class="mb-1 px-2 text-danger bg-danger-subtle"
+                    data-start="{{ $startedAtMs }}">00:00</span>
             </p>
         </div>
 
@@ -41,10 +42,10 @@
             <input type="hidden" name="part_a[target]">
             <input type="hidden" name="part_a[division]">
             <input type="hidden" name="part_a[attendance]">
-            <input type="hidden" name="part_a[condition]">
-            <input type="hidden" name="part_a[replacement_name]">
-            <input type="hidden" name="part_a[replacement_division]">
-            <input type="hidden" name="part_a[replacement_condition]">
+            <input type="hidden" name="part_a[kondisi]">
+            <input type="hidden" name="part_a[nama_pengganti]">
+            <input type="hidden" name="part_a[bagian_pengganti]">
+            <input type="hidden" name="part_a[kondisi_pengganti]">
 
             @foreach ($questions as $i => $q)
                 @php $idx = $i+1; @endphp
@@ -67,7 +68,7 @@
                                 <div class="form-check">
                                     <input class="form-check-input answer-radio" type="radio"
                                         name="answers[{{ $q->id }}]" id="q{{ $q->id }}_{{ $v }}"
-                                        value="{{ $v }}" data-type="{{ $q->answer_type }}"
+                                        value="{{ $v }}" data-extra="{{ $q->extra_fields }}"
                                         data-qid="{{ $q->id }}">
                                     <label class="form-check-label"
                                         for="q{{ $q->id }}_{{ $v }}">{{ $lbl }}</label>
@@ -93,9 +94,9 @@
             <div class="d-flex justify-content-between">
                 <span id="pageInfo" class="me-3">{{ count($questions) ? '1 / ' . count($questions) : '' }}</span>
                 <div>
-                    <button type="button" id="prevQ" class="btn btn-outline-secondary">Back</button>
+                    <button type="button" id="prevQ" class="btn btn-outline-primary">Back</button>
                     <button type="button" id="nextQ" class="btn btn-primary">Next</button>
-                    <button type="submit" id="submitBtn" class="btn btn-success d-none">Submit</button>
+                    <button type="submit" id="submitBtn" class="btn btn-primary d-none">Submit</button>
                 </div>
             </div>
         </form>
@@ -109,8 +110,7 @@
             const PLAN = {{ $plan->id }};
             const key = (k) => `cl:plan:${PLAN}:phase:${PHASE}:${k}`;
             // Stopwatch: pakai started_at_ms yang disimpan di Part A (server draft)
-            // Ambil dari sessionStorage backup kalau ada
-            let started = Number(sessionStorage.getItem(key('started_ms')) || 0);
+            let started = parseInt($('#stopwatch').data('start'), 0);
             if (!started) {
                 started = Date.now();
             } // fallback
@@ -124,7 +124,6 @@
             // inject Part A hidden dari sessionStorage
             try {
                 const a = JSON.parse(sessionStorage.getItem(key('partA')) || 'null');
-                console.log('a=', a);
                 if (a) {
                     $('[name="part_a[shift]"]').val(a.shift);
                     $('[name="part_a[target]"]').val(a.target);
@@ -134,7 +133,6 @@
                     $('[name="part_a[replacement_name]"]').val(a.nama_pengganti);
                     $('[name="part_a[replacement_division]"]').val(a.bagian_pengganti);
                     $('[name="part_a[replacement_condition]"]').val(a.kondisi_pengganti);
-                    sessionStorage.setItem(key('started_ms'), String(started)); // keep
                 }
             } catch (e) {}
 
@@ -219,17 +217,20 @@
             });
             go(1);
 
-            // tampilkan problem/countermeasure sesuai rule:
-            // - type A (3 pilihan): jika value 0 atau 1 → tampilkan keduanya
-            // - type B (2 pilihan): jika value 0 → tampilkan keduanya
-            // - type C (3 pilihan, tanpa prob/cm) → tidak ada (biarin)
+            // tampilkan problem/countermeasure sesuai rule
             $('.answer-radio').on('change', function() {
-                const type = $(this).data('type'); // a|b|c
+                const extra = $(this).data('extra'); // 1 atau 0
                 const qid = $(this).data('qid');
-                const val = $(this).val();
+                const val = parseInt($(this).val());
                 const card = $(this).closest('.card-body');
-                const show = (type === 'a' && (val === '0' || val === '1')) || (type === 'b' && val ===
-                    '0');
+                const totalOptions = card.find('.answer-radio[data-qid="' + qid + '"]').length;
+                // Tampilkan problem/countermeasure jika:
+                // - extra-fields = 1 (true) DAN
+                // - bukan pilihan terakhir (val !== totalOptions - 1)
+                const show = extra === 1 && val !== (totalOptions - 1);
+                console.log('extra:', extra, 'val:', val, 'totalOptions-1:', totalOptions - 1, 'show:',
+                    show);
+
                 card.find('.problem-wrap').toggleClass('d-none', !show);
                 card.find('.counter-wrap').toggleClass('d-none', !show);
             });
@@ -242,7 +243,6 @@
                 }
                 // hapus session draft
                 sessionStorage.removeItem(key('partA'));
-                sessionStorage.removeItem(key('started_ms'));
             });
         });
     </script>

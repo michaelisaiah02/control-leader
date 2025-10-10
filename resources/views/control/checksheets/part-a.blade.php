@@ -56,18 +56,17 @@
 
                 <div class="mb-1 p-2 border border-2 rounded-4">
                     <div class="fw-semibold mb-1">2. {{ $targetLabel }}</div>
-                    <select id="selectize" name="target_pick" class="form-select bg-warning-subtle" required>
+                    <select id="target_pick" name="target_pick" class="form-select bg-warning-subtle" required>
                         <option value="">Pilih...</option>
                         @foreach ($options as $opt)
                             <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
-
                 <div class="mb-1 p-2 border border-2 rounded-4">
                     <div class="fw-semibold mb-1">3. Bagian</div>
-                    <input type="text" name="bagian" class="form-control bg-warning-subtle" value="{{ $deptName }}"
-                        placeholder="Contoh : Cutting">
+                    <input type="text" name="bagian" class="form-control bg-warning-subtle" value=""
+                        placeholder="Contoh : Cutting" readonly>
                 </div>
             </div>
 
@@ -95,13 +94,17 @@
                 <div id="absenWrap" class="d-none">
                     <div class="mb-3 p-3 border border-2 rounded-4">
                         <div class="fw-semibold mb-1">Nama Operator <u>Pengganti</u></div>
-                        <input type="text" class="form-control bg-warning-subtle" name="nama_pengganti"
-                            placeholder="Nama Lengkap">
+                        <select id="nama_pengganti" name="nama_pengganti" class="form-select bg-warning-subtle">
+                            <option value="">Pilih...</option>
+                            @foreach ($options as $opt)
+                                <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="mb-3 p-3 border border-2 rounded-4">
                         <div class="fw-semibold mb-1">Bagian Operator <u>Pengganti</u></div>
                         <input type="text" class="form-control bg-warning-subtle" name="bagian_pengganti"
-                            placeholder="Contoh : Finishing">
+                            placeholder="Contoh : Finishing" readonly>
                     </div>
                     <div class="mb-3 p-3 border border-2 rounded-4">
                         <div class="fw-semibold mb-1"><u>Kondisi</u> Operator Pengganti</div>
@@ -133,6 +136,7 @@
 @endsection
 
 @section('scripts')
+
     <script type="module">
         $(function() {
             const PHASE = @json($phase);
@@ -157,7 +161,7 @@
                 });
 
             function tick() {
-                const started = parseInt($('#stopwatch').data('start') || '{{ $startedAtMs }}', 10);
+                const started = parseInt($('#stopwatch').data('start'), 10);
                 const sec = Math.floor((Date.now() - started) / 1000);
                 const m = String(Math.floor(sec / 60)).padStart(2, '0');
                 const s = String(sec % 60).padStart(2, '0');
@@ -175,6 +179,11 @@
                 const v = $(this).val();
                 $('#absenWrap').toggleClass('d-none', v !== '0');
                 $('#hadirWrap').toggleClass('d-none', v !== '1');
+
+                // Uncheck kondisi operator when absen is selected
+                if (v === '0') {
+                    $('input[name="kondisi"]').prop('checked', false);
+                }
             });
 
             $('#prevBtn').on('click', function() {
@@ -211,10 +220,10 @@
                     target,
                     bagian,
                     attendance: attend,
+                    kondisi: $('input[name="kondisi"]:checked').val() || null,
                     nama_pengganti: $('input[name="nama_pengganti"]').val() || null,
                     bagian_pengganti: $('input[name="bagian_pengganti"]').val() || null,
                     kondisi_pengganti: $('input[name="kondisi_pengganti"]:checked').val() || null,
-                    kondisi: $('input[name="kondisi"]:checked').val() || null,
                 };
                 sessionStorage.setItem(key('partA'), JSON.stringify(payload));
 
@@ -248,8 +257,53 @@
             } catch (e) {}
         });
         $(document).ready(function() {
-            $('#selectize').selectize({
+            let targetSelectize = $('[name="target_pick"]').selectize({
                 theme: 'bootstrap5'
+            })[0].selectize;
+
+            let penggantiSelectize = $('[name="nama_pengganti"]').selectize({
+                theme: 'bootstrap5'
+            })[0].selectize;
+
+            // Store original options for pengganti
+            let originalPenggantiOptions = Object.values(penggantiSelectize.options);
+
+            // Update pengganti options when target changes
+            $('[name="target_pick"]').on('change', function() {
+                const selectedValue = $(this).val();
+
+                // Update bagian field
+                if (selectedValue) {
+                    const parts = selectedValue.split('::');
+                    const bagian = parts[parts.length - 1];
+                    $('[name="bagian"]').val(bagian);
+                } else {
+                    $('[name="bagian"]').val('');
+                }
+
+                // Clear pengganti selectize and rebuild options
+                penggantiSelectize.clearOptions();
+                penggantiSelectize.clear();
+
+                // Add back all original options except the selected one
+                Object.values(originalPenggantiOptions).forEach(option => {
+                    if (option.value !== selectedValue) {
+                        penggantiSelectize.addOption(option);
+                    }
+                });
+
+                penggantiSelectize.refreshOptions();
+            });
+
+            $('[name="nama_pengganti"]').on('change', function() {
+                const selectedValue = $(this).val();
+                if (selectedValue) {
+                    const parts = selectedValue.split('::');
+                    const bagian = parts[parts.length - 1];
+                    $('[name="bagian_pengganti"]').val(bagian);
+                } else {
+                    $('[name="bagian_pengganti"]').val('');
+                }
             });
         });
     </script>

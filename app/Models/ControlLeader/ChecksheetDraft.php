@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read ScheduleDetail|null $detail
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetDraft newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetDraft newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetDraft query()
@@ -32,7 +31,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetDraft whereStartedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetDraft whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetDraft whereUserId($value)
- *
  * @mixin \Eloquent
  */
 class ChecksheetDraft extends ControlLeaderModel

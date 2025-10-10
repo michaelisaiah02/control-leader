@@ -19,7 +19,7 @@ class PrintController extends Controller
 
     public function reportMasterlist($id)
     {
-        $result = Result::with(['masterList'])->where('id_num', $id)->firstOrFail();
+        $result = Result::with(['masterList'])->where('id_num', $id)->orderByDesc('updated_at')->firstOrFail();
         $approved = User::where('approved', true)->first();
         $checked = User::where('checked', true)->first();
 

@@ -106,7 +106,7 @@
                                 <input type="text" class="form-control" id="std-1" placeholder="std" disabled>
                                 <input type="number"
                                     class="form-control @error('param_01') is-invalid @enderror {{ old('param_01') ? 'is-valid' : '' }}"
-                                    id="act-1" name="param_01" placeholder="act" step="0.01"
+                                    id="act-1" name="param_01" placeholder="act" step="0.00001"
                                     value="{{ old('param_01') }}">
                             </div>
                             <div class="input-group input-group-sm mb-1">
@@ -114,7 +114,7 @@
                                 <input type="text" class="form-control" id="std-2" placeholder="std" disabled>
                                 <input type="number"
                                     class="form-control @error('param_02') is-invalid @enderror {{ old('param_02') ? 'is-valid' : '' }}"
-                                    id="act-2" name="param_02" placeholder="act" step="0.01"
+                                    id="act-2" name="param_02" placeholder="act" step="0.00001"
                                     value="{{ old('param_02') }}">
                             </div>
                             <div class="input-group input-group-sm mb-1">
@@ -122,7 +122,7 @@
                                 <input type="text" class="form-control" id="std-3" placeholder="std" disabled>
                                 <input type="number"
                                     class="form-control @error('param_03') is-invalid @enderror {{ old('param_03') ? 'is-valid' : '' }}"
-                                    id="act-3" name="param_03" placeholder="act" step="0.01"
+                                    id="act-3" name="param_03" placeholder="act" step="0.00001"
                                     value="{{ old('param_03') }}">
                             </div>
                             <div class="input-group input-group-sm mb-1">
@@ -130,7 +130,7 @@
                                 <input type="text" class="form-control" id="std-4" placeholder="std" disabled>
                                 <input type="number"
                                     class="form-control @error('param_04') is-invalid @enderror {{ old('param_04') ? 'is-valid' : '' }}"
-                                    id="act-4" name="param_04" placeholder="act" step="0.01"
+                                    id="act-4" name="param_04" placeholder="act" step="0.00001"
                                     value="{{ old('param_04') }}">
                             </div>
                             <div class="input-group input-group-sm mb-1">
@@ -138,7 +138,7 @@
                                 <input type="text" class="form-control" id="std-5" placeholder="std" disabled>
                                 <input type="number"
                                     class="form-control @error('param_05') is-invalid @enderror {{ old('param_05') ? 'is-valid' : '' }}"
-                                    id="act-5" name="param_05" placeholder="act" step="0.01"
+                                    id="act-5" name="param_05" placeholder="act" step="0.00001"
                                     value="{{ old('param_05') }}">
                             </div>
                         </div>
@@ -148,7 +148,7 @@
                                 <input type="text" class="form-control" id="std-6" placeholder="std" disabled>
                                 <input type="number"
                                     class="form-control @error('param_06') is-invalid @enderror {{ old('param_06') ? 'is-valid' : '' }}"
-                                    id="act-6" name="param_06" placeholder="act" step="0.01"
+                                    id="act-6" name="param_06" placeholder="act" step="0.00001"
                                     value="{{ old('param_06') }}">
                             </div>
                             <div class="input-group input-group-sm mb-1">
@@ -156,7 +156,7 @@
                                 <input type="text" class="form-control" id="std-7" placeholder="std" disabled>
                                 <input type="number"
                                     class="form-control @error('param_07') is-invalid @enderror {{ old('param_07') ? 'is-valid' : '' }}"
-                                    id="act-7" name="param_07" placeholder="act" step="0.01"
+                                    id="act-7" name="param_07" placeholder="act" step="0.00001"
                                     value="{{ old('param_07') }}">
                             </div>
                             <div class="input-group input-group-sm mb-1">
@@ -164,7 +164,7 @@
                                 <input type="text" class="form-control" id="std-8" placeholder="std" disabled>
                                 <input type="number"
                                     class="form-control @error('param_08') is-invalid @enderror {{ old('param_08') ? 'is-valid' : '' }}"
-                                    id="act-8" name="param_08" placeholder="act" step="0.01"
+                                    id="act-8" name="param_08" placeholder="act" step="0.00001"
                                     value="{{ old('param_08') }}">
                             </div>
                             <div class="input-group input-group-sm mb-1">
@@ -172,7 +172,7 @@
                                 <input type="text" class="form-control" id="std-9" placeholder="std" disabled>
                                 <input type="number"
                                     class="form-control @error('param_09') is-invalid @enderror {{ old('param_09') ? 'is-valid' : '' }}"
-                                    id="act-9" name="param_09" placeholder="act" step="0.01"
+                                    id="act-9" name="param_09" placeholder="act" step="0.00001"
                                     value="{{ old('param_09') }}">
                             </div>
                             <div class="input-group input-group-sm mb-1">
@@ -180,7 +180,7 @@
                                 <input type="text" class="form-control" id="std-10" placeholder="std" disabled>
                                 <input type="number"
                                     class="form-control @error('param_10') is-invalid @enderror {{ old('param_10') ? 'is-valid' : '' }}"
-                                    id="act-10" name="param_10" placeholder="act" step="0.01"
+                                    id="act-10" name="param_10" placeholder="act" step="0.00001"
                                     value="{{ old('param_10') }}">
                             </div>
                         </div>

@@ -7,7 +7,6 @@ use App\Models\ControlLeader\SchedulePlan;
 use App\Models\ControlLeader\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class ScheduleSeeder extends Seeder
 {
@@ -24,11 +23,6 @@ class ScheduleSeeder extends Seeder
 
             return;
         }
-
-        // Ambil 1 department/division yang sudah ada
-        // NOTE: PAKAI SALAH SATU baris di bawah sesuai kolom yang kamu punya
-        $deptId = DB::connection('mysql_control_leader')->table('departments')->min('id');   // ← kalau tabelnya "departments"
-        // $deptId = DB::table('divisions')->min('id');  // ← kalau tabelnya "divisions"
 
         // ========== Plans ==========
         // type: 'leader_checks_operator' | 'supervisor_checks_leader'
@@ -60,6 +54,7 @@ class ScheduleSeeder extends Seeder
             ],
             [
                 'target_operator_name' => 'Budi Santoso',
+                'division' => 'Finishing',
             ]
         );
 
@@ -71,6 +66,7 @@ class ScheduleSeeder extends Seeder
             ],
             [
                 'target_operator_name' => 'Zaenal Samsudin',
+                'division' => 'Packing',
             ]
         );
 

@@ -13,20 +13,29 @@ return new class extends Migration
     {
         Schema::connection('mysql_control_leader')->create('checksheets', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('schedule_plan_id')
-                ->constrained('schedule_plans')
+            $table->foreignId('schedule_plan_id')->constrained('schedule_plans')
                 ->cascadeOnDelete();
             $table->unsignedInteger('stopwatch_duration')->comment('Durasi dalam detik');
-            $table->string('phase')->default('awal_shift');
+            $table->string('phase')->default('awal_shift')
+                ->comment('Fase checksheet: awal_shift, bekerja, istirahat, akhir_shift, leader');
+
+            // opsional: simpan juga 'scheduled_target' biar report makin jelas
+            // $table->string('scheduled_target')->nullable()
+            //     ->comment('Snapshot target yang dijadwalkan: "id - nama"');
 
             // Kolom untuk 4 jawaban Bagian A yang tetap
-            $table->string('shift');
+            $table->integer('shift', false, true)
+                ->comment('Shift: 1, 2, 3');
             $table->string('target')->comment('Format: id - nama');
             $table->string('division');
             $table->string('attendance');
-
-            // Kondisi Target
             $table->string('condition')->nullable();
+
+            // Apakah ini checksheet sebagai operator pengganti?
+            $table->boolean('replacement')->default(false)
+                ->comment('false = scheduled/original; true = replacement (yang dinilai)');
+            $table->unsignedBigInteger('replacement_of_id')->nullable()
+                ->comment('ID checksheet parent (scheduled). Null bila scheduled/hadir');
 
             // Operator Pengganti
             $table->string('replacement_name')->nullable();
@@ -36,6 +45,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['phase']);
+            $table->index('replacement_of_id');
         });
     }
 
