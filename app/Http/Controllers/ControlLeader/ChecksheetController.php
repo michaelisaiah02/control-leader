@@ -47,32 +47,27 @@ class ChecksheetController extends Controller
             ->where('type', $direction)
             ->orderByDesc('year')->orderByDesc('month')->first();
 
-        if (! $plan) {
+        if (!$plan) {
             return back()->with('error', 'Belum ada Schedule Plan untuk Anda.');
         }
 
         // Opsi target dari DETAILS plan terbaru (tanpa tanggal di label)
         if ($direction === 'supervisor_checks_leader') {
-            $leaderIds = ScheduleDetail::where('schedule_plan_id', $plan->id)
-                ->whereNotNull('target_leader_id')
-                ->pluck('target_leader_id')->unique();
-            $leaders = User::whereIn('id', $leaderIds)->orderBy('name')->get();
+            $leaders = User::where('role', 'Leader')->where('is_active', true)->orderBy('name')->get();
             $targetLabel = 'ID & Nama Leader';
-            $options = $leaders->map(fn ($u) => [
-                'value' => "L::{$u->id}",
-                'label' => ($u->employeeID ?? "LDR{$u->id}").' - '.$u->name,
-            ])->values()->all();
+            $options = $leaders->map(fn($u) => [
+                'value' => 'U::' . $u->id,
+                'label' => ($u->employeeID ?? "LDR{$u->id}") . ' - ' . $u->name
+            ])->all();
         } else {
             $ops = ScheduleDetail::where('schedule_plan_id', $plan->id)
-                ->whereNotNull('target_operator_id')
-                ->whereNotNull('target_operator_name')
-                ->select('id', 'target_operator_id', 'target_operator_name', 'division')
-                ->distinct()->orderBy('target_operator_name')->get();
+                ->whereNotNull('target_user_id')->pluck('target_user_id')->unique()->values();
+            $users = User::whereIn('id', $ops)->orderBy('name')->get();
             $targetLabel = 'ID & Nama Operator';
-            $options = $ops->map(fn ($r) => [
-                'value' => "O::{$r->id}::{$r->target_operator_id}::{$r->target_operator_name}::{$r->division}",
-                'label' => "{$r->target_operator_id} - {$r->target_operator_name}",
-            ])->values()->all();
+            $options = $users->map(fn($u) => [
+                'value' => 'U::' . $u->id,
+                'label' => ($u->employeeID ?: "OP{$u->id}") . ' - ' . $u->name
+            ])->all();
         }
 
         // Draft (key: user_id + plan + phase)
@@ -85,11 +80,11 @@ class ChecksheetController extends Controller
         // Jika draft ada dan last_ping lebih dari 45 detik, hapus dan buat baru
         if ($draft && $draft->last_ping && $draft->last_ping->diffInSeconds(now()) > 45) {
             $draft->delete();
-            $draft = null;
+            $draft = false;
         }
 
         // Buat draft baru jika belum ada
-        if (! $draft) {
+        if (!$draft) {
             $draft = ChecksheetDraft::create([
                 'user_id' => $me->id,
                 'schedule_plan_id' => $plan->id,
@@ -127,7 +122,7 @@ class ChecksheetController extends Controller
             ['user_id' => $me->id, 'schedule_plan_id' => $data['schedule_plan_id'], 'phase' => $data['phase']],
             ['session_id' => session()->getId(), 'is_active' => true, 'last_ping' => now()]
         );
-        if (! $draft->started_at) {
+        if (!$draft->started_at) {
             $draft->started_at = now();
             $draft->save();
         }
@@ -170,6 +165,15 @@ class ChecksheetController extends Controller
         ]);
     }
 
+    private function userLabel(int $uid): string
+    {
+        $u = User::find($uid);
+        if (!$u)
+            return '';
+        $code = $u->employeeID ?: ($u->role === 'Leader' ? 'LDR' . $u->id : 'OP' . $u->id);
+        return $code . ' - ' . $u->name;
+    }
+
     public function store(Request $req)
     {
         $me = auth('web_control_leader')->user();
@@ -181,6 +185,7 @@ class ChecksheetController extends Controller
             'part_a.target' => 'required|string', // "O::id::name" / "L::id"
             'part_a.division' => 'required|string',
             'part_a.attendance' => 'required|in:0,1',
+            'part_a.has_replacement' => 'sometimes|boolean',
             'part_a.kondisi' => 'nullable|string',
             'part_a.nama_pengganti' => 'nullable|string',
             'part_a.bagian_pengganti' => 'nullable|string',
@@ -197,26 +202,13 @@ class ChecksheetController extends Controller
         $duration = $draft && $draft->started_at ? $draft->started_at->diffInSeconds(now()) : 0;
 
         // --- Parse target pick
-        $pick = $data['part_a']['target']; // ex: "O::15::OP001::Budi::Finishing" / "L::22::99"
-        $parts = explode('::', $pick);
-        $kind = $parts[0] ?? null;           // O | L
-        $detailId = (int) ($parts[1] ?? 0);   // schedule_details.id
-        $scheduledLabel = '';                // "id - nama" utk yang dijadwalkan
-
-        if ($kind === 'O') {
-            $opId = $parts[2] ?? '';
-            $opName = $parts[3] ?? '';
-            $scheduledLabel = trim("$opId - $opName");
-        } else { // Leader
-            $leaderId = (int) ($parts[2] ?? 0);
-            $u = User::find($leaderId);
-            $code = $u?->employeeID ?? ('LDR'.$leaderId);
-            $scheduledLabel = trim("$code - ".($u?->name ?? ''));
-        }
+        [$detailId, $uidStr] = explode('::', $req->input('part_a.target'));
+        $uid = (int) $uidStr;
+        $scheduledLabel = $this->userLabel($uid);
 
         // --- Ambil division dari schedule_details
         $detail = ScheduleDetail::find($detailId);
-        $divisionFromDetail = $parts[4];
+        $divisionFromDetail = $detail?->division ?? $data['part_a']['division'];
 
         // --- Attendance
         $isPresent = (int) $data['part_a']['attendance'] === 1;
@@ -269,7 +261,7 @@ class ChecksheetController extends Controller
         $parent = Checksheet::create([
             'schedule_plan_id' => $data['schedule_plan_id'],
             'phase' => $phase,
-            'stopwatch_duration' => $duration,
+            'stopwatch_duration' => null,
             'scheduled_target' => $scheduledLabel,
             'shift' => $data['part_a']['shift'],
             'target' => $scheduledLabel,     // tetap snapshot yang dijadwalkan
@@ -288,7 +280,7 @@ class ChecksheetController extends Controller
         // --- Bangun label evaluated dari pengganti
         //   NB: kalau kamu minta input "ID pengganti", tinggal gabung "ID - Nama".
         $evaluatedLabel = trim(($req->input('part_a.operator_id_pengganti', '') ?: '')
-            .' - '.$data['part_a']['nama_pengganti']);
+            . ' - ' . $data['part_a']['nama_pengganti']);
 
         // === Buat CHILD (replacement, yang akan dipakai untuk jawaban B)
         $child = Checksheet::create([

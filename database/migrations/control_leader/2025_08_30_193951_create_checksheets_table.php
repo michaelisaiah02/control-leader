@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -15,13 +14,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('schedule_plan_id')->constrained('schedule_plans')
                 ->cascadeOnDelete();
-            $table->unsignedInteger('stopwatch_duration')->comment('Durasi dalam detik');
+            $table->unsignedInteger('stopwatch_duration')->comment('Durasi dalam detik')->nullable();
             $table->string('phase')->default('awal_shift')
                 ->comment('Fase checksheet: awal_shift, bekerja, istirahat, akhir_shift, leader');
 
             // opsional: simpan juga 'scheduled_target' biar report makin jelas
-            // $table->string('scheduled_target')->nullable()
-            //     ->comment('Snapshot target yang dijadwalkan: "id - nama"');
+            $table->string('scheduled_target')->nullable()
+                ->comment('Snapshot target yang dijadwalkan: "id - nama"');
 
             // Kolom untuk 4 jawaban Bagian A yang tetap
             $table->integer('shift', false, true)
@@ -31,6 +30,8 @@ return new class extends Migration
             $table->string('attendance');
             $table->string('condition')->nullable();
 
+            $table->boolean('has_replacement')->default(false)
+                ->comment('Apakah ada operator pengganti untuk checksheet ini?');
             // Apakah ini checksheet sebagai operator pengganti?
             $table->boolean('replacement')->default(false)
                 ->comment('false = scheduled/original; true = replacement (yang dinilai)');
