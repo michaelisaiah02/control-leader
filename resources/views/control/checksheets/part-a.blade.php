@@ -59,8 +59,8 @@
                     <div class="fw-semibold mb-1">2. {{ $targetLabel }}</div>
                     <select id="target_pick" name="target_pick" class="form-select bg-warning-subtle" required>
                         <option value="">Pilih...</option>
-                        @foreach ($options as $opt)
-                            <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                        @foreach ($options as $option)
+                            <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -207,7 +207,7 @@
 
                 // Clear pengganti fields when "Tidak" is selected
                 if (v === '0') {
-                    $('input[name="nama_pengganti"]').val('');
+                    $('select[name="nama_pengganti"]').selectize()[0].selectize.clear();
                     $('input[name="bagian_pengganti"]').val('');
                     $('input[name="kondisi_pengganti"]').prop('checked', false);
                 }
@@ -265,33 +265,50 @@
 
                 // Kalau tidak ada pengganti, langsung submit form
                 if (attend === '0' && adaPengganti === '0') {
-                    $.post(@json(route('control.checksheets.store')), {
+                    // Update payload structure to match server validation
+                    const finalPayload = {
                         _token: '{{ csrf_token() }}',
                         schedule_plan_id: PLAN,
                         phase: PHASE,
-                        data: payload
-                    }).done(() => {
-                        // ke Dashboard
-                        const url = `${DASHBOARD_URL}`;
-                        window.location.href = url;
-                    }).fail(() => {
-                        alert('Gagal menyimpan data. Silakan coba lagi.');
-                    });
+                        part_a: {
+                            shift: parseInt(shift),
+                            target: target,
+                            division: bagian,
+                            attendance: parseInt(attend),
+                            ada_pengganti: adaPengganti || '0',
+                            kondisi: kondisi || null,
+                            nama_pengganti: namaPengganti || null,
+                            bagian_pengganti: bagianPengganti || null,
+                            kondisi_pengganti: kondisiPengganti || null
+                        }
+                    };
+                    $.post(@json(route('control.checksheets.store')) + `?type=${PHASE}`, finalPayload)
+                        .done((message) => {
+                            // hapus session draft
+                            sessionStorage.removeItem(key('partA'));
+                            // ke Dashboard
+                            const url = `${DASHBOARD_URL}`;
+                            window.location.href = url;
+                        }).fail((xhr) => {
+                            console.error('Server error:', xhr.responseJSON);
+                            alert('Gagal menyimpan data. Silakan coba lagi.');
+                            return false;
+                        });
                 } else if (attend === '0' && adaPengganti === '1') {
                     if (!namaPengganti || !bagianPengganti || !kondisiPengganti) {
-                        return alert('Lengkapi form. wow');
+                        return alert('Lengkapi form.');
                     }
                     payload.has_replacement = true;
-                    // ke Part B
-                    const url = `${PARTB_URL}?type=${encodeURIComponent(PHASE)}&plan=${PLAN}`;
-                    window.location.href = url;
                 } else {
                     // attend === '1'
                     if (!payload.kondisi) {
-                        return alert('Lengkapi form. cie');
+                        return alert('Lengkapi form.');
                     }
                     payload.has_replacement = false;
                 }
+                // ke Part B
+                const url = `${PARTB_URL}?type=${encodeURIComponent(PHASE)}&plan=${PLAN}`;
+                window.location.href = url;
             });
 
             // restore bila balik dari Part B

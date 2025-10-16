@@ -13,8 +13,7 @@ class ControlLeaderDatabaseSeeder extends Seeder
             ControlLeaderUserSeeder::class,
             QuestionSeeder::class,
             ScheduleSeeder::class,
-            OperatorBackfillSeeder::class,
-            // Panggil seeder lain di sini jika ada, misal ScheduleSeeder
+            // Panggil seeder lain di sini jika ada
         ]);
     }
 }

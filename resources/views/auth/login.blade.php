@@ -73,13 +73,6 @@
                                 </div>
                             @endif
                             <div class="row justify-content-center mx-auto px-2">
-                                @if ($errors->any())
-                                    <div class="alert alert-danger py-2">
-                                        @foreach ($errors->all() as $error)
-                                            {{ $error }}
-                                        @endforeach
-                                    </div>
-                                @endif
                                 <button type="submit"
                                     class="btn btn-primary text-light fw-bold text-center mb-2 mx-auto">Login</button>
                                 <p class="text-center fst-italic text-light small">Jika login gagal, hubungi (IT)</p>
@@ -90,6 +83,7 @@
             </div>
         </div>
     </div>
+    <x-toast />
 @endsection
 
 @section('scripts')

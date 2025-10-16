@@ -15,30 +15,12 @@ return new class extends Migration {
             $table->foreignId('schedule_plan_id')->constrained('schedule_plans')->onDelete('cascade');
             $table->foreignId('target_user_id')->nullable()
                 ->constrained('users')->nullOnDelete();
-            $table->foreignId('target_leader_id')->nullable()->constrained('users');
             $table->string('division')->nullable();
             $table->date('scheduled_date');
             $table->timestamps();
 
             $table->index(['schedule_plan_id', 'scheduled_date'], 'sd_plan_date_idx');
         });
-
-        // Backfill target_user_id dari employeeID
-        $users = DB::connection('mysql_control_leader')->table('users')
-            ->where('role', 'Operator')->pluck('id', 'employeeID'); // [empID => user_id]
-
-        $rows = DB::connection('mysql_control_leader')->table('schedule_details')
-            ->select('id', 'target_operator_id')->get();
-
-        foreach ($rows as $r) {
-            if (!$r->target_operator_id)
-                continue;
-            $uid = $users[$r->target_operator_id] ?? null;
-            if ($uid) {
-                DB::connection('mysql_control_leader')->table('schedule_details')
-                    ->where('id', $r->id)->update(['target_user_id' => $uid]);
-            }
-        }
     }
 
     /**

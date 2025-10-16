@@ -53,20 +53,22 @@ class ChecksheetController extends Controller
 
         // Opsi target dari DETAILS plan terbaru (tanpa tanggal di label)
         if ($direction === 'supervisor_checks_leader') {
-            $leaders = User::where('role', 'Leader')->where('is_active', true)->orderBy('name')->get();
+            $leaders = User::where('role', 'leader')->where('is_active', true)->orderBy('name')->get();
             $targetLabel = 'ID & Nama Leader';
             $options = $leaders->map(fn($u) => [
                 'value' => 'U::' . $u->id,
                 'label' => ($u->employeeID ?? "LDR{$u->id}") . ' - ' . $u->name
             ])->all();
         } else {
-            $ops = ScheduleDetail::where('schedule_plan_id', $plan->id)
-                ->whereNotNull('target_user_id')->pluck('target_user_id')->unique()->values();
-            $users = User::whereIn('id', $ops)->orderBy('name')->get();
+            $scheduleDetails = ScheduleDetail::where('schedule_plan_id', $plan->id)
+                ->whereNotNull('target_user_id')
+                ->with('targetUser')
+                ->get();
+
             $targetLabel = 'ID & Nama Operator';
-            $options = $users->map(fn($u) => [
-                'value' => 'U::' . $u->id,
-                'label' => ($u->employeeID ?: "OP{$u->id}") . ' - ' . $u->name
+            $options = $scheduleDetails->map(fn($detail) => [
+                'value' => "{$detail->id}::{$detail->target_user_id}::{$detail->division}",
+                'label' => ($detail->targetUser->employeeID ?: "OP{$detail->target_user_id}") . ' - ' . $detail->targetUser->name
             ])->all();
         }
 
@@ -74,7 +76,6 @@ class ChecksheetController extends Controller
         $draft = ChecksheetDraft::where('user_id', $me->id)
             ->where('schedule_plan_id', $plan->id)
             ->where('phase', $phase)
-            ->where('is_active', true)
             ->first();
 
         // Jika draft ada dan last_ping lebih dari 45 detik, hapus dan buat baru
@@ -85,7 +86,7 @@ class ChecksheetController extends Controller
 
         // Buat draft baru jika belum ada
         if (!$draft) {
-            $draft = ChecksheetDraft::create([
+            $draft = ChecksheetDraft::updateOrCreate([
                 'user_id' => $me->id,
                 'schedule_plan_id' => $plan->id,
                 'phase' => $phase,
@@ -118,6 +119,11 @@ class ChecksheetController extends Controller
             'schedule_plan_id' => 'required|exists:mysql_control_leader.schedule_plans,id',
             'phase' => 'required|string',
         ]);
+        // Delete draft lama dengan kriteria sama yang sudah tidak aktif
+        ChecksheetDraft::where('user_id', $me->id)->where('schedule_plan_id', $data['schedule_plan_id'])
+            ->where('phase', $data['phase'])->where('is_active', false)->delete();
+
+        // Buat atau update draft aktif
         $draft = ChecksheetDraft::updateOrCreate(
             ['user_id' => $me->id, 'schedule_plan_id' => $data['schedule_plan_id'], 'phase' => $data['phase']],
             ['session_id' => session()->getId(), 'is_active' => true, 'last_ping' => now()]
@@ -170,7 +176,7 @@ class ChecksheetController extends Controller
         $u = User::find($uid);
         if (!$u)
             return '';
-        $code = $u->employeeID ?: ($u->role === 'Leader' ? 'LDR' . $u->id : 'OP' . $u->id);
+        $code = $u->employeeID ?: ($u->role === 'leader' ? 'LDR' . $u->id : 'OP' . $u->id);
         return $code . ' - ' . $u->name;
     }
 
@@ -182,7 +188,7 @@ class ChecksheetController extends Controller
         $data = $req->validate([
             'schedule_plan_id' => 'required|exists:mysql_control_leader.schedule_plans,id',
             'part_a.shift' => 'required|in:1,2,3',
-            'part_a.target' => 'required|string', // "O::id::name" / "L::id"
+            'part_a.target' => 'required|string',
             'part_a.division' => 'required|string',
             'part_a.attendance' => 'required|in:0,1',
             'part_a.has_replacement' => 'sometimes|boolean',
@@ -198,17 +204,17 @@ class ChecksheetController extends Controller
         // ambil duration dari draft
         $draft = ChecksheetDraft::where('user_id', $me->id)
             ->where('schedule_plan_id', $data['schedule_plan_id'])
-            ->where('phase', $phase)->first();
+            ->where('phase', $phase)->where('is_active', true)->first();
         $duration = $draft && $draft->started_at ? $draft->started_at->diffInSeconds(now()) : 0;
-
+        // return response()->json(['success' => true, 'message' => $draft]);
         // --- Parse target pick
-        [$detailId, $uidStr] = explode('::', $req->input('part_a.target'));
+        [$detailId, $uidStr, $division] = explode('::', $req->input('part_a.target'));
         $uid = (int) $uidStr;
         $scheduledLabel = $this->userLabel($uid);
 
         // --- Ambil division dari schedule_details
         $detail = ScheduleDetail::find($detailId);
-        $divisionFromDetail = $detail?->division ?? $data['part_a']['division'];
+        $divisionFromDetail = $detail?->division ?? $division;
 
         // --- Attendance
         $isPresent = (int) $data['part_a']['attendance'] === 1;
@@ -254,10 +260,32 @@ class ChecksheetController extends Controller
                 $draft->update(['is_active' => false]);
             }
 
-            return redirect()->route('control.dashboard')->with('ok', 'Checksheet tersimpan.');
+            return redirect()->route('dashboard')->with('ok', 'Checksheet tersimpan.');
         }
 
-        // === Case 2: ABSEN → buat PARENT (scheduled, absen)
+        // === Case 2: ABSEN tanpa pengganti → buat satu checksheet (evaluated = scheduled)
+        $hasReplacement = isset($data['part_a']['has_replacement']) && $data['part_a']['has_replacement'];
+        if (!$isPresent && !$hasReplacement) {
+            Checksheet::create([
+                'schedule_plan_id' => $data['schedule_plan_id'],
+                'phase' => $phase,
+                'stopwatch_duration' => null,
+                'scheduled_target' => $scheduledLabel,       // yang dinilai = yang dijadwalkan
+                'shift' => $data['part_a']['shift'],
+                'target' => $scheduledLabel,       // yang dinilai = yang dijadwalkan
+                'division' => $divisionFromDetail,
+                'attendance' => '0',
+                'condition' => null,                    // kondisi scheduled (bisa biarin null)
+                'replacement' => false,
+                'replacement_of_id' => null,
+            ]);
+            if ($draft) {
+                $draft->update(['is_active' => false]);
+                return response()->json(['success' => true, 'message' => $draft]);
+            }
+        }
+
+        // === Case 3: ABSEN → buat PARENT (scheduled, absen)
         $parent = Checksheet::create([
             'schedule_plan_id' => $data['schedule_plan_id'],
             'phase' => $phase,
