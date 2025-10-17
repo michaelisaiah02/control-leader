@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ChecksheetFormController;
 use App\Http\Controllers\ControlLeader\ChecksheetController;
+use App\Http\Controllers\ControlLeader\QuestionController;
 use App\Http\Controllers\ControlLeader\ScheduleDetailController;
 use App\Http\Controllers\ControlLeader\SchedulePlanController;
 use App\Http\Controllers\DashboardController;
@@ -170,9 +171,11 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
 });
 
 // Checksheet CRUD (Sementara)
-Route::controller(ChecksheetFormController::class)->group(function () {
-    Route::get("/checksheet/add", 'create')->name('form.checksheet.create');
-    Route::post("/checksheet/add", 'store')->name('form.checksheet.create.store');
-    Route::get("/checksheet/{id}/edit", 'edit')->name('form.checksheet.edit');
-    Route::put("/checksheet/{id}/edit", 'update')->name('form.checksheet.edit.update');
+Route::controller(QuestionController::class)->group(function () {
+    Route::get("/question", 'index')->name('question.index');
+    Route::get("/question/add", 'create')->name('question.create');
+    Route::post("/question/add", 'store')->name('question.store');
+    Route::get("/question/{question}/edit", 'edit')->name('question.edit');
+    Route::put("/question/{question}/update", 'update')->name('question.update');
+    Route::delete("/question/{question}/delete", 'delete')->name('question.delete');
 });

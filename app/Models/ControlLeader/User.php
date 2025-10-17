@@ -45,7 +45,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $connection = 'mysql_control_leader'; // override juga di sini
+    protected $connection = 'mysql'; // override juga di sini
 
     /**
      * Beri tahu model ini nama tabelnya adalah 'users'.

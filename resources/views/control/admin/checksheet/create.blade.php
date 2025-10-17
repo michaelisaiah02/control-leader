@@ -2,7 +2,7 @@
 
 @push('subtitle')
 <p class="fs-2 w-75 p-0 my-auto sub-judul border border-white rounded-2 text-uppercase">
-  {{ isset($question) ? 'edit question' : 'add question' }}
+  add question
 </p>
 @endpush
 
@@ -20,225 +20,174 @@
 @endsection
 
 @section('content')
-<div class="px-5">
+<form method="POST" action="{{ route('question.store') }}" class="px-5">
+  @csrf
+  <!-- Header -->
   <div class="d-flex gap-5 w-100 mt-2 justify-content-between align-items-center my-2">
     <div class="d-flex align-items-center gap-2 w-100">
-      <label for="name" class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Pertanyaan</label>
-      <input id="name" type="text" name="" class="form-control bg-warning-subtle">
+      <label for="question_text" class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Pertanyaan</label>
+      <input id="question_text" type="text" name="question_text" class="form-control bg-warning-subtle" required>
     </div>
     <div class="d-flex align-items-center gap-2 w-100">
-      <label for="category" class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Type</label>
-      <select name="" id="category" class="form-control bg-warning-subtle">
+      <label for="package" class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Type</label>
+      <select name="package" id="package" class="form-select bg-warning-subtle" required>
         <option value="" selected disabled>-- Pilih</option>
         <option value="op_awal">Awal Shift</option>
         <option value="op_kerja">Saat Bekerja</option>
         <option value="op_istirahat">Setelah Istirahat</option>
         <option value="op_akhir">Akhir Shift</option>
+        <option value="leader">Leader</option>
       </select>
     </div>
   </div>
+
   <div class="row my-4">
     <!-- Kolom Kiri -->
     <div class="col-md-8">
-      <div id="builder" class="border border-primary p-3 overflow-y-scroll" style="height: 300px; max-height:300px;">
+      <div id="builder" class="border border-primary p-3 rounded overflow-y-scroll" style="height: 300px; max-height:300px;">
+        <!-- Opsi Pilihan -->
+        <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
+          <label>Pilihan:</label>
+          <div class="radio-options sortable-radio">
+            <div class="input-group mb-1">
+              <span class="input-group-text cursor-grab">☰</span>
+              <div class="input-group-text">
+                <input type="radio" disabled>
+              </div>
+              <input
+                type="text"
+                class="form-control border border-1 border-primary bg-warning-subtle radio-input"
+                name="choices[]"
+                value="Option 1" required>
+              <button type="button" class="btn btn-outline-danger btn-sm remove-radio" onclick="removeRadio(this)">✕</button>
+            </div>
+            <div class="input-group mb-1">
+              <span class="input-group-text cursor-grab">☰</span>
+              <div class="input-group-text">
+                <input type="radio" disabled>
+              </div>
+              <input
+                type="text"
+                class="form-control border border-1 border-primary bg-warning-subtle radio-input"
+                name="choices[]"
+                value="Option 2"
+                required>
+              <button type="button" class="btn btn-outline-danger btn-sm remove-radio" onclick="removeRadio(this)">✕</button>
+            </div>
+          </div>
+          <p class="text-warning-subtle">*Urutkan yang terbaik ke terburuk</p>
+        </div>
+
+        <!-- Problem dan Countermeasure -->
+        <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
+          <input type="text" name="problem_label" class="w-100 border-0 my-2" value="Problem" required>
+          <input type="text" class="form-control border border-1 border-primary bg-warning-subtle opacity-50" disabled>
+        </div>
+        <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
+          <input type="text" name="countermeasure_label" class="w-100 border-0 my-2" value="Countermeasure" required>
+          <input type="text" class="form-control border border-1 border-primary bg-warning-subtle opacity-50" disabled>
+        </div>
       </div>
     </div>
 
     <!-- Kolom Kanan -->
     <div class="col-md-4">
       <div class="d-grid gap-2 border border-primary p-3 rounded h-100">
-        <button class="btn btn-outline-primary add-field" data-type="toggle">Toggle (Boolean)</button>
-        <button class="btn btn-outline-primary add-field" data-type="radio">Tambah Pilihan</button>
+        <button type="button" class="btn btn-outline-primary add-field" data-type="radio">Tambah Pilihan</button>
+        <button type="button" class="btn btn-outline-primary add-field" data-type="toggle">Problem dan Countermeasure</button>
       </div>
     </div>
   </div>
 
+  <!-- Footer -->
   <div class="py-1 d-flex justify-content-between">
     <div>
-      <a href="" class="btn btn-danger text-white py-2 px-4">Clear</a>
+      <button type="reset" class="btn btn-danger text-white py-2 px-4">Clear</button>
     </div>
     <div>
-      <a href="" class="btn btn-primary text-white py-2 px-4">Back</a>
-      <button id="updateBtn" class="btn btn-primary text-white py-2 px-4">Update</button>
+      <a href="{{ route('question.index') }}" class="btn btn-primary text-white py-2 px-4">Back</a>
+      <button type="submit" class="btn btn-primary text-white py-2 px-4">Save</button>
     </div>
   </div>
-</div>
+</form>
+
 @endsection
 
 @section('scripts')
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="{{ asset('js/Sortable.min.js') }}"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    let count = 0;
-    let options = [];
     const builder = document.getElementById("builder");
-    const saveBtn = document.getElementById("saveBtn");
+    const radioContainer = builder.querySelector(".radio-options");
+    const toggleButton = document.querySelector('[data-type="toggle"]');
+    const addRadioButton = document.querySelector('[data-type="radio"]');
 
-    // Tambah Field
-    document.querySelectorAll(".add-field").forEach(btn => {
-      btn.addEventListener("click", () => addField(btn.dataset.type));
+    // Drag Radio
+    Sortable.create(radioContainer, {
+      animation: 150,
+      handle: ".cursor-grab",
+      ghostClass: "sortable-ghost"
     });
 
-    // Tooltips
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    // Tambah Radio
+    addRadioButton.addEventListener("click", () => {
+      const index = radioContainer.querySelectorAll(".radio-input").length + 1;
 
-    function addRadio(btn) {
-      const container = btn.previousElementSibling;
-      const index = container.querySelectorAll(".radio-input").length + 1;
-      container.insertAdjacentHTML("beforeend", `
-        <div class="input-group mb-1 border border-1 border-primary p-4">
-            <span class="input-group-text cursor-grab">☰</span>
-            <div class="input-group-text">
-                <input type="radio" disabled>
-            </div>
-            <input 
-              type="text"
-              class="form-control border border-1 border-primary radio-input" 
-              value="Option ${index}">
-            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRadio(this)">✕</button>
-        </div>
-    `);
-      enableSortable();
-    }
+      const newOption = `
+      <div class="input-group mb-1">
+        <span class="input-group-text cursor-grab">☰</span>
+        <div class="input-group-text"><input type="radio" disabled></div>
+        <input 
+          type="text" 
+          class="form-control border border-1 border-primary bg-warning-subtle radio-input" 
+          name="choices[]"
+          value="Option ${index}
+          required"
+        >
+        <button type="button" class="btn btn-outline-danger btn-sm remove-radio">✕</button>
+      </div>
+    `;
 
-    function addField(type) {
-      let fieldHtml = "";
-      const label = `Field`;
+      radioContainer.insertAdjacentHTML("beforeend", newOption);
+    });
 
-      switch (type) {
-        case "toggle":
-          fieldHtml = `
-                    <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
-                        <label contenteditable="true">Problem</label>
-                        <input type="text" name="" class="form-control border border-1 border-primary">
-                    </div>
-                    <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
-                        <label contenteditable="true">Countermeasture</label>
-                        <input type="text" name="" class="form-control border border-1 border-primary">
-                    </div>`;
-          break;
-        case "radio":
-          fieldHtml = `
-                    <div class="mb-3 border border-1 border-primary p-3 rounded field-block" data-type="radio">
-                        <label contenteditable="true">${label}</label>
-                        <div class="radio-options sortable-radio">
-                          ${(options.length ? options : ["Option 1", "Option 2"]).map(opt => `
-                              <div class="input-group mb-1">
-                                  <span class="input-group-text cursor-grab">☰</span>
-                                  <div class="input-group-text cursor-grab">
-                                      <input type="radio" disabled>
-                                  </div>
-                                  <input
-                                    type="text" 
-                                    class="form-control border border-1 border-primary radio-input" 
-                                    value="${opt}"
-                                  >
-                                  <button type="button" class="btn btn-outline-danger btn-sm remove-radio">✕</button>
-                              </div>
-                          `).join("")}
-                      </div>
-                      <p class="text-warning-emphasis">Urutkan dari terburuk ke terbaik!</p>
-                      <button type="button" class="btn btn-outline-primary btn-sm add-radio mt-1">+ Tambah</button>
-                    </div>`;
-          break;
-      }
-
-      builder.insertAdjacentHTML("beforeend", fieldHtml);
-      count++;
-    }
-
-    function enableSortable() {
-      document.querySelectorAll(".sortable-radio").forEach(container => {
-        Sortable.create(container, {
-          animation: 150,
-          handle: ".cursor-grab",
-          ghostClass: "sortable-ghost"
-        });
-      });
-    }
-
-
-    // Add Radio
-    builder.addEventListener("click", e => {
-      if (e.target.classList.contains("add-radio")) {
-        const container = e.target.closest(".field-block").querySelector(".radio-options");
-        const index = container.querySelectorAll(".radio-input").length + 1;
-
-        container.insertAdjacentHTML("beforeend", `
-            <div class="input-group mb-1">
-                <span class="input-group-text cursor-grab">☰</span>
-                <div class="input-group-text cursor-grab">
-                  <input type="radio" disabled>
-                </div>
-                <input type="text" class="form-control border border-1 border-primary radio-input" value="Option ${index}">
-                <button type="button" class="btn btn-outline-danger btn-sm remove-radio">✕</button>
-            </div>
-        `);
-      }
-
-      enableSortable();
-
-      // Remove Radio
+    // Delete Radio
+    builder.addEventListener("click", (e) => {
       if (e.target.classList.contains("remove-radio")) {
+        const allRadios = builder.querySelectorAll(".radio-options .input-group");
+
+        if (allRadios.length <= 2) {
+          alert("Minimal harus ada 2 opsi radio!");
+          return;
+        }
+
         e.target.closest(".input-group").remove();
       }
     });
 
-    function collectFields() {
-      let fields = [];
-      builder.querySelectorAll(".field-block").forEach(div => {
-        const label = div.querySelector("label").innerText;
-        const type = div.dataset.type || "text";
+    // Toggle Problem and Countermeasure
+    toggleButton.addEventListener("click", () => {
+      const problemField = builder.querySelector('input[name="problem_label"]');
+      const counterField = builder.querySelector('input[name="countermeasure_label"]');
 
-        if (type === "radio") {
-          let options = [];
-          div.querySelectorAll(".radio-input").forEach(input => options.push(input.value));
-          fields.push({
-            label,
-            type,
-            options
-          });
-        } else {
-          fields.push({
-            label,
-            type,
-            options: null
-          });
-        }
-      });
-      return fields;
-    }
+      // Show: Problem and Countermeasure
+      if (!problemField && !counterField) {
+        builder.insertAdjacentHTML("beforeend", `
+        <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
+          <input type="text" name="problem_label" class="w-100 border-0 my-2" value="Problem" required>
+          <input type="text" class="form-control border border-1 border-primary bg-warning-subtle opacity-50" disabled>
+        </div>
+        <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
+          <input type="text" name="countermeasure_label" class="w-100 border-0 my-2" value="Countermeasure" required>
+          <input type="text" class="form-control border border-1 border-primary bg-warning-subtle opacity-50" disabled>
+        </div>
+      `);
+        return;
+      }
 
-    // Save Fields
-    saveBtn.addEventListener("click", () => {
-      let fields = [];
-      builder.querySelectorAll(".field-block").forEach(div => {
-        const label = div.querySelector("label").innerText;
-        const input = div.querySelector("input,textarea");
-        let type = input ? input.tagName.toLowerCase() : "radio";
-
-        fields.push({
-          label: label,
-          type: type === "input" ? "text" : type,
-          options: type === "radio" ? ["Option 1", "Option 2"] : null
-        });
-      });
-
-      fetch("/checksheet", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-          },
-          body: JSON.stringify({
-            fields
-          })
-        })
-        .then(res => res.json())
-        .then(data => alert("Checksheet saved!"))
-        .catch(err => console.error(err));
+      // Toggle Hide/Show
+      const fields = builder.querySelectorAll('input[name="problem_label"], input[name="countermeasure_label"]');
+      fields.forEach(input => input.closest(".field-block").remove());
     });
   });
 </script>

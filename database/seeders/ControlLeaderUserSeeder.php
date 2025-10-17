@@ -6,6 +6,7 @@ use App\Models\ControlLeader\Department;
 use App\Models\ControlLeader\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class ControlLeaderUserSeeder extends Seeder
 {

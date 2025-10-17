@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ControlLeader\ChecksheetField;
+use App\Models\ControlLeader\Question;
 use Illuminate\Http\Request;
 
 class ChecksheetFormController extends Controller
@@ -14,25 +15,25 @@ class ChecksheetFormController extends Controller
 
     public function store(Request $request)
     {
-        foreach ($request->fields as $field) {
-            ChecksheetField::create($field);
-        }
-        return response()->json(['success' => true]);
+        $question = new Question();
+        $question->fields = $request->input('fields');
+        $question->save();
+
+        return response()->json(['success' => true, 'id' => $question->id]);
     }
 
     public function edit($id)
     {
-        $fields = ChecksheetField::all();
-        return view('control.admin.checksheet.edit', compact('fields'));
+        $question = Question::findOrFail($id);
+        return view('control.admin.checksheet.create', compact(['question']));
     }
 
     public function update(Request $request, $id)
     {
-        ChecksheetField::truncate();
+        $question = Question::findOrFail($id);
+        $question->fields = $request->input('fields');
+        $question->save();
 
-        foreach ($request->fields as $field) {
-            ChecksheetField::create($field);
-        }
         return response()->json(['success' => true]);
     }
 }
