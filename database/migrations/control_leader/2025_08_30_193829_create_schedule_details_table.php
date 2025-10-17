@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -14,9 +13,8 @@ return new class extends Migration
         Schema::connection('mysql_control_leader')->create('schedule_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('schedule_plan_id')->constrained('schedule_plans')->onDelete('cascade');
-            $table->foreignId('target_leader_id')->nullable()->constrained('users');
-            $table->string('target_operator_id')->nullable(); // ID Operator (input manual)
-            $table->string('target_operator_name')->nullable(); // Nama Operator (input manual)
+            $table->foreignId('target_user_id')->nullable()
+                ->constrained('users')->nullOnDelete();
             $table->string('division')->nullable();
             $table->date('scheduled_date');
             $table->timestamps();

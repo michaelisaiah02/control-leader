@@ -45,11 +45,12 @@
                     <div class="fw-semibold mb-1">1. Shift</div>
                     <div class="ms-3">
                         @foreach ([1, 2, 3] as $s)
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="shift" value="{{ $s }}"
-                                    id="shift{{ $s }}">
-                                <label class="form-check-label" for="shift{{ $s }}">{{ $s }}</label>
-                            </div>
+                            <button type="button"
+                                class="btn btn-outline-primary me-2 {{ session('shift') == $s ? 'active' : '' }}"
+                                {{ session('shift') != $s ? 'disabled' : '' }} readonly>
+                                Shift {{ $s }}
+                                <input type="hidden" name="shift" value="{{ session('shift') }}">
+                            </button>
                         @endforeach
                     </div>
                 </div>
@@ -58,8 +59,8 @@
                     <div class="fw-semibold mb-1">2. {{ $targetLabel }}</div>
                     <select id="target_pick" name="target_pick" class="form-select bg-warning-subtle" required>
                         <option value="">Pilih...</option>
-                        @foreach ($options as $opt)
-                            <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                        @foreach ($options as $option)
+                            <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -88,6 +89,13 @@
                     <div class="ms-2">
                         <label class="me-4"><input type="radio" name="attendance" value="0"> Absen</label>
                         <label><input type="radio" name="attendance" value="1"> Hadir</label>
+                    </div>
+                </div>
+                <div id="penggantiWrap" class="mb-1 p-2 d-none border border-2 rounded-4">
+                    <div class="fw-semibold mb-1">5. Apakah ada operator pengganti?</div>
+                    <div class="ms-2">
+                        <label class="me-4"><input type="radio" name="ada_pengganti" value="0"> Tidak</label>
+                        <label><input type="radio" name="ada_pengganti" value="1"> Ya</label>
                     </div>
                 </div>
 
@@ -141,6 +149,7 @@
         $(function() {
             const PHASE = @json($phase);
             const PLAN = {{ $plan->id }};
+            const DASHBOARD_URL = @json(route('dashboard'));
             const PARTB_URL = @json(route('control.checksheets.partB'));
             const START_URL = @json(route('control.drafts.start'));
             const HEART_URL = @json(route('control.heartbeat'));
@@ -177,14 +186,34 @@
 
             $('[name="attendance"]').on('change', function() {
                 const v = $(this).val();
-                $('#absenWrap').toggleClass('d-none', v !== '0');
+                $('#penggantiWrap').toggleClass('d-none', v !== '0');
                 $('#hadirWrap').toggleClass('d-none', v !== '1');
-
+                // Clear pengganti fields when "Hadir" is selected
+                if (v === '1') {
+                    $('input[name="ada_pengganti"]').prop('checked', false);
+                    $('input[name="nama_pengganti"]').val('');
+                    $('input[name="bagian_pengganti"]').val('');
+                    $('input[name="kondisi_pengganti"]').prop('checked', false);
+                }
                 // Uncheck kondisi operator when absen is selected
                 if (v === '0') {
                     $('input[name="kondisi"]').prop('checked', false);
                 }
             });
+
+            $('[name="ada_pengganti"]').on('change', function() {
+                const v = $(this).val();
+                $('#absenWrap').toggleClass('d-none', v !== '1');
+
+                // Clear pengganti fields when "Tidak" is selected
+                if (v === '0') {
+                    $('select[name="nama_pengganti"]').selectize()[0].selectize.clear();
+                    $('input[name="bagian_pengganti"]').val('');
+                    $('input[name="kondisi_pengganti"]').prop('checked', false);
+                }
+            });
+
+            const shift = $('input[name="shift"]').val();
 
             $('#prevBtn').on('click', function() {
                 if (page === 2) {
@@ -196,12 +225,18 @@
             });
 
             $('#nextBtn').on('click', function() {
-                const shift = $('input[name="shift"]:checked').val();
                 const target = $('[name="target_pick"]').val();
                 const bagian = $('[name="bagian"]').val();
                 const attend = $('input[name="attendance"]:checked').val();
+                const adaPengganti = $('input[name="ada_pengganti"]:checked').val();
+                const kondisi = $('input[name="kondisi"]:checked').val();
+                const namaPengganti = $('select[name="nama_pengganti"]').val();
+                const bagianPengganti = $('input[name="bagian_pengganti"]').val();
+                const kondisiPengganti = $('input[name="kondisi_pengganti"]:checked').val();
+                console.log(target, bagian, attend, adaPengganti, kondisi, namaPengganti, bagianPengganti,
+                    kondisiPengganti);
                 if (page === 1) {
-                    if (!shift || !target || !bagian) {
+                    if (!target || !bagian) {
                         return alert('Lengkapi form.');
                     }
                     $('#page1').addClass('d-none');
@@ -220,13 +255,57 @@
                     target,
                     bagian,
                     attendance: attend,
-                    kondisi: $('input[name="kondisi"]:checked').val() || null,
-                    nama_pengganti: $('input[name="nama_pengganti"]').val() || null,
-                    bagian_pengganti: $('input[name="bagian_pengganti"]').val() || null,
-                    kondisi_pengganti: $('input[name="kondisi_pengganti"]:checked').val() || null,
+                    has_replacement: adaPengganti,
+                    kondisi: kondisi || null,
+                    nama_pengganti: namaPengganti || null,
+                    bagian_pengganti: bagianPengganti || null,
+                    kondisi_pengganti: kondisiPengganti || null,
                 };
                 sessionStorage.setItem(key('partA'), JSON.stringify(payload));
 
+                // Kalau tidak ada pengganti, langsung submit form
+                if (attend === '0' && adaPengganti === '0') {
+                    // Update payload structure to match server validation
+                    const finalPayload = {
+                        _token: '{{ csrf_token() }}',
+                        schedule_plan_id: PLAN,
+                        phase: PHASE,
+                        part_a: {
+                            shift: parseInt(shift),
+                            target: target,
+                            division: bagian,
+                            attendance: parseInt(attend),
+                            ada_pengganti: adaPengganti || '0',
+                            kondisi: kondisi || null,
+                            nama_pengganti: namaPengganti || null,
+                            bagian_pengganti: bagianPengganti || null,
+                            kondisi_pengganti: kondisiPengganti || null
+                        }
+                    };
+                    $.post(@json(route('control.checksheets.store')) + `?type=${PHASE}`, finalPayload)
+                        .done((message) => {
+                            // hapus session draft
+                            sessionStorage.removeItem(key('partA'));
+                            // ke Dashboard
+                            const url = `${DASHBOARD_URL}`;
+                            window.location.href = url;
+                        }).fail((xhr) => {
+                            console.error('Server error:', xhr.responseJSON);
+                            alert('Gagal menyimpan data. Silakan coba lagi.');
+                            return false;
+                        });
+                } else if (attend === '0' && adaPengganti === '1') {
+                    if (!namaPengganti || !bagianPengganti || !kondisiPengganti) {
+                        return alert('Lengkapi form.');
+                    }
+                    payload.has_replacement = true;
+                } else {
+                    // attend === '1'
+                    if (!payload.kondisi) {
+                        return alert('Lengkapi form.');
+                    }
+                    payload.has_replacement = false;
+                }
                 // ke Part B
                 const url = `${PARTB_URL}?type=${encodeURIComponent(PHASE)}&plan=${PLAN}`;
                 window.location.href = url;
@@ -242,6 +321,10 @@
                     $(`input[name="attendance"][value="${earlier.attendance}"]`).prop('checked', true)
                         .trigger(
                             'change');
+                    if (earlier.attendance === '0') {
+                        $(`input[name="ada_pengganti"][value="${earlier.has_replacement ? '1' : '0'
+                            }"]`).prop('checked', true).trigger('change');
+                    }
                     if (earlier.nama_pengganti) $('input[name="nama_pengganti"]').val(earlier
                         .nama_pengganti);
                     if (earlier.bagian_pengganti) $('input[name="bagian_pengganti"]').val(earlier

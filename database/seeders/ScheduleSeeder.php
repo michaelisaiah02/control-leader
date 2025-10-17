@@ -14,26 +14,29 @@ class ScheduleSeeder extends Seeder
     {
         $today = Carbon::today();
 
-        // Ambil 1 supervisor & 1 leader dari seeder user yang sudah ada
-        $leader = User::where('role', 'leader')->orderBy('id')->first();
+        // Ambil semua leader dan supervisor
+        $leaders = User::where('role', 'leader')->get();
         $supervisor = User::where('role', 'supervisor')->orderBy('id')->first();
 
-        if (! $leader || ! $supervisor) {
+        if ($leaders->isEmpty() || !$supervisor) {
             $this->command->warn('⚠️ Tidak menemukan user Leader/Supervisor. Pastikan ControlLeaderUserSeeder jalan.');
 
             return;
         }
 
         // ========== Plans ==========
-        // type: 'leader_checks_operator' | 'supervisor_checks_leader'
-        $planLCO = SchedulePlan::firstOrCreate(
-            ['type' => 'leader_checks_operator'],
-            [
-                'scheduler_id' => $leader->id, // biasanya supervisor yang buat plan LCO
-                'month' => $today->format('m'),
-                'year' => $today->format('Y'),
-            ]
-        );
+        // Buat plan LCO untuk setiap leader
+        $planLCOs = [];
+        foreach ($leaders as $leader) {
+            $planLCOs[] = SchedulePlan::firstOrCreate(
+                [
+                    'type' => 'leader_checks_operator',
+                    'scheduler_id' => $leader->id,
+                    'month' => $today->format('m'),
+                    'year' => $today->format('Y'),
+                ]
+            );
+        }
 
         $planSCL = SchedulePlan::firstOrCreate(
             ['type' => 'supervisor_checks_leader'],
@@ -45,41 +48,39 @@ class ScheduleSeeder extends Seeder
         );
 
         // ========== Details (hari ini) ==========
-        // LCO: evaluator = Leader, target operator (tidak punya akun) ⇒ target_user_id = null
-        ScheduleDetail::firstOrCreate(
-            [
-                'schedule_plan_id' => $planLCO->id,
-                'scheduled_date' => $today->toDateString(),
-                'target_operator_id' => '57259',
-            ],
-            [
-                'target_operator_name' => 'Budi Santoso',
-                'division' => 'Finishing',
-            ]
-        );
+        // LCO: evaluator = Leader, target = random operator
+        $operators = User::where('role', 'operator')->inRandomOrder()->take(2)->get();
 
-        ScheduleDetail::firstOrCreate(
-            [
-                'schedule_plan_id' => $planLCO->id,
-                'scheduled_date' => $today->toDateString(),
-                'target_operator_id' => '29837',
-            ],
-            [
-                'target_operator_name' => 'Zaenal Samsudin',
-                'division' => 'Packing',
-            ]
-        );
+        // Use the first plan from the array
+        $firstPlanLCO = $planLCOs[0] ?? null;
 
-        // SCL: evaluator = Supervisor, target = Leader (punya akun)
-        ScheduleDetail::firstOrCreate(
-            [
-                'schedule_plan_id' => $planSCL->id,
-                'scheduled_date' => $today->toDateString(),
-            ],
-            [
-                'target_leader_id' => $leader->id,
-            ]
-        );
+        if ($firstPlanLCO) {
+            foreach ($operators as $operator) {
+                ScheduleDetail::firstOrCreate(
+                    [
+                        'schedule_plan_id' => $firstPlanLCO->id,
+                        'scheduled_date' => $today->toDateString(),
+                        'target_user_id' => $operator->id,
+                    ],
+                    [
+                        'division' => 'Finishing',
+                    ]
+                );
+            }
+        }
+
+        // SCL: evaluator = Supervisor, target = random leader
+        $randomLeader = User::where('role', 'leader')->inRandomOrder()->first();
+
+        if ($randomLeader) {
+            ScheduleDetail::firstOrCreate(
+                [
+                    'schedule_plan_id' => $planSCL->id,
+                    'scheduled_date' => $today->toDateString(),
+                    'target_user_id' => $randomLeader->id,
+                ]
+            );
+        }
 
         $this->command->info('✅ ScheduleSeeder selesai: plan & detail untuk hari ini siap.');
     }

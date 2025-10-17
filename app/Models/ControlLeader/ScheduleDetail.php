@@ -55,8 +55,8 @@ class ScheduleDetail extends ControlLeaderModel
         return $this->belongsTo(SchedulePlan::class, 'schedule_plan_id');
     }
 
-    public function targetLeader(): BelongsTo
+    public function targetUser(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'target_leader_id');
+        return $this->belongsTo(User::class, 'target_user_id');
     }
 }

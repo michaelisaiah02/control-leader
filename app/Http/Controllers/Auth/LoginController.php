@@ -25,7 +25,7 @@ class LoginController extends Controller
         $appType = $request->session()->get('login_app_type');
 
         // Jika session-nya pun tidak ada, baru lempar ke welcome
-        if (! $appType || ! in_array($appType, ['kalibrasi', 'control_leader'])) {
+        if (!$appType || !in_array($appType, ['kalibrasi', 'control_leader'])) {
             return redirect()->route('welcome');
         }
 
@@ -50,6 +50,7 @@ class LoginController extends Controller
             'employeeID' => 'required|string',
             'password' => 'required|string',
             'app' => 'required|string|in:kalibrasi,control_leader',
+            'shift' => 'required_if:app,control_leader|in:1,2,3',
         ]);
 
         $credentials = $request->only('employeeID', 'password');
@@ -68,7 +69,14 @@ class LoginController extends Controller
             // >>> Tambahan: single-device hanya untuk control_leader
             if ($activeApp === 'control_leader') {
                 $user = $guard->user();
+                if (!$user->can_login) {
+                    $guard->logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                    throw ValidationException::withMessages(['error' => 'Akun ini tidak diizinkan login.']);
+                }
                 $sid = $request->session()->getId();
+                $request->session()->put('shift', $request->input('shift'));
 
                 // LOCK: hanya block takeover kalau user masih mengisi (ping < 3 menit)
                 $LOCK_TTL_MIN = 3;
@@ -76,7 +84,7 @@ class LoginController extends Controller
                     && $user->cl_last_ping
                     && now()->diffInMinutes($user->cl_last_ping) < $LOCK_TTL_MIN;
 
-                if (! empty($user->control_session_id) && $user->control_session_id !== $sid && $lockActive) {
+                if (!empty($user->control_session_id) && $user->control_session_id !== $sid && $lockActive) {
                     $guard->logout();
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
@@ -98,10 +106,8 @@ class LoginController extends Controller
                     ->first();
 
                 if ($draft) {
-                    $draft->forceFill([
-                        'session_id' => $request->session()->getId(),
-                        'last_ping' => now(),
-                    ])->save();
+                    // hapus draft yg masih aktif (karena sudah logout > 3 menit)
+                    $draft->delete();
 
                     return redirect()->route('control.checksheets.create', [
                         'detail' => $draft->schedule_detail_id,
@@ -133,11 +139,11 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->session()->forget(['active_app', 'login_app_type', 'url.intended', 'cl_in_progress']);
+        $request->session()->forget(['active_app', 'login_app_type', 'url.intended', 'cl_in_progress', 'shift']);
 
         if (Auth::guard('web_control_leader')->check()) {
             Auth::guard('web_control_leader')->user()
-                ?->forceFill(['control_session_id' => null, 'cl_in_progress' => false])
+                    ?->forceFill(['control_session_id' => null, 'cl_in_progress' => false])
                 ->save();
         }
 

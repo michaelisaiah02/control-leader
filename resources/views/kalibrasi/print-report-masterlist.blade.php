@@ -61,12 +61,11 @@
         }
 
         .already-sign-overlay {
-            display: none;
+            display: block;
             position: absolute;
 
-            /* Posisikan di tengah-tengah area TTD (bukan tengah-tengah total) */
-            /* Kita turunkan sedikit dari atas */
-            top: 45%;
+            /* Posisikan di tengah-tengah area TTD */
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             /* Trik centering modern */
@@ -88,6 +87,10 @@
             button.back-button,
             .sign-checkbox-container {
                 display: none !important;
+            }
+
+            .already-sign-overlay {
+                display: none;
             }
 
             @page {
