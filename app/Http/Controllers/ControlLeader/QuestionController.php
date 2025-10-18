@@ -8,9 +8,21 @@ use Illuminate\Http\Request;
 
 class QuestionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view("control.admin.questions.index");
+        $query = Question::query();
+
+        if ($request->has('package') && $request->package != '') {
+            $query->where('package', $request->package);
+        }
+
+        $questions = $query->orderBy('display_order')->pagination(7);
+
+        if ($request->ajax()) {
+            return response()->json(['html' => view('control.admin.questions._table', compact(['questions']))->render()]);
+        }
+
+        return view("control.admin.questions.index", compact(['questions']));
     }
 
     public function create()
