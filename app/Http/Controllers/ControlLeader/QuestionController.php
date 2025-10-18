@@ -10,18 +10,18 @@ class QuestionController extends Controller
 {
     public function index()
     {
-        return view("control.admin.checksheet.index");
+        return view("control.admin.questions.index");
     }
 
     public function create()
     {
-        return view('control.admin.checksheet.create');
+        return view('control.admin.questions.create');
     }
 
     public function delete(Question $question)
     {
         $question->delete();
-        return redirect()->route('control.checksheets.index')->with('success', 'Question deleted.');
+        return redirect()->route('questions.index')->with('success', 'Question deleted.');
     }
 
     public function store(Request $request)
@@ -37,12 +37,12 @@ class QuestionController extends Controller
         $validated['extra_fields'] = $request->countermeasure_label && $request->problem_label ? true : false;
         Question::create($validated);
 
-        return redirect()->back()->with('success', 'Question created successfully!');
+        return redirect()->route('questions.index')->with('success', 'Question created successfully!');
     }
 
     public function edit(Question $question)
     {
-        return view('control.admin.checksheet.edit', compact(['question']));
+        return view('control.admin.questions.edit', compact(['question']));
     }
 
     public function update(Request $request, Question $question)
@@ -58,6 +58,6 @@ class QuestionController extends Controller
         $validated['extra_fields'] = $request->countermeasure_label && $request->problem_label ? true : false;
         $question->update($validated);
 
-        return redirect()->back()->with('success', 'Question updated successfully!');
+        return redirect()->route('question.index')->with('success', 'Question updated successfully!');
     }
 }
