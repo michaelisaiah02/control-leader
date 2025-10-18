@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -16,12 +15,12 @@ return new class extends Migration
 
             // 5 paket pertanyaan
             $table->enum('package', [
-                'op_awal',        // operator awal shift
-                'op_bekerja',     // operator saat bekerja
-                'op_istirahat',   // operator setelah istirahat
-                'op_akhir',       // operator akhir shift
+                'awal_shift',        // operator awal shift
+                'saat_bekerja',     // operator saat bekerja
+                'setelah_istirahat',   // operator setelah istirahat
+                'akhir_shift',       // operator akhir shift
                 'leader',         // supervisor cek leader (sekali/hari, no shift split)
-            ])->default('op_awal');
+            ])->default('awal_shift');
 
             $table->text('question_text'); // pertanyaan inti
 
