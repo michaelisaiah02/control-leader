@@ -27,7 +27,7 @@ class QuestionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'package' => 'required|in:op_awal,op_bekerja,op_istirahat,op_akhir,leader',
+            'package' => 'required|in:awal_shift,saat_bekerja,setelah_istirahat,akhir_shift,leader',
             'question_text' => 'required|string',
             'choices' => 'nullable|array',
             'problem_label' => 'nullable|string',
@@ -48,7 +48,7 @@ class QuestionController extends Controller
     public function update(Request $request, Question $question)
     {
         $validated = $request->validate([
-            'package' => 'required|in:op_awal,op_bekerja,op_istirahat,op_akhir,leader',
+            'package' => 'required|in:awal_shift,saat_bekerja,setelah_istirahat,akhir_shift,leader',
             'question_text' => 'required|string',
             'choices' => 'nullable|array',
             'problem_label' => 'nullable|string',

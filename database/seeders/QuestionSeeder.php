@@ -55,7 +55,7 @@ class QuestionSeeder extends Seeder
         // ==============================
         // Paket: Operator - AWAL SHIFT
         // ==============================
-        $pkg = 'op_awal';
+        $pkg = 'awal_shift';
         $rows[] = $this->q(
             $pkg,
             'Apakah operator ikut 5 Minute Talk sampai selesai?',
@@ -105,7 +105,7 @@ class QuestionSeeder extends Seeder
         // ==============================
         // Paket: Operator - SAAT BEKERJA
         // ==============================
-        $pkg = 'op_bekerja';
+        $pkg = 'saat_bekerja';
         $rows[] = $this->q(
             $pkg,
             'Operator mengikuti instruksi kerja (WI) saat proses?',
@@ -155,7 +155,7 @@ class QuestionSeeder extends Seeder
         // ==============================
         // Paket: Operator - SETELAH ISTIRAHAT
         // ==============================
-        $pkg = 'op_istirahat';
+        $pkg = 'setelah_istirahat';
         $rows[] = $this->q(
             $pkg,
             'Operator kembali tepat waktu setelah istirahat?',
@@ -205,7 +205,7 @@ class QuestionSeeder extends Seeder
         // ==============================
         // Paket: Operator - AKHIR SHIFT
         // ==============================
-        $pkg = 'op_akhir';
+        $pkg = 'akhir_shift';
         $rows[] = $this->q(
             $pkg,
             'Pembersihan area kerja akhir shift sudah dilakukan?',
