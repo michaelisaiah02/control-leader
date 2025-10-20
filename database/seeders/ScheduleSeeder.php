@@ -49,10 +49,10 @@ class ScheduleSeeder extends Seeder
 
         // ========== Details (hari ini) ==========
         // LCO: evaluator = Leader, target = random operator
-        $operators = User::where('role', 'operator')->inRandomOrder()->take(2)->get();
+        $operators = User::where('role', 'operator')->inRandomOrder()->take(5)->get();
 
         // Use the first plan from the array
-        $firstPlanLCO = $planLCOs[0] ?? null;
+        $firstPlanLCO = $planLCOs[1] ?? null;
 
         if ($firstPlanLCO) {
             foreach ($operators as $operator) {
@@ -64,6 +64,7 @@ class ScheduleSeeder extends Seeder
                     ],
                     [
                         'division' => 'Finishing',
+                        'shift' => rand(1, 3)
                     ]
                 );
             }
@@ -78,6 +79,7 @@ class ScheduleSeeder extends Seeder
                     'schedule_plan_id' => $planSCL->id,
                     'scheduled_date' => $today->toDateString(),
                     'target_user_id' => $randomLeader->id,
+                    'shift' => rand(1, 3),
                 ]
             );
         }

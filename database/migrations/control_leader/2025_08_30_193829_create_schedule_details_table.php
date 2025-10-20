@@ -13,9 +13,9 @@ return new class extends Migration {
         Schema::connection('mysql_control_leader')->create('schedule_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('schedule_plan_id')->constrained('schedule_plans')->onDelete('cascade');
-            $table->foreignId('target_user_id')->nullable()
-                ->constrained('users')->nullOnDelete();
+            $table->foreignId('target_user_id')->constrained('users')->onDelete('cascade');
             $table->string('division')->nullable();
+            $table->string('shift')->nullable();
             $table->date('scheduled_date');
             $table->timestamps();
 
