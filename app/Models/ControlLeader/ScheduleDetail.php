@@ -43,11 +43,10 @@ class ScheduleDetail extends ControlLeaderModel
 
     protected $fillable = [
         'schedule_plan_id',
-        'target_leader_id',
-        'target_operator_id',
-        'target_operator_name',
+        'target_user_id',
         'division',
         'scheduled_date',
+        'shift',
     ];
 
     public function plan(): BelongsTo

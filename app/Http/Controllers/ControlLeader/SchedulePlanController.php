@@ -11,6 +11,16 @@ use App\Models\ControlLeader\ScheduleDetail;
 
 class SchedulePlanController extends Controller
 {
+    public function index()
+    {
+        $plans = SchedulePlan::withCount('details')
+            ->where('scheduler_id', auth()->guard('web_control_leader')->id())
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->get();
+
+        return view('control.schedule.index', compact('plans'));
+    }
     public function edit($id)
     {
         $plan = SchedulePlan::with(['details'])->findOrFail($id);
@@ -63,20 +73,31 @@ class SchedulePlanController extends Controller
         $shift = $request->input('shift');
         $division = $request->input('division');
 
-        // hapus dulu kalo ada record lama
-        ScheduleDetail::where('schedule_plan_id', $plan->id)
+        // cari record lama kalau ada berarti update record tersebut
+        $existSchedule = ScheduleDetail::where('schedule_plan_id', $plan->id)
             ->where('target_user_id', $userId)
-            ->where('scheduled_date', $date)
-            ->delete();
+            ->where('scheduled_date', $date)->first();
 
-        if (!empty($shift)) {
-            ScheduleDetail::create([
-                'schedule_plan_id' => $plan->id,
-                'target_user_id' => $userId,
-                'division' => $division,
-                'shift' => (int) $shift,
-                'scheduled_date' => $date,
-            ]);
+        // Hapus kalau shift dikosongkan
+        if (empty($shift)) {
+            if ($existSchedule) {
+                $existSchedule->delete();
+            }
+        } else {
+            if ($existSchedule) {
+                $existSchedule->update([
+                    'division' => $division,
+                    'shift' => (int) $shift,
+                ]);
+            } else {
+                ScheduleDetail::create([
+                    'schedule_plan_id' => $plan->id,
+                    'target_user_id' => $userId,
+                    'division' => $division,
+                    'shift' => (int) $shift,
+                    'scheduled_date' => $date,
+                ]);
+            }
         }
 
         return response()->json(['success' => true, 'schedule_plan_id' => $plan->id, 'user_id' => $userId, 'date' => $date, 'shift' => $shift, 'division' => $division]);
@@ -105,4 +126,13 @@ class SchedulePlanController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function removeUser($id, $userId)
+    {
+        $plan = SchedulePlan::findOrFail($id);
+        ScheduleDetail::where('schedule_plan_id', $plan->id)
+            ->where('target_user_id', $userId)
+            ->delete();
+
+        return response()->json(['success' => true]);
+    }
 }

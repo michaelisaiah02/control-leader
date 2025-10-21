@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->date('scheduled_date');
             $table->timestamps();
 
+            $table->unique(['target_user_id', 'scheduled_date'], 'sd_user_date_unique');
             $table->index(['schedule_plan_id', 'scheduled_date'], 'sd_plan_date_idx');
         });
     }
