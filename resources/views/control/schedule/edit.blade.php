@@ -99,38 +99,7 @@
         const csrf = '{{ csrf_token() }}';
         const planId = '{{ $plan->id }}';
 
-        // =================== Auto save =====================
-        // document.querySelectorAll('.schedule-input').forEach(select => {
-        //     select.addEventListener('change', async () => {
-        //         const userId = select.dataset.user;
-        //         const date = select.dataset.date;
-        //         const shift = select.value;
-        //         const division = select.dataset.division;
-        //         console.log(division);
-        //         select.classList.add('border-warning');
-
-        //         const res = await fetch(`/control/schedule/${planId}/update-cell`, {
-        //             method: 'POST',
-        //             headers: {
-        //                 'X-CSRF-TOKEN': csrf,
-        //                 'Content-Type': 'application/json'
-        //             },
-        //             body: JSON.stringify({
-        //                 user_id: userId,
-        //                 date,
-        //                 shift,
-        //                 division
-        //             })
-        //         });
-
-        //         const data = await res.json();
-        //         if (data.success) {
-        //             select.classList.remove('border-warning');
-        //             select.classList.add('border-success');
-        //             setTimeout(() => select.classList.remove('border-success'), 1000);
-        //         }
-        //     });
-        // });
+        // =================== Update shift on badge click =====================
         document.querySelectorAll('.shift-badge').forEach(el => {
             el.addEventListener('click', async () => {
                 if (el.classList.contains('disabled')) return;
@@ -175,7 +144,7 @@
                     <select class="form-select form-select-sm new-user">
                         <option value="">-- pilih user --</option>
                         @foreach ($availableUsers as $user)
-                        <option value="{{ $user->id }}">{{ $user->fullname }}</option>
+                            <option value="{{ $user->id }}">{{ $user->fullname }}</option>
                         @endforeach
                     </select>
                 </td>
@@ -187,12 +156,15 @@
                     </select>
                 </td>
                 @for ($d = 1; $d <= $daysInMonth; $d++)
-                <td>
-                    <span class="badge shift-badge bg-secondary">-</span>
-                </td>
+                    <td>
+                        <span class="badge shift-badge bg-secondary">-</span>
+                    </td>
                 @endfor
             `;
             tbody.appendChild(newRow);
+
+            // allow removing unsaved row before it is persisted
+            newRow.querySelector('.delete-user').addEventListener('click', () => newRow.remove());
 
             const userSelect = newRow.querySelector('.new-user');
             const divSelect = newRow.querySelector('.new-division');
@@ -212,31 +184,40 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    location.reload();
+                    // reload to render the saved user with correct data attributes and controls
+                    window.location.reload();
                 }
             });
         });
 
-        newRow.querySelector('.delete-user-temp').addEventListener('click', () => newRow.remove());
+        // =================== Delete User (existing rows) =====================
+        const tbodyEl = document.querySelector('#scheduleTable tbody');
+        const deleteModalEl = document.getElementById('deleteModal');
+        const deleteModal = new bootstrap.Modal(deleteModalEl);
+        let rowToDelete = null;
 
-        // =================== Delete User =====================
-        document.querySelectorAll('.delete-user').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const userId = btn.closest('tr').dataset.user;
-                const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-                document.getElementById('deleteModal').dataset.userId = userId;
-                modal.show();
-            });
+        tbodyEl.addEventListener('click', (e) => {
+            const btn = e.target.closest('.delete-user');
+            if (!btn) return;
+
+            const tr = btn.closest('tr');
+            const userId = tr.dataset.user;
+
+            // if row is unsaved (no userId), remove immediately without server call
+            if (!userId) {
+                tr.remove();
+                return;
+            }
+
+            rowToDelete = tr;
+            deleteModalEl.dataset.userId = userId;
+            deleteModal.show();
         });
 
-        // Handle confirm delete
         document.getElementById('confirmDelete').addEventListener('click', async () => {
-            const userId = document.getElementById('deleteModal').dataset.userId;
-            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-            console.log(userId);
-            // kalau row belum punya userId (baru ditambah)
+            const userId = deleteModalEl.dataset.userId;
             if (!userId) {
-                row.remove();
+                deleteModal.hide();
                 return;
             }
 
@@ -247,10 +228,12 @@
                 }
             });
             const data = await res.json();
-            if (data.success) {
-                document.querySelector(`tr[data-user="${userId}"]`).remove();
-                modal.hide();
+            if (data.success && rowToDelete) {
+                rowToDelete.remove();
             }
+            deleteModal.hide();
+            rowToDelete = null;
+            deleteModalEl.dataset.userId = '';
         });
     </script>
 @endsection

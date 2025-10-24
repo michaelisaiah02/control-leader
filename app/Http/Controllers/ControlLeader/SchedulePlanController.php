@@ -13,13 +13,28 @@ class SchedulePlanController extends Controller
 {
     public function index()
     {
-        $plans = SchedulePlan::withCount('details')
-            ->where('scheduler_id', auth()->guard('web_control_leader')->id())
-            ->orderBy('year', 'desc')
-            ->orderBy('month', 'desc')
-            ->get();
+        $authUser = auth()->guard('web_control_leader')->user();
 
-        return view('control.schedule.index', compact('plans'));
+        // Validasi role supervisor
+        // if ($authUser->role !== 'supervisor') {
+        //     abort(403, 'Unauthorized access. Only supervisors can access this page.');
+        // }
+
+        $query = SchedulePlan::withCount('details')
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc');
+
+        // Filter berdasarkan scheduler_id jika ada input
+        if (request()->has('scheduler_id') && request('scheduler_id')) {
+            $query->where('scheduler_id', request('scheduler_id'));
+        }
+
+        $plans = $query->get();
+
+        // Data untuk dropdown filter
+        $users = User::whereIn('role', ['supervisor', 'leader'])->orderBy('name')->get();
+
+        return view('control.schedule.index', compact('plans', 'users'));
     }
     public function edit($id)
     {

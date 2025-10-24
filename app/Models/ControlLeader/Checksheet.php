@@ -56,6 +56,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int|null $replacement_of_id ID checksheet parent (scheduled). Null bila scheduled/hadir
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereReplacement($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereReplacementOfId($value)
+ * @property string|null $scheduled_target Snapshot target yang dijadwalkan: "id - nama"
+ * @property int $has_replacement Apakah ada operator pengganti untuk checksheet ini?
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereHasReplacement($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScheduledTarget($value)
  * @mixin \Eloquent
  */
 class Checksheet extends ControlLeaderModel

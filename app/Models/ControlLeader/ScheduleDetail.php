@@ -33,6 +33,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail whereTargetOperatorName($value)
  * @property string|null $division
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail whereDivision($value)
+ * @property int $target_user_id
+ * @property string|null $shift
+ * @property-read \App\Models\ControlLeader\User $targetUser
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail whereShift($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ScheduleDetail whereTargetUserId($value)
  * @mixin \Eloquent
  */
 class ScheduleDetail extends ControlLeaderModel
