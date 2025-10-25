@@ -16,10 +16,13 @@ class QuestionController extends Controller
             $query->where('package', $request->package);
         }
 
-        $questions = $query->orderBy('display_order')->pagination(7);
+        $questions = $query->orderBy('display_order')->paginate(7);
 
         if ($request->ajax()) {
-            return response()->json(['html' => view('control.admin.questions._table', compact(['questions']))->render()]);
+            return response()->json([
+                'html' => view('control.admin.questions._table', compact(['questions']))->render(),
+                'paginate' => $questions->links()->toHtml()
+            ]);
         }
 
         return view("control.admin.questions.index", compact(['questions']));
@@ -71,5 +74,16 @@ class QuestionController extends Controller
         $question->update($validated);
 
         return redirect()->route('question.index')->with('success', 'Question updated successfully!');
+    }
+
+    public function updateOrder(Request $request)
+    {
+        $order = $request->input('order'); // array of {id, display_order}
+
+        foreach ($order as $item) {
+            Question::where('id', $item['id'])->update(['display_order' => $item['display_order']]);
+        }
+
+        return response()->json(['success' => true]);
     }
 }

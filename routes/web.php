@@ -178,4 +178,5 @@ Route::controller(QuestionController::class)->group(function () {
     Route::get("/question/{question}/edit", 'edit')->name('question.edit');
     Route::put("/question/{question}/update", 'update')->name('question.update');
     Route::delete("/question/{question}/delete", 'delete')->name('question.delete');
+    Route::post('/question/update-order', 'updateOrder')->name('question.updateOrder');
 });

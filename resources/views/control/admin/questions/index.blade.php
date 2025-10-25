@@ -6,12 +6,25 @@
 </p>
 @endpush
 
+@section('styles')
+<style>
+  .cursor-grab {
+    cursor: grab;
+  }
+
+  .sortable-ghost {
+    opacity: 0.4;
+    background: #f0f0f0;
+  }
+</style>
+@endsection
+
 @section('content')
 <div class="px-5">
   <form id="filterForm" class="w-100 d-flex gap-2">
     <label for="filterPackage">Filter</label>
     <select id="filterPackage" class="form-select w-auto">
-      <option value="" disabled>--</option>
+      <option value="">-- Semua</option>
       <option value="awal_shift">Awal Shift</option>
       <option value="saat_bekerja">Saat Bekerja</option>
       <option value="setelah_istirahat">Setelah Istirahat</option>
@@ -57,7 +70,7 @@
     // Filter: Type Pertanyaan
     filterPackage.addEventListener('change', () => {
       const pkg = filterPackage.value;
-      let url = `{{ route('questions.index') }}`;
+      let url = `{{ route('question.index') }}`;
       if (pkg) url += `?package=${encodeURIComponent(pkg)}`;
       loadQuestions(url);
     });
@@ -88,7 +101,7 @@
             row.querySelector('td:first-child').textContent = index + 1;
           });
 
-          fetch(`{{ route('questions.updateOrder') }}`, {
+          fetch(`{{ route('question.updateOrder') }}`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -103,8 +116,6 @@
         }
       });
     }
-
-    attachPaginationEvents();
     initSortable();
   });
 </script>

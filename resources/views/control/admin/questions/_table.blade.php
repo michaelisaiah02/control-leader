@@ -10,7 +10,7 @@
   </thead>
   <tbody id="sortableBody">
     @forelse($questions as $question)
-    <tr data-id="{{ $question }}">
+    <tr data-id="{{ $question->id }}">
       <td class="handle cursor-grab">{{ $question->display_order }}</td>
       <td>{{ $question->question_text }}</td>
       <td>
