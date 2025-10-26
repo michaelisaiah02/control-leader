@@ -14,6 +14,9 @@ $theme-colors: (
     "danger": #f44336
 );
 
+// 2) Override variabel Bootstrap sesuai kebutuhan
+$table-bg-scale: -5%;
+
 // 3) Lanjut import sisa partial Bootstrap
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/maps";

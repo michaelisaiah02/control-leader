@@ -39,6 +39,10 @@ use Illuminate\Notifications\Notifiable;
  * @property string|null $cl_last_ping
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereClInProgress($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereClLastPing($value)
+ * @property int $can_login
+ * @property int $is_active
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCanLogin($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIsActive($value)
  * @mixin \Eloquent
  */
 class User extends Authenticatable

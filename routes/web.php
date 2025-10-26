@@ -130,21 +130,12 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
     });
     Route::prefix('control')->as('control.')->middleware(SingleLogin::class)->middleware(ResumeDraft::class)->group(function () {
         // Rencana & Detail (biar lengkap, bisa kamu tambah belakangan)
-        Route::resource('schedule-plans', SchedulePlanController::class)->only([
-            'index',
-            'create',
-            'store',
-            'show',
-            'edit',
-            'update',
-            'destroy',
-        ]);
-
-        Route::scopeBindings()->group(function () {
-            Route::resource('schedule-plans.details', ScheduleDetailController::class)
-                ->shallow()
-                ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-        });
+        Route::get('/schedules', [SchedulePlanController::class, 'index'])->name('schedule.index');
+        Route::get('/schedule/{id}/edit', [SchedulePlanController::class, 'edit'])->name('schedule.edit');
+        Route::put('/schedule/{id}', [SchedulePlanController::class, 'update'])->name('schedule.update');
+        Route::post('/schedule/{id}/update-cell', [SchedulePlanController::class, 'updateCell'])->name('schedule.updateCell');
+        Route::post('/schedule/{id}/add-user', [SchedulePlanController::class, 'addUser'])->name('schedule.addUser');
+        Route::delete('/schedule/{id}/remove-user/{userId}', [SchedulePlanController::class, 'removeUser'])->name('schedule.removeUser');
 
         // =========================
         // CHECKSHEET (2 step: Part A -> Part B)
