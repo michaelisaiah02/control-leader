@@ -137,6 +137,12 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
         Route::post('/schedule/{id}/add-user', [SchedulePlanController::class, 'addUser'])->name('schedule.addUser');
         Route::delete('/schedule/{id}/remove-user/{userId}', [SchedulePlanController::class, 'removeUser'])->name('schedule.removeUser');
 
+        // ------------------------
+        // QEUSTIONS CRUD
+        // ------------------------
+        Route::resource('question', QuestionController::class)->except(['show']);
+        Route::post('/question/update-order', [QuestionController::class, 'updateOrder'])->name('question.updateOrder');
+
         // =========================
         // CHECKSHEET (2 step: Part A -> Part B)
         // =========================
@@ -161,13 +167,3 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
     });
 });
 
-// Checksheet CRUD (Sementara)
-Route::controller(QuestionController::class)->group(function () {
-    Route::get("/question", 'index')->name('question.index');
-    Route::get("/question/add", 'create')->name('question.create');
-    Route::post("/question/add", 'store')->name('question.store');
-    Route::get("/question/{question}/edit", 'edit')->name('question.edit');
-    Route::put("/question/{question}/update", 'update')->name('question.update');
-    Route::delete("/question/{question}/delete", 'delete')->name('question.delete');
-    Route::post('/question/update-order', 'updateOrder')->name('question.updateOrder');
-});

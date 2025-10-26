@@ -15,7 +15,7 @@ $theme-colors: (
 );
 
 // 2) Override variabel Bootstrap sesuai kebutuhan
-$table-bg-scale: -5%;
+$table-bg-scale: 75%;
 
 // 3) Lanjut import sisa partial Bootstrap
 @import "bootstrap/scss/variables";
@@ -75,6 +75,14 @@ img.icon {
     &:hover {
         transform: scale(1.3);
     }
+}
+
+.page-link {
+    color: var(--bs-primary);
+}
+
+.active .page-link {
+    background-color: var(--bs-primary);
 }
 
 // 5) Responsive
