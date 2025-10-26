@@ -233,8 +233,6 @@
                 const namaPengganti = $('select[name="nama_pengganti"]').val();
                 const bagianPengganti = $('input[name="bagian_pengganti"]').val();
                 const kondisiPengganti = $('input[name="kondisi_pengganti"]:checked').val();
-                console.log(target, bagian, attend, adaPengganti, kondisi, namaPengganti, bagianPengganti,
-                    kondisiPengganti);
                 if (page === 1) {
                     if (!target || !bagian) {
                         return alert('Lengkapi form.');
@@ -289,6 +287,7 @@
                             // ke Dashboard
                             const url = `${DASHBOARD_URL}`;
                             window.location.href = url;
+                            return;
                         }).fail((xhr) => {
                             console.error('Server error:', xhr.responseJSON);
                             alert('Gagal menyimpan data. Silakan coba lagi.');
@@ -299,16 +298,17 @@
                         return alert('Lengkapi form.');
                     }
                     payload.has_replacement = true;
+                    const url = `${PARTB_URL}?type=${encodeURIComponent(PHASE)}&plan=${PLAN}`;
+                    window.location.href = url;
                 } else {
                     // attend === '1'
                     if (!payload.kondisi) {
                         return alert('Lengkapi form.');
                     }
                     payload.has_replacement = false;
+                    const url = `${PARTB_URL}?type=${encodeURIComponent(PHASE)}&plan=${PLAN}`;
+                    window.location.href = url;
                 }
-                // ke Part B
-                const url = `${PARTB_URL}?type=${encodeURIComponent(PHASE)}&plan=${PLAN}`;
-                window.location.href = url;
             });
 
             // restore bila balik dari Part B

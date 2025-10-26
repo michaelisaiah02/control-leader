@@ -17,7 +17,7 @@ class ChecksheetController extends Controller
     // map phase -> package untuk Question
     private function packageFor(string $phase, string $direction): string
     {
-        if ($direction === 'supervisor_checks_leader') {
+        if ($direction === 'supervisor_checks_leader' || $phase === 'leader') {
             return 'leader';
         }
 
@@ -221,10 +221,12 @@ class ChecksheetController extends Controller
 
         // === Case 1: HADIR → simpan satu checksheet (evaluated = scheduled)
         if ($isPresent) {
+            // dd($data);
             $cs = Checksheet::create([
                 'schedule_plan_id' => $data['schedule_plan_id'],
                 'phase' => $phase,
                 'stopwatch_duration' => $duration,
+                'score' => 0,
                 'scheduled_target' => $scheduledLabel,       // simpan jadwal
                 'shift' => $data['part_a']['shift'],
                 'target' => $scheduledLabel,       // yang dinilai = yang dijadwalkan
@@ -254,7 +256,27 @@ class ChecksheetController extends Controller
                     'problem' => $probs[$qid] ?? null,
                     'countermeasure' => $cms[$qid] ?? null,
                 ]);
+
+                // Hitung skor berdasarkan jumlah choices
+                $question = Question::find($qid);
+                if ($question) {
+                    $choicesCount = is_array($question->choices) ? count($question->choices) : 0;
+                    $answerValue = (int) $val;
+
+                    if ($choicesCount == 2) {
+                        // 2 pilihan: 0 -> 0, 1 -> 2
+                        $score = $answerValue == 0 ? 0 : 2;
+                    } elseif ($choicesCount == 3) {
+                        // 3 pilihan: 0 -> 0, 1 -> 1, 2 -> 2
+                        $score = $answerValue;
+                    } else {
+                        $score = 0;
+                    }
+
+                    $cs->score += $score;
+                }
             }
+            $cs->update();
 
             if ($draft) {
                 $draft->update(['is_active' => false]);
@@ -270,6 +292,7 @@ class ChecksheetController extends Controller
                 'schedule_plan_id' => $data['schedule_plan_id'],
                 'phase' => $phase,
                 'stopwatch_duration' => null,
+                'score' => 0,
                 'scheduled_target' => $scheduledLabel,       // yang dinilai = yang dijadwalkan
                 'shift' => $data['part_a']['shift'],
                 'target' => $scheduledLabel,       // yang dinilai = yang dijadwalkan
@@ -281,8 +304,8 @@ class ChecksheetController extends Controller
             ]);
             if ($draft) {
                 $draft->update(['is_active' => false]);
-                return response()->json(['success' => true, 'message' => $draft]);
             }
+            return response()->json(['success' => true, 'message' => $draft]);
         }
 
         // === Case 3: ABSEN → buat PARENT (scheduled, absen)
@@ -290,6 +313,7 @@ class ChecksheetController extends Controller
             'schedule_plan_id' => $data['schedule_plan_id'],
             'phase' => $phase,
             'stopwatch_duration' => null,
+            'score' => 0,
             'scheduled_target' => $scheduledLabel,
             'shift' => $data['part_a']['shift'],
             'target' => $scheduledLabel,     // tetap snapshot yang dijadwalkan
@@ -315,6 +339,7 @@ class ChecksheetController extends Controller
             'schedule_plan_id' => $data['schedule_plan_id'],
             'phase' => $phase,
             'stopwatch_duration' => $duration,
+            'score' => 0,
             'scheduled_target' => $scheduledLabel,     // tetap tahu siapa jadwalnya
             'shift' => $data['part_a']['shift'],
             'target' => $evaluatedLabel,     // yang dinilai = pengganti
@@ -343,7 +368,24 @@ class ChecksheetController extends Controller
                 'problem' => $probs[$qid] ?? null,
                 'countermeasure' => $cms[$qid] ?? null,
             ]);
+            // Hitung skor berdasarkan jumlah choices
+            $question = Question::find($qid);
+            if ($question) {
+                $choicesCount = is_array($question->choices) ? count($question->choices) : 0;
+                $answerValue = (int) $val;
+                if ($choicesCount == 2) {
+                    // 2 pilihan: 0 -> 0, 1 -> 2
+                    $score = $answerValue == 0 ? 0 : 2;
+                } elseif ($choicesCount == 3) {
+                    // 3 pilihan: 0 -> 0, 1 -> 1, 2 -> 2
+                    $score = $answerValue;
+                } else {
+                    $score = 0;
+                }
+                $child->score += $score;
+            }
         }
+        $child->update();
 
         if ($draft) {
             $draft->update(['is_active' => false]);

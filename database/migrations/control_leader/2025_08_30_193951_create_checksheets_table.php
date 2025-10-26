@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->unsignedInteger('stopwatch_duration')->comment('Durasi dalam detik')->nullable();
             $table->string('phase')->default('awal_shift')
                 ->comment('Fase checksheet: awal_shift, bekerja, istirahat, akhir_shift, leader');
+            $table->integer('score')->unsigned()->comment('Skor checksheet (jumlah poin benar)')->default(0);
 
             // opsional: simpan juga 'scheduled_target' biar report makin jelas
             $table->string('scheduled_target')->nullable()

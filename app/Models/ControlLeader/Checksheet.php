@@ -71,6 +71,8 @@ class Checksheet extends ControlLeaderModel
     protected $fillable = [
         'schedule_plan_id',
         'stopwatch_duration',
+        'score',
+        'scheduled_target',
         'phase',
         'shift',
         'target',
