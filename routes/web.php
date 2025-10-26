@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ChecksheetFormController;
 use App\Http\Controllers\ControlLeader\ChecksheetController;
+use App\Http\Controllers\ControlLeader\QuestionController;
 use App\Http\Controllers\ControlLeader\ScheduleDetailController;
 use App\Http\Controllers\ControlLeader\SchedulePlanController;
 use App\Http\Controllers\DashboardController;
@@ -157,4 +159,15 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
         Route::get('api/schedules', [ScheduleDetailController::class, 'options'])
             ->name('api.schedules.options'); // ?type=leader_checks_operator&date=YYYY-MM-DD&shift=1
     });
+});
+
+// Checksheet CRUD (Sementara)
+Route::controller(QuestionController::class)->group(function () {
+    Route::get("/question", 'index')->name('question.index');
+    Route::get("/question/add", 'create')->name('question.create');
+    Route::post("/question/add", 'store')->name('question.store');
+    Route::get("/question/{question}/edit", 'edit')->name('question.edit');
+    Route::put("/question/{question}/update", 'update')->name('question.update');
+    Route::delete("/question/{question}/delete", 'delete')->name('question.delete');
+    Route::post('/question/update-order', 'updateOrder')->name('question.updateOrder');
 });

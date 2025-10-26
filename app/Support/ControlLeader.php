@@ -14,11 +14,11 @@ class ControlLeader
         }
 
         return match ($phase) {
-            'awal_shift' => 'op_awal',
-            'saat_bekerja' => 'op_bekerja',
-            'setelah_istirahat' => 'op_istirahat',
-            'akhir_shift' => 'op_akhir',
-            default => 'op_awal',
+            'awal_shift' => 'awal_shift',
+            'saat_bekerja' => 'saat_bekerja',
+            'setelah_istirahat' => 'setelah_istirahat',
+            'akhir_shift' => 'akhir_shift',
+            default => 'awal_shift',
         };
     }
 }
