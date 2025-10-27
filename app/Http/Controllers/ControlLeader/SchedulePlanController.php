@@ -52,7 +52,7 @@ class SchedulePlanController extends Controller
         $authUser = auth()->guard('web_control_leader')->user();
         $targetRole = $authUser->role === 'leader' ? 'operator' : 'leader';
 
-        $availableUsers = \App\Models\User::where('role', $targetRole)->orderBy('name')->get();
+        $availableUsers = User::where('role', $targetRole)->orderBy('name')->get();
 
         $targets = $plan->details
             ->groupBy('target_user_id')
