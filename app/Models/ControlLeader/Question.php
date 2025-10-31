@@ -75,4 +75,18 @@ class Question extends ControlLeaderModel
     {
         return $q->where('is_active', true)->orderBy('display_order');
     }
+
+    public static function getNextOrder(string $package): int
+    {
+        $last = self::where('package', $package)->max('display_order');
+        return $last ? $last + 1 : 1;
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($question) {
+            $lastOrder = self::where('package', $question->package)->max('display_order');
+            $question->display_order = $lastOrder ? $lastOrder + 1 : 1;
+        });
+    }
 }
