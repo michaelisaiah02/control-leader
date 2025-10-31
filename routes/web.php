@@ -180,3 +180,9 @@ Route::controller(QuestionController::class)->group(function () {
     Route::delete("/question/{question}/delete", 'delete')->name('question.delete');
     Route::post('/question/update-order', 'updateOrder')->name('question.updateOrder');
 });
+
+// Reports (Sementara)
+Route::controller(App\Http\Controllers\ControlLeader\ReportController::class)->group(function () {
+    Route::get("/reports/daily", 'daily');
+    Route::get("/reports/monthly", 'monthly');
+});
