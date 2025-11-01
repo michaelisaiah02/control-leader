@@ -40,7 +40,7 @@
         <div class="py-0 d-flex justify-content-between align-items-center">
             <a href="{{ route('control.question.create') }}"
                 class="btn btn-primary btn-lg text-white rounded-circle">&plus;</a>
-            <a href="#" class="btn btn-primary text-white py-2 px-4">Back</a>
+            <a href="{{ route('dashboard') }}" class="btn btn-primary text-white py-2 px-4">Back</a>
         </div>
     </div>
 @endsection
