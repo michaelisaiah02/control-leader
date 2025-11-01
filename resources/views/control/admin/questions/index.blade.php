@@ -21,7 +21,7 @@
 
 @section('content')
     <div class="px-5">
-        <form id="filterForm" class="w-100 d-flex gap-2">
+        <form id="filterForm" class="w-100 d-flex gap-3 align-items-center mt-1">
             <label for="filterPackage">Filter</label>
             <select id="filterPackage" class="form-select w-auto">
                 <option value="">-- Semua</option>
@@ -37,7 +37,7 @@
             @include('control.admin.questions._table', ['questions' => $questions])
         </div>
 
-        <div class="pt-2 pb-5 d-flex justify-content-between align-items-center">
+        <div class="py-0 d-flex justify-content-between align-items-center">
             <a href="{{ route('control.question.create') }}"
                 class="btn btn-primary btn-lg text-white rounded-circle">&plus;</a>
             <a href="#" class="btn btn-primary text-white py-2 px-4">Back</a>

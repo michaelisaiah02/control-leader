@@ -59,7 +59,7 @@
             </div>
         </div>
 
-        <div class="row my-4">
+        <div class="row my-2">
             <!-- Kolom Kiri -->
             <div class="col-md-8">
                 <div id="builder" class="border border-primary p-3 rounded overflow-y-scroll"
@@ -183,15 +183,15 @@
       `;
             });
 
-        // Tambah Radio
-        addRadioButton.addEventListener("click", () => {
-            const index = radioContainer.querySelectorAll(".radio-input").length + 1;
-            const allRadios = builder.querySelectorAll(".radio-options .input-group");
+            // Tambah Radio
+            addRadioButton.addEventListener("click", () => {
+                const index = radioContainer.querySelectorAll(".radio-input").length + 1;
+                const allRadios = builder.querySelectorAll(".radio-options .input-group");
 
-            if (allRadios.length >= 3) {
-                alert("Maksimal opsi radio hanya 3!");
-                return;
-            }
+                if (allRadios.length >= 3) {
+                    alert("Maksimal opsi radio hanya 3!");
+                    return;
+                }
 
                 const newOption = `
       <div class="input-group mb-1">

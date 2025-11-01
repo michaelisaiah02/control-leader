@@ -23,7 +23,7 @@
     <form method="POST" action="{{ route('control.question.store') }}" class="px-5">
         @csrf
         <!-- Header -->
-        <div class="d-flex gap-5 w-100 mt-2 justify-content-between align-items-center my-2">
+        <div class="d-flex gap-5 w-100 mt-1 justify-content-between align-items-center my-1">
             <div class="d-flex align-items-center gap-2 w-100">
                 <label for="question_text"
                     class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Pertanyaan</label>
@@ -173,15 +173,15 @@
       `;
             });
 
-    // Tambah Radio
-    addRadioButton.addEventListener("click", () => {
-      const index = radioContainer.querySelectorAll(".radio-input").length + 1;
-      const allRadios = builder.querySelectorAll(".radio-options .input-group");
+            // Tambah Radio
+            addRadioButton.addEventListener("click", () => {
+                const index = radioContainer.querySelectorAll(".radio-input").length + 1;
+                const allRadios = builder.querySelectorAll(".radio-options .input-group");
 
-      if (allRadios.length >= 3) {
-        alert("Maksimal opsi radio hanya 3!");
-        return;
-      }
+                if (allRadios.length >= 3) {
+                    alert("Maksimal opsi radio hanya 3!");
+                    return;
+                }
 
                 const newOption = `
       <div class="input-group mb-1">

@@ -16,7 +16,7 @@ class QuestionController extends Controller
             $query->where('package', $request->package);
         }
 
-        $questions = $query->orderBy('display_order')->paginate(7);
+        $questions = $query->orderBy('display_order')->paginate(5);
 
         if ($request->ajax()) {
             return response()->json([

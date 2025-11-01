@@ -1,5 +1,5 @@
 <div class="table-responsive">
-    <table class="my-2 table table-striped table-bordered" id="sortableTable">
+    <table class="mt-1 mb-0 table table-sm table-striped table-bordered" id="sortableTable">
         <thead class="table-primary text-center">
             <tr>
                 <th scope="col">No</th>

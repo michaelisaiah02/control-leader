@@ -90,7 +90,7 @@
                 {{-- Baris Pertama Tombol --}}
                 <div class="row justify-content-center g-5 mb-4">
                     <div class="col-12 col-md-4">
-                        <a href="#"
+                        <a href="{{ route('control.question.index') }}"
                             class="btn btn-primary btn-lg w-100 h-100 py-3 fs-3 align-content-center rounded-4">QUESTION LIST</a>
                     </div>
                     <div class="col-12 col-md-4">
