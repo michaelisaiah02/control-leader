@@ -183,9 +183,15 @@
       `;
             });
 
-            // Tambah Radio
-            addRadioButton.addEventListener("click", () => {
-                const index = radioContainer.querySelectorAll(".radio-input").length + 1;
+        // Tambah Radio
+        addRadioButton.addEventListener("click", () => {
+            const index = radioContainer.querySelectorAll(".radio-input").length + 1;
+            const allRadios = builder.querySelectorAll(".radio-options .input-group");
+
+            if (allRadios.length >= 3) {
+                alert("Maksimal opsi radio hanya 3!");
+                return;
+            }
 
                 const newOption = `
       <div class="input-group mb-1">
