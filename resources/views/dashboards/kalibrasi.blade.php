@@ -56,8 +56,19 @@
                     <img src="{{ asset('icon/input.svg') }}" class="mx-auto mt-1 icon menu-btn" alt="Input"
                         data-target="menu-input" id="img-input">
                     <div class="card-body mx-auto" id="btn-input">
-                        <button class="btn btn-primary py-2 px-5 rounded-4 menu-btn btn1"
-                            data-target="menu-input">INPUT</button>
+                        <button class="btn btn-primary py-2 px-5 rounded-4 menu-btn btn1 position-relative"
+                            data-target="menu-input">INPUT
+                            <a href="{{ route('kalibrasi.input.calibration.data', ['data' => 'warning']) }}"
+                                class="position-absolute top-0 start-0 translate-middle bg-warning border border-light rounded-circle fs-6 text-decoration-none text-primary px-2">
+                                {{ $count['warning'] }}
+                                <span class="visually-hidden">Warning</span>
+                            </a>
+                            <a href="{{ route('kalibrasi.input.calibration.data', ['data' => 'danger']) }}"
+                                class="position-absolute top-0 start-100 translate-middle bg-danger border border-light rounded-circle fs-6 text-decoration-none text-primary px-2">
+                                {{ $count['danger'] }}
+                                <span class="visually-hidden">Dangers</span>
+                            </a>
+                        </button>
                     </div>
                     <div class="menu-input menu-section row d-none mx-1 mx-md-0">
                         <a class="btn btn-primary py-2 my-3 rounded-4 btn1"

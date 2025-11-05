@@ -61,7 +61,7 @@
         }
 
         .already-sign-overlay {
-            display: block;
+            display: none;
             position: absolute;
 
             /* Posisikan di tengah-tengah area TTD */
@@ -80,12 +80,23 @@
             z-index: 10;
         }
 
+        /* Overlay khusus preview */
+        .preview-overlay {
+            font-weight: bold;
+            border: 2px solid #000;
+            background: white;
+            display: inline-block;
+            padding: 4px 8px;
+            margin-top: 4px;
+        }
+
         /* Hide print button during printing */
         @media print {
 
             button.print-button,
             button.back-button,
-            .sign-checkbox-container {
+            .sign-checkbox-container,
+            .preview-checkbox-container {
                 display: none !important;
             }
 
@@ -94,7 +105,8 @@
             }
 
             @page {
-                size: A4 landscape;
+                size: A4;
+                orientation: landscape !important;
                 /* atau bisa pakai: size: landscape; */
                 margin: 1cm;
             }
@@ -197,7 +209,9 @@
                             @endif
 
                             @if ($i == 1)
-                                <td colspan="3" rowspan="10">{{ $result->judgement }}</td>
+                                <td colspan="3" rowspan="10" style="font-size: 10rem; font-weight: 100">
+                                    {{ $result->judgement }}
+                                </td>
                             @endif
                         </tr>
                     @endfor
@@ -210,7 +224,7 @@
 
             <div class="row justify-content-end" style="display: flex; justify-content: end;">
                 <div class="col-4" style="width: 100%;">
-                    <table class="table table-bordered text-center">
+                    <table class="table table-bordered text-center" id="signature-table">
                         <thead>
                             <tr>
                                 <th scope="col" style="width: 33%;">Disetujui</th>
@@ -218,15 +232,15 @@
                                 <th scope="col" style="width: 33%;">Dibuat</th>
                             </tr>
                             <tr class="signature-space-row">
-                                <th scope="col" style="height: 50px;">&nbsp;</th>
-                                <th scope="col" style="height: 50px;">&nbsp;</th>
+                                <th scope="col" style="height: 50px;" id="approved-cell">&nbsp;</th>
+                                <th scope="col" style="height: 50px;" id="checked-cell">&nbsp;</th>
                                 <th scope="col" style="height: 50px;">&nbsp;</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr class="signature-names-row">
-                                <td>{{ $approved->name }}</td>
-                                <td>{{ $checked->name }}</td>
+                                <td id="approved-name">{{ $approved->name }}</td>
+                                <td id="checked-name">{{ $checked->name }}</td>
                                 <td>{{ $result->creator->name }}</td>
                             </tr>
                         </tbody>
@@ -238,6 +252,7 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = "{{ auth()->user()->name }}";
             // --- MEMBUAT CHECKBOX ---
             const signCheckboxContainer = document.createElement('div');
             signCheckboxContainer.classList.add('sign-checkbox-container');
@@ -259,6 +274,55 @@
                 } else {
                     // Jika tidak dicentang, hapus class dari body
                     document.body.classList.remove('show-sign-on-print');
+                }
+            });
+
+            // === CHECKBOX: Preview Disetujui & Diperiksa ===
+            const previewCheckboxContainer = document.createElement('div');
+            previewCheckboxContainer.classList.add('preview-checkbox-container');
+            previewCheckboxContainer.style.position = 'fixed';
+            previewCheckboxContainer.style.bottom = '60px';
+            previewCheckboxContainer.style.left = '20px';
+            previewCheckboxContainer.innerHTML = `
+            <div style="margin-bottom:5px;">
+                <input type="checkbox" id="preview-approved-checkbox" style="margin-right: 5px;">
+                <label for="preview-approved-checkbox" style="color: #333; font-size: 14px;">Preview Disetujui</label>
+            </div>
+            <div>
+                <input type="checkbox" id="preview-checked-checkbox" style="margin-right: 5px;">
+                <label for="preview-checked-checkbox" style="color: #333; font-size: 14px;">Preview Diperiksa</label>
+            </div>
+        `;
+            document.body.appendChild(previewCheckboxContainer);
+
+            const approvedCheckbox = document.getElementById('preview-approved-checkbox');
+            const checkedCheckbox = document.getElementById('preview-checked-checkbox');
+            const approvedCell = document.getElementById('approved-cell');
+            const checkedCell = document.getElementById('checked-cell');
+            const approvedName = document.getElementById('approved-name');
+            const checkedName = document.getElementById('checked-name');
+
+            // Simpan nama original
+            const originalApprovedName = approvedName.textContent;
+            const originalCheckedName = checkedName.textContent;
+
+            approvedCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    approvedCell.innerHTML = `<div class="preview-overlay">ALREADY APPROVED</div>`;
+                    approvedName.textContent = currentUser;
+                } else {
+                    approvedCell.innerHTML = "&nbsp;";
+                    approvedName.textContent = originalApprovedName;
+                }
+            });
+
+            checkedCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    checkedCell.innerHTML = `<div class="preview-overlay">ALREADY CHECKED</div>`;
+                    checkedName.textContent = currentUser;
+                } else {
+                    checkedCell.innerHTML = "&nbsp;";
+                    checkedName.textContent = originalCheckedName;
                 }
             });
 

@@ -13,12 +13,44 @@ class CalibrationDataController extends Controller
 {
     public function create()
     {
+        if (request()->has('data')) {
+            $dataType = request()->input('data');
+        }
+        $result = match ($dataType ?? null) {
+            // Warning: Ambil data yang NG, atau OK yang tanggal kalibrasi selanjutnya dalam sebulan ke depan tapi yang belum lewat (dengan ID Masterlist masing-masing 1 yang terakhir)
+            'warning' => Result::where(function ($query) {
+                    $query->where('judgement', 'NG')
+                    ->orWhere(function ($q) {
+                        $q->where('judgement', 'OK')
+                        ->whereRaw("DATE_ADD(calibration_date, INTERVAL (SELECT calibration_freq FROM master_lists WHERE master_lists.id_num = results.id_num) MONTH) BETWEEN ? AND ?", [
+                            Carbon::now()->toDateString(),
+                            Carbon::now()->addMonth()->toDateString(),
+                        ]);
+                    });
+                })
+                ->whereIn('id', function ($subQuery) {
+                        $subQuery->selectRaw('MAX(id)')
+                        ->from('results')
+                        ->groupBy('id_num');
+                    })->get(),
+            // Danger: Ambil data yang sudah lewat due date (kalibrasi terakhir + freq) (dengan ID Masterlist masing-masing 1 yang terakhir)
+            'danger' => Result::where(function ($query) {
+                    $query->whereRaw("DATE_ADD(calibration_date, INTERVAL (SELECT calibration_freq FROM master_lists WHERE master_lists.id_num = results.id_num) MONTH) < ?", [Carbon::now()->toDateString()]);
+                })
+                ->whereIn('id', function ($subQuery) {
+                        $subQuery->selectRaw('MAX(id)')
+                        ->from('results')
+                        ->groupBy('id_num');
+                    })->get(),
+            default => Result::all(),
+        };
         return view('kalibrasi.input.calibration-data', [
             'title' => 'CALIBRATION DATA INPUT',
-            'results' => Result::all(),
+            'results' => $result,
             'pending' => IncompleteInput::forCurrentUser()
                 ->atStage('calibration')
                 ->first(),
+            'dataType' => $dataType,
         ]);
     }
 
@@ -61,7 +93,6 @@ class CalibrationDataController extends Controller
         }
 
         if (is_null($validated['calibration_date'])) {
-            dd($validated);
             $validated['calibration_date'] = now()->toDateString();
         }
 

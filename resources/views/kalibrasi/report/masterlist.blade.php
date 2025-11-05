@@ -36,6 +36,7 @@
                             <th>Location</th>
                             <th>Last Certificate</th>
                             <th>Last Result</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -84,6 +85,7 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
+                                <td>{{ $item->status }}</td>
                             </tr>
                         @endforeach
                     </tbody>

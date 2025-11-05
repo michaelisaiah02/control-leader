@@ -431,6 +431,7 @@
 
 @section('scripts')
     <script type="module">
+        const dataType = '{{ $dataType }}';
         const $input = $('#id-num');
         let debounceTimer;
         let currentAjax = null;
@@ -651,6 +652,12 @@
         $(document).ready(function() {
             if ($input.val().trim().length === 7) {
                 fetchMasterList($input.val().trim());
+            }
+
+            if (dataType === 'warning' || dataType === 'danger') {
+                // buka modal tabel kalibrasi
+                const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+                resultModal.show();
             }
         });
     </script>
