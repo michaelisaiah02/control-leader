@@ -15,7 +15,7 @@ $theme-colors: (
 );
 
 // 2) Override variabel Bootstrap sesuai kebutuhan
-$table-bg-scale: 75%;
+$table-bg-scale: 50%;
 
 // 3) Lanjut import sisa partial Bootstrap
 @import "bootstrap/scss/variables";

@@ -13,6 +13,7 @@ class CalibrationDataController extends Controller
 {
     public function create()
     {
+        $dataType = null;
         if (request()->has('data')) {
             $dataType = request()->input('data');
         }
