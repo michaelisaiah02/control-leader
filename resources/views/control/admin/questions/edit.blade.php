@@ -120,7 +120,7 @@
                 <button id="clear-button" type="button" class="btn btn-danger text-white py-2 px-4">Clear</button>
             </div>
             <div>
-                <a href="{{ route('control.question.index') }}" class="btn btn-primary text-white py-2 px-4">Back</a>
+                <a href="{{ route('control.admin.question.index') }}" class="btn btn-primary text-white py-2 px-4">Back</a>
                 <button type="submit" class="btn btn-primary text-white py-2 px-4">Update</button>
             </div>
         </div>

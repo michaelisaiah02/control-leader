@@ -38,7 +38,7 @@
         </div>
 
         <div class="py-0 d-flex justify-content-between align-items-center">
-            <a href="{{ route('control.question.create') }}"
+            <a href="{{ route('control.admin.question.create') }}"
                 class="btn btn-primary btn-lg text-white rounded-circle">&plus;</a>
             <a href="{{ route('dashboard') }}" class="btn btn-primary text-white py-2 px-4">Back</a>
         </div>
@@ -71,7 +71,7 @@
             // Filter: Type Pertanyaan
             filterPackage.addEventListener('change', () => {
                 const pkg = filterPackage.value;
-                let url = `{{ route('control.question.index') }}`;
+                let url = `{{ route('control.admin.question.index') }}`;
                 if (pkg) url += `?package=${encodeURIComponent(pkg)}`;
                 loadQuestions(url);
             });
@@ -102,7 +102,7 @@
                             row.querySelector('td:first-child').textContent = index + 1;
                         });
 
-                        fetch(`{{ route('control.question.updateOrder') }}`, {
+                        fetch(`{{ route('control.admin.question.updateOrder') }}`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',

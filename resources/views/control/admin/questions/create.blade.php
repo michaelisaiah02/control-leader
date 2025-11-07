@@ -20,7 +20,7 @@
 @endsection
 
 @section('content')
-    <form method="POST" action="{{ route('control.question.store') }}" class="px-5">
+    <form method="POST" action="{{ route('control.admin.question.store') }}" class="px-5">
         @csrf
         <!-- Header -->
         <div class="d-flex gap-5 w-100 mt-1 justify-content-between align-items-center my-1">
@@ -109,7 +109,7 @@
                 <button id="clear-button" type="button" class="btn btn-danger text-white py-2 px-4">Clear</button>
             </div>
             <div>
-                <a href="{{ route('control.question.index') }}" class="btn btn-primary text-white py-2 px-4">Back</a>
+                <a href="{{ route('control.admin.question.index') }}" class="btn btn-primary text-white py-2 px-4">Back</a>
                 <button type="submit" class="btn btn-primary text-white py-2 px-4">Save</button>
             </div>
         </div>

@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckRoleIsAdmin
@@ -16,7 +15,11 @@ class CheckRoleIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->role !== 'admin') {
+        // Cek aplikasi apa yang aktif dari session
+        $activeApp = $request->session()->get('active_app');
+        $guard = $activeApp === 'control_leader' ? 'web_control_leader' : 'web';
+        // Cek apakah user adalah admin
+        if (auth()->guard($guard)->user()->role !== 'admin') {
             return redirect()->back()->with('error', 'Khusus admin!');
         }
 

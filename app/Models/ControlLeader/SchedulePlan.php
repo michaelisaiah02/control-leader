@@ -37,7 +37,7 @@ class SchedulePlan extends ControlLeaderModel
 
     public function scheduler(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'scheduler_id');
+        return $this->belongsTo(User::class, 'scheduler_id', 'employeeID');
     }
 
     public function details(): HasMany

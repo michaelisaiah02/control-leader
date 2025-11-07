@@ -60,6 +60,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int $has_replacement Apakah ada operator pengganti untuk checksheet ini?
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereHasReplacement($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScheduledTarget($value)
+ * @property int $leader_id
+ * @property int $schedule_id
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereLeaderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScheduleId($value)
+ * @property int $score Skor checksheet (jumlah poin benar)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScore($value)
  * @mixin \Eloquent
  */
 class Checksheet extends ControlLeaderModel

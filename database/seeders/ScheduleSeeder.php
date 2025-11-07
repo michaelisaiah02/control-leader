@@ -31,7 +31,7 @@ class ScheduleSeeder extends Seeder
             $planLCOs[] = SchedulePlan::firstOrCreate(
                 [
                     'type' => 'leader_checks_operator',
-                    'scheduler_id' => $leader->id,
+                    'scheduler_id' => $leader->employeeID,
                     'month' => $today->format('m'),
                     'year' => $today->format('Y'),
                 ]
@@ -41,7 +41,7 @@ class ScheduleSeeder extends Seeder
         $planSCL = SchedulePlan::firstOrCreate(
             ['type' => 'supervisor_checks_leader'],
             [
-                'scheduler_id' => $supervisor->id,
+                'scheduler_id' => $supervisor->employeeID,
                 'month' => $today->format('m'),
                 'year' => $today->format('Y'),
             ]
@@ -60,7 +60,7 @@ class ScheduleSeeder extends Seeder
                     [
                         'schedule_plan_id' => $firstPlanLCO->id,
                         'scheduled_date' => $today->toDateString(),
-                        'target_user_id' => $operator->id,
+                        'target_user_id' => $operator->employeeID,
                     ],
                     [
                         'division' => 'Finishing',
@@ -78,7 +78,7 @@ class ScheduleSeeder extends Seeder
                 [
                     'schedule_plan_id' => $planSCL->id,
                     'scheduled_date' => $today->toDateString(),
-                    'target_user_id' => $randomLeader->id,
+                    'target_user_id' => $randomLeader->employeeID,
                     'shift' => rand(1, 3),
                 ]
             );

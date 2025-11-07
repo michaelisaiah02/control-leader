@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\ChecksheetFormController;
 use App\Http\Controllers\ControlLeader\ChecksheetController;
-use App\Http\Controllers\ControlLeader\QuestionController;
+use App\Http\Controllers\ControlLeader\Admin\QuestionController;
 use App\Http\Controllers\ControlLeader\ScheduleDetailController;
-use App\Http\Controllers\ControlLeader\SchedulePlanController;
+use App\Http\Controllers\ControlLeader\ScheduleController;
+use App\Http\Controllers\ControlLeader\Admin\UserController as UserControlLeaderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Kalibrasi\Admin\EquipmentController;
 use App\Http\Controllers\Kalibrasi\Admin\MasterListController;
@@ -130,18 +130,32 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
     });
     Route::prefix('control')->as('control.')->middleware(SingleLogin::class)->middleware(ResumeDraft::class)->group(function () {
         // Rencana & Detail (biar lengkap, bisa kamu tambah belakangan)
-        Route::get('/schedules', [SchedulePlanController::class, 'index'])->name('schedule.index');
-        Route::get('/schedule/{id}/edit', [SchedulePlanController::class, 'edit'])->name('schedule.edit');
-        Route::put('/schedule/{id}', [SchedulePlanController::class, 'update'])->name('schedule.update');
-        Route::post('/schedule/{id}/update-cell', [SchedulePlanController::class, 'updateCell'])->name('schedule.updateCell');
-        Route::post('/schedule/{id}/add-user', [SchedulePlanController::class, 'addUser'])->name('schedule.addUser');
-        Route::delete('/schedule/{id}/remove-user/{userId}', [SchedulePlanController::class, 'removeUser'])->name('schedule.removeUser');
+        Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule.index');
+        Route::post('/schedule', [ScheduleController::class, 'store'])->name('schedule.store');
+        Route::get('/schedule/{id}/edit', [ScheduleController::class, 'edit'])->name('schedule.edit');
+        Route::put('/schedule/{id}', [ScheduleController::class, 'update'])->name('schedule.update');
+        Route::post('/schedule/{id}/update-cell', [ScheduleController::class, 'updateCell'])->name('schedule.updateCell');
+        Route::post('/schedule/{id}/add-user', [ScheduleController::class, 'addUser'])->name('schedule.addUser');
+        Route::delete('/schedule/{id}/remove-user/{userId}', [ScheduleController::class, 'removeUser'])->name('schedule.removeUser');
 
-        // ------------------------
-        // QEUSTIONS CRUD
-        // ------------------------
-        Route::resource('question', QuestionController::class)->except(['show']);
-        Route::post('/question/update-order', [QuestionController::class, 'updateOrder'])->name('question.updateOrder');
+        Route::middleware(CheckRoleIsAdmin::class)->group(function () {
+            // ------------------------
+            // QUESTIONS CRUD
+            // ------------------------
+            Route::resource('admin/question', QuestionController::class)->except(['show'])->names('admin.question');
+            Route::post('/admin/question/update-order', [QuestionController::class, 'updateOrder'])->name('admin.question.updateOrder');
+
+            // =========================
+            // USERS CRUD
+            // =========================
+            Route::prefix('admin/users')->as('admin.users.')->controller(UserControlLeaderController::class)->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::post('/store', 'store')->name('store');
+                Route::post('/update-user/{id}', 'update')->name('update');
+                Route::delete('/delete-user/{id}', 'destroy');
+                Route::get('/search', 'search')->name('search');
+            });
+        });
 
         // =========================
         // CHECKSHEET (2 step: Part A -> Part B)

@@ -43,12 +43,13 @@
                         @endswitch
                     </td>
                     <td class="d-flex gap-3 justify-content-center">
-                        <a href="{{ route('control.question.edit', $question->id) }}" class="btn btn-primary">Edit</a>
-                        <form method="POST" action="{{ route('control.question.destroy', $question->id) }}">
+                        <a href="{{ route('control.admin.question.edit', $question->id) }}"
+                            class="btn btn-primary btn-sm">Edit</a>
+                        <form method="POST" action="{{ route('control.admin.question.destroy', $question->id) }}">
                             @csrf
                             @method('DELETE')
                             <button type="submit" onclick="return confirm('Apakah yakin dihapus?')"
-                                class="btn btn-danger">Delete</button>
+                                class="btn btn-danger btn-sm">Delete</button>
                         </form>
                     </td>
                 </tr>

@@ -50,7 +50,7 @@ class ControlLeaderUserSeeder extends Seeder
                 'password' => Hash::make($password),
             ],
             [
-                'employeeID' => $makeID(4),
+                'employeeID' => 24556,
                 'name' => 'Leader Rina',
                 'role' => 'leader',
                 'department_id' => $departmentIds[array_rand($departmentIds)],

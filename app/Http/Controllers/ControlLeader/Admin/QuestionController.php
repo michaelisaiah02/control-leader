@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ControlLeader;
+namespace App\Http\Controllers\ControlLeader\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ControlLeader\Question;

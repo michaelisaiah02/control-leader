@@ -9,11 +9,11 @@ use App\Models\ControlLeader\Division;
 use App\Models\ControlLeader\SchedulePlan;
 use App\Models\ControlLeader\ScheduleDetail;
 
-class SchedulePlanController extends Controller
+class ScheduleController extends Controller
 {
     public function index()
     {
-        $authUser = auth()->guard('web_control_leader')->user();
+        $authUser = User::find(auth()->guard('web_control_leader')->id());
 
         // Validasi role supervisor
         // if ($authUser->role !== 'supervisor') {
@@ -32,7 +32,10 @@ class SchedulePlanController extends Controller
         $plans = $query->get();
 
         // Data untuk dropdown filter
-        $users = User::whereIn('role', ['supervisor', 'leader'])->orderBy('name')->get();
+        $users = User::whereIn('role', ['leader'])->orderBy('name')->get();
+
+        // Tambahkan user yang sedang login sebagai data pertama
+        $users = $users->reject(fn($u) => $u->id === $authUser->id)->prepend($authUser);
 
         return view('control.schedule.index', compact('plans', 'users'));
     }
@@ -78,6 +81,36 @@ class SchedulePlanController extends Controller
             'today',
             'divisionOptions'
         ));
+    }
+
+    public function store(Request $request)
+    {
+        // dd($request->all());
+        $request->validate([
+            'month' => 'required|date_format:Y-m',
+            'employeeID' => 'required|exists:users,employeeID',
+        ]);
+
+        $month = date('m', strtotime($request->input('month')));
+        $year = date('Y', strtotime($request->input('month')));
+
+        $exists = SchedulePlan::where('scheduler_id', $request->input('employeeID'))
+            ->where('month', $month)
+            ->where('year', $year)
+            ->exists();
+
+        if ($exists) {
+            return back()->with('error', 'Rencana untuk user dan bulan tersebut sudah ada!');
+        }
+
+        $plan = SchedulePlan::create([
+            'month' => $month,
+            'year' => $year,
+            'scheduler_id' => $request->input('employeeID'),
+        ]);
+
+        return redirect()->route('control.schedule.index', $plan->id)
+            ->with('success', 'Rencana jadwal baru berhasil dibuat.');
     }
 
     public function updateCell(Request $request, $id)
