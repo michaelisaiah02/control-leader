@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Kalibrasi;
 
-use App\Http\Controllers\Controller;
-use App\Models\MasterList;
+use App\Models\User;
 use App\Models\Repair;
 use App\Models\Result;
-use App\Models\User;
+use App\Models\MasterList;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class PrintController extends Controller
 {
@@ -39,5 +40,25 @@ class PrintController extends Controller
             'approved' => $approved,
             'checked' => $checked,
         ]);
+    }
+
+    public function updateMasterListPrint(Result $result, Request $request)
+    {
+        try {
+            $request->validate([
+                'is_approved' => 'nullable|boolean',
+                'is_checked' => 'nullable|boolean',
+            ]);
+
+            if ($request->input('is_approved'))
+                $result->is_approved = $request->input('is_approved');
+            if ($request->input('is_checked'))
+                $result->is_checked = $request->input('is_checked');
+            $result->save();
+
+            return response()->json(['status' => 'success']);
+        } catch (\Throwable $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
     }
 }

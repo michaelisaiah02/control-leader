@@ -59,6 +59,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
             Route::controller(PrintController::class)->group(function () {
                 Route::get('/print-report-masterlist/{id}', 'reportMasterlist')->name('print.report.masterlist');
                 Route::get('/print-report-repair/{id}', 'reportRepair')->name('print.report.repair');
+                Route::post('/update-masterlist-print/{result}', 'updateMasterListPrint')->name('update.masterlist.print');
             });
             Route::controller(ReportController::class)->group(function () {
                 Route::get('/report', 'menu')->name('report.menu');

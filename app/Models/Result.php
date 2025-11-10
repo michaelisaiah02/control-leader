@@ -76,6 +76,8 @@ class Result extends Model
         'judgement',
         'created_by',
         'certificate',
+        'is_approved',
+        'is_checked',
     ];
 
     protected $casts = [
