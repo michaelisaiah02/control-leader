@@ -23,14 +23,14 @@
       <select id="month" class="form-select">
         @for ($m = 1; $m <= 12; $m++)
           <option value="{{ $m }}" @selected($m==now()->month)>{{ $m }}</option>
-          @endfor
+        @endfor
       </select>
     </div>
     <div class="col-md-2">
       <select id="year" class="form-select">
         @for ($y = now()->year - 5; $y <= now()->year + 1; $y++)
           <option value="{{ $y }}" @selected($y==now()->year)>{{ $y }}</option>
-          @endfor
+        @endfor
       </select>
     </div>
   </div>
