@@ -170,19 +170,15 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
     });
 });
 
-// Checksheet CRUD (Sementara)
-Route::controller(QuestionController::class)->group(function () {
-    Route::get("/question", 'index')->name('question.index');
-    Route::get("/question/add", 'create')->name('question.create');
-    Route::post("/question/add", 'store')->name('question.store');
-    Route::get("/question/{question}/edit", 'edit')->name('question.edit');
-    Route::put("/question/{question}/update", 'update')->name('question.update');
-    Route::delete("/question/{question}/delete", 'delete')->name('question.delete');
-    Route::post('/question/update-order', 'updateOrder')->name('question.updateOrder');
-});
-
 // Reports (Sementara)
 Route::controller(App\Http\Controllers\ControlLeader\ReportController::class)->group(function () {
     Route::get("/reports/daily", 'daily');
     Route::get("/reports/monthly", 'monthly');
+    Route::get("/reports/leader-score", 'leaderScore');
+    Route::get("/reports/leader-consistency", 'leaderConsistency');
+    // API
+    Route::get("api/reports/daily", 'apiDaily');
+    Route::get("api/reports/monthly", 'apiMonthly');
+    Route::get("api/reports/leader-score", 'apiLeaderScore');
+    Route::get("api/reports/leader-consistency", 'apiLeaderConsistency');
 });
