@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ControlLeader;
+namespace App\Http\Controllers\ControlLeader\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ControlLeader\Question;
@@ -16,7 +16,7 @@ class QuestionController extends Controller
             $query->where('package', $request->package);
         }
 
-        $questions = $query->orderBy('display_order')->paginate(7);
+        $questions = $query->orderBy('display_order')->paginate(5);
 
         if ($request->ajax()) {
             return response()->json([
@@ -33,10 +33,10 @@ class QuestionController extends Controller
         return view('control.admin.questions.create');
     }
 
-    public function delete(Question $question)
+    public function destroy(Question $question)
     {
         $question->delete();
-        return redirect()->route('questions.index')->with('success', 'Question deleted.');
+        return redirect()->route('control.question.index')->with('success', 'Question deleted.');
     }
 
     public function store(Request $request)
@@ -52,7 +52,7 @@ class QuestionController extends Controller
         $validated['extra_fields'] = $request->countermeasure_label && $request->problem_label ? true : false;
         Question::create($validated);
 
-        return redirect()->route('questions.index')->with('success', 'Question created successfully!');
+        return redirect()->route('control.question.index')->with('success', 'Question created successfully!');
     }
 
     public function edit(Question $question)
@@ -73,7 +73,7 @@ class QuestionController extends Controller
         $validated['extra_fields'] = $request->countermeasure_label && $request->problem_label ? true : false;
         $question->update($validated);
 
-        return redirect()->route('question.index')->with('success', 'Question updated successfully!');
+        return redirect()->route('control.question.index')->with('success', 'Question updated successfully!');
     }
 
     public function updateOrder(Request $request)

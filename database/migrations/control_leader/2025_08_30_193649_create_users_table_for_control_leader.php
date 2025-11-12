@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::connection('mysql_control_leader')->create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('employeeID')->unique();
+            $table->char('employeeID', 5)->unique();
             $table->foreignId('department_id')->nullable()->constrained('departments');
             $table->string('password');
             $table->enum('role', ['admin', 'guest', 'supervisor', 'leader', 'operator']);

@@ -129,10 +129,10 @@
                     $('[name="part_a[target]"]').val(a.target);
                     $('[name="part_a[division]"]').val(a.bagian);
                     $('[name="part_a[attendance]"]').val(a.attendance);
-                    $('[name="part_a[condition]"]').val(a.kondisi);
-                    $('[name="part_a[replacement_name]"]').val(a.nama_pengganti);
-                    $('[name="part_a[replacement_division]"]').val(a.bagian_pengganti);
-                    $('[name="part_a[replacement_condition]"]').val(a.kondisi_pengganti);
+                    $('[name="part_a[kondisi]"]').val(a.kondisi);
+                    $('[name="part_a[nama_pengganti]"]').val(a.nama_pengganti);
+                    $('[name="part_a[bagian_pengganti]"]').val(a.bagian_pengganti);
+                    $('[name="part_a[kondisi_pengganti]"]').val(a.kondisi_pengganti);
                 }
             } catch (e) {}
 

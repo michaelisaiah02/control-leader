@@ -214,7 +214,8 @@
             </div>
             <div class="row table-responsive mb-3" style="max-height: 85px; overflow-y: auto;">
                 <table class="table table-sm table-bordered align-middle text-nowrap">
-                    <thead class="table-primary sticky-top">
+                    <thead
+                        class="{{ $dataType == 'warning' ? 'table-warning' : ($dataType == 'danger' ? 'table-danger' : 'table-primary') }} sticky-top">
                         <tr class="align-middle text-center">
                             <th scope="col">No
                             </th>
@@ -240,8 +241,15 @@
                                 <td><button type="button"
                                         class="btn btn-primary btn-select-id {{ $pending ? 'disabled' : '' }}"
                                         data-num="{{ $result->id }}"
-                                        data-id="{{ $result->id_num }}">{{ $loop->iteration }}</button></td>
-                                <td> {{ $result->calibration_date->format('d-m-Y') }} </td>
+                                        data-id="{{ $result->id_num }}">{{ $loop->iteration }}</button>
+                                </td>
+                                <td class="text-center">
+                                    @if ($result->calibration_date)
+                                        {{ $result->calibration_date?->format('d-m-Y') }}
+                                    @else
+                                        <i class="bi bi-dash-lg"></i>
+                                    @endif
+                                </td>
                                 <td> {{ $result->id_num }} / {{ $result->masterList->sn_num }} </td>
                                 <td>
                                     @isset($result->masterList->equipment->name)
@@ -333,7 +341,8 @@
                 </div>
                 <div class="modal-body p-0 m-0 table-responsive">
                     <table class="table table-sm table-bordered align-middle text-nowrap" id="modal-table">
-                        <thead class="table-primary sticky-top">
+                        <thead
+                            class="{{ $dataType == 'warning' ? 'table-warning' : ($dataType == 'danger' ? 'table-danger' : 'table-primary') }} sticky-top">
                             <tr class="align-middle text-center">
                                 <th scope="col">No</th>
                                 <th scope="col">Calibration Date</th>
@@ -358,7 +367,13 @@
                                     <td><button class="btn btn-primary btn-select-id" data-num="{{ $result->id }}"
                                             data-id="{{ $result->id_num }}"
                                             data-bs-dismiss="modal">{{ $loop->iteration }}</button></td>
-                                    <td>{{ $result->calibration_date->format('d-m-Y') }}</td>
+                                    <td class="text-center">
+                                        @if ($result->calibration_date)
+                                            {{ $result->calibration_date?->format('d-m-Y') }}
+                                        @else
+                                            <i class="bi bi-dash-lg"></i>
+                                        @endif
+                                    </td>
                                     <td>{{ $result->id_num }} / {{ $result->masterList->sn_num }}</td>
                                     <td>{{ $result->masterList->equipment->name ?? '' }}</td>
                                     <td>
@@ -431,6 +446,7 @@
 
 @section('scripts')
     <script type="module">
+        const dataType = '{{ $dataType }}';
         const $input = $('#id-num');
         let debounceTimer;
         let currentAjax = null;
@@ -651,6 +667,12 @@
         $(document).ready(function() {
             if ($input.val().trim().length === 7) {
                 fetchMasterList($input.val().trim());
+            }
+
+            if (dataType === 'warning' || dataType === 'danger') {
+                // buka modal tabel kalibrasi
+                const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+                resultModal.show();
             }
         });
     </script>

@@ -37,6 +37,9 @@ return new class extends Migration {
             $table->foreign('created_by')->references('employeeID')->on('users')->onDelete('cascade');
             $table->string('certificate')->nullable()->default(null);
 
+            $table->boolean('is_approved')->default(false);
+            $table->boolean('is_checked')->default(false);
+
             $table->timestamps();
         });
     }

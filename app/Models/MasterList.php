@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
  * @property int $id
@@ -50,6 +51,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereTypeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereUnitId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereUpdatedAt($value)
+ * @property-read mixed $status
  * @mixin \Eloquent
  */
 class MasterList extends Model
@@ -103,5 +105,41 @@ class MasterList extends Model
     public function latestResult()
     {
         return $this->hasOne(Result::class, 'id_num', 'id_num')->latestOfMany('calibration_date');
+    }
+
+    protected function status(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->calculateStatus(),
+        );
+    }
+
+    private function calculateStatus()
+    {
+        $latestResult = $this->latestResult;
+
+        if (!$latestResult) {
+            return 'NEW';
+        }
+
+        $previousResult = $this->results()
+            ->where('id', '!=', $latestResult->id)
+            ->orderBy('calibration_date', 'desc')
+            ->first();
+
+        if (!$previousResult) {
+            return 'NEW';
+        }
+
+        $expectedDate = $previousResult->calibration_date->addMonths($this->calibration_freq);
+        $actualDate = $latestResult->calibration_date;
+
+        if ($actualDate->lt($expectedDate->copy()->subMonth())) {
+            return 'EARLY';
+        } elseif ($actualDate->gt($expectedDate->copy()->addMonth())) {
+            return 'DELAY';
+        } else {
+            return 'ON TIME';
+        }
     }
 }

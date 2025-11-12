@@ -56,6 +56,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int|null $replacement_of_id ID checksheet parent (scheduled). Null bila scheduled/hadir
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereReplacement($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereReplacementOfId($value)
+ * @property string|null $scheduled_target Snapshot target yang dijadwalkan: "id - nama"
+ * @property int $has_replacement Apakah ada operator pengganti untuk checksheet ini?
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereHasReplacement($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScheduledTarget($value)
+ * @property int $leader_id
+ * @property int $schedule_id
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereLeaderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScheduleId($value)
+ * @property int $score Skor checksheet (jumlah poin benar)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScore($value)
  * @mixin \Eloquent
  */
 class Checksheet extends ControlLeaderModel
@@ -67,6 +77,8 @@ class Checksheet extends ControlLeaderModel
     protected $fillable = [
         'schedule_plan_id',
         'stopwatch_duration',
+        'score',
+        'scheduled_target',
         'phase',
         'shift',
         'target',

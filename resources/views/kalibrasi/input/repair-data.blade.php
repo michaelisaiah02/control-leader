@@ -218,7 +218,7 @@
             if (currentAjax) currentAjax.abort();
 
             currentAjax = $.ajax({
-                url: `/get-masterlist/${idNum}`,
+                url: `/kalibrasi/get-masterlist/${idNum}`,
                 method: 'GET',
                 success: function(data) {
                     $('#sn-num').val(data.sn_num);

@@ -41,16 +41,30 @@
                 </tbody>
             </table>
         </div>
-        <div class="text-center row justify-content-between align-items-start">
+        <div class="text-center row justify-content-between align-items-center">
             <div id="pagination-links" class="col-md col align-items-center"
                 data-url="{{ route('kalibrasi.admin.master-lists.search') }}">
                 {{-- Generate by AJAX --}}
             </div>
+
+            <div class="col-auto">
+                <form id="exportForm" method="GET" action="{{ route('kalibrasi.admin.master-lists.export') }}">
+                    <input type="hidden" name="keyword" id="export-keyword">
+                    <input type="hidden" name="format" id="export-format">
+                    <button type="button" class="btn btn-success btn-sm me-2" id="btn-export-excel">
+                        Export Excel
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" id="btn-export-pdf">
+                        Export PDF
+                    </button>
+                </form>
+            </div>
             <div class="col-auto">
                 <a href="{{ route('dashboard', ['key' => 'master-data', 'application' => 'KALIBRASI']) }}"
-                    class="btn btn-primary">Close</a>
+                    class="btn btn-primary btn-sm">Close</a>
             </div>
         </div>
+    </div>
     </div>
     <!-- Modal Tambah/Edit MasterList -->
     <div class="modal fade" id="masterlistModal" tabindex="-1" aria-labelledby="masterlistModalLabel" aria-hidden="true">
@@ -98,8 +112,8 @@
                     </div>
                     <div class="input-group mb-3">
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="brand" placeholder="Brand" name="brand"
-                                required>
+                            <input type="text" class="form-control" id="brand" placeholder="Brand"
+                                name="brand" required>
                             <label for="brand">Brand</label>
                         </div>
                         <div class="form-floating">
@@ -259,6 +273,18 @@
                 const page = $(this).attr('href').split('page=')[1];
                 const keyword = $('#search-master-list').val();
                 fetchMasterLists(keyword, page);
+            });
+
+            // Export current search results as Excel or PDF.
+            $(document).on('click', '#btn-export-excel, #btn-export-pdf', function() {
+                const format = $(this).is('#btn-export-excel') ? 'excel' : 'pdf';
+                $('#export-keyword').val($('#search-master-list').val() || '');
+                $('#export-format').val(format);
+
+                // Build URL and open in new tab so file downloads without disrupting the page
+                const $form = $('#exportForm');
+                const url = $form.attr('action') + '?' + $form.serialize();
+                window.open(url, '_blank');
             });
 
             // Initial fetch

@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\ChecksheetFormController;
 use App\Http\Controllers\ControlLeader\ChecksheetController;
-use App\Http\Controllers\ControlLeader\QuestionController;
+use App\Http\Controllers\ControlLeader\Admin\QuestionController;
 use App\Http\Controllers\ControlLeader\ScheduleDetailController;
-use App\Http\Controllers\ControlLeader\SchedulePlanController;
+use App\Http\Controllers\ControlLeader\ScheduleController;
+use App\Http\Controllers\ControlLeader\Admin\UserController as UserControlLeaderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Kalibrasi\Admin\EquipmentController;
 use App\Http\Controllers\Kalibrasi\Admin\MasterListController;
@@ -59,6 +59,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
             Route::controller(PrintController::class)->group(function () {
                 Route::get('/print-report-masterlist/{id}', 'reportMasterlist')->name('print.report.masterlist');
                 Route::get('/print-report-repair/{id}', 'reportRepair')->name('print.report.repair');
+                Route::post('/update-masterlist-print/{result}', 'updateMasterListPrint')->name('update.masterlist.print');
             });
             Route::controller(ReportController::class)->group(function () {
                 Route::get('/report', 'menu')->name('report.menu');
@@ -124,26 +125,38 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
                     Route::post('/update-master-list/{id}', 'update')->name('admin.master-lists.update');
                     Route::delete('/delete-master-list/{id}', 'destroy');
                     Route::get('/search', 'search')->name('admin.master-lists.search');
+                    Route::get('/master/export', 'export')->name('admin.master-lists.export');
                 });
             });
         });
     });
     Route::prefix('control')->as('control.')->middleware(SingleLogin::class)->middleware(ResumeDraft::class)->group(function () {
         // Rencana & Detail (biar lengkap, bisa kamu tambah belakangan)
-        Route::resource('schedule-plans', SchedulePlanController::class)->only([
-            'index',
-            'create',
-            'store',
-            'show',
-            'edit',
-            'update',
-            'destroy',
-        ]);
+        Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule.index');
+        Route::post('/schedule', [ScheduleController::class, 'store'])->name('schedule.store');
+        Route::get('/schedule/{id}/edit', [ScheduleController::class, 'edit'])->name('schedule.edit');
+        Route::put('/schedule/{id}', [ScheduleController::class, 'update'])->name('schedule.update');
+        Route::post('/schedule/{id}/update-cell', [ScheduleController::class, 'updateCell'])->name('schedule.updateCell');
+        Route::post('/schedule/{id}/add-user', [ScheduleController::class, 'addUser'])->name('schedule.addUser');
+        Route::delete('/schedule/{id}/remove-user/{userId}', [ScheduleController::class, 'removeUser'])->name('schedule.removeUser');
 
-        Route::scopeBindings()->group(function () {
-            Route::resource('schedule-plans.details', ScheduleDetailController::class)
-                ->shallow()
-                ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+        Route::middleware(CheckRoleIsAdmin::class)->group(function () {
+            // ------------------------
+            // QUESTIONS CRUD
+            // ------------------------
+            Route::resource('admin/question', QuestionController::class)->except(['show'])->names('admin.question');
+            Route::post('/admin/question/update-order', [QuestionController::class, 'updateOrder'])->name('admin.question.updateOrder');
+
+            // =========================
+            // USERS CRUD
+            // =========================
+            Route::prefix('admin/users')->as('admin.users.')->controller(UserControlLeaderController::class)->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::post('/store', 'store')->name('store');
+                Route::post('/update-user/{id}', 'update')->name('update');
+                Route::delete('/delete-user/{id}', 'destroy');
+                Route::get('/search', 'search')->name('search');
+            });
         });
 
         // =========================
