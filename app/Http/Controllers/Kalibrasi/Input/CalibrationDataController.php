@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Kalibrasi\Input;
 
-use App\Http\Controllers\Controller;
-use App\Models\IncompleteInput;
-use App\Models\Result;
 use Carbon\Carbon;
+use App\Models\Result;
+use App\Models\MasterList;
 use Illuminate\Http\Request;
+use App\Models\IncompleteInput;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
 class CalibrationDataController extends Controller
@@ -45,6 +46,26 @@ class CalibrationDataController extends Controller
                     })->get(),
             default => Result::all(),
         };
+
+        // kalau data type danger, ambil juga data masterlist yang baru (belum pernah kalibrasi) yang sudah lewat due date
+        if ($dataType === 'danger') {
+            $masterlistOverdue = MasterList::whereNotIn('id_num', function ($subQuery) {
+                $subQuery->select('id_num')
+                    ->from('results');
+            })
+                ->whereRaw("DATE_ADD(first_used, INTERVAL calibration_freq MONTH) < ?", [Carbon::now()->toDateString()])
+                ->get();
+
+            // Gabungkan hasil masterlist overdue ke dalam result
+            foreach ($masterlistOverdue as $ml) {
+                $dummyResult = new Result();
+                $dummyResult->id_num = $ml->id_num;
+                $dummyResult->setAttribute('calibration_date', null);
+                $dummyResult->judgement = 'Not Calibrated';
+                $result->push($dummyResult);
+            }
+        }
+
         return view('kalibrasi.input.calibration-data', [
             'title' => 'CALIBRATION DATA INPUT',
             'results' => $result,

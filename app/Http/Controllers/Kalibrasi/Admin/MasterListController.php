@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Kalibrasi\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\MasterList;
 use App\Models\Unit;
+use App\Models\MasterList;
 use Illuminate\Http\Request;
+use App\Exports\MasterExport;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\Controller;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MasterListController extends Controller
 {
@@ -91,5 +94,28 @@ class MasterListController extends Controller
             'html' => view('kalibrasi.admin.master-lists.partials.table_rows', compact('masterlists'))->render(),
             'pagination' => view('kalibrasi.admin.master-lists.partials.pagination', compact('masterlists'))->render(),
         ]);
+    }
+
+    public function export(Request $request)
+    {
+        $keyword = $request->keyword;
+        $format = $request->format;
+
+        // ambil data sesuai filter
+        $query = MasterList::query();
+        if ($keyword) {
+            $query->where('name', 'like', "%$keyword%");
+        }
+        $data = $query->get();
+
+        if ($format === 'excel') {
+            return Excel::download(new MasterExport($data), 'master-list.xlsx');
+        } elseif ($format === 'pdf') {
+            $pdf = Pdf::loadView('pdf.master', ['data' => $data])
+                ->setPaper('a4', 'landscape');
+            return $pdf->download('master-list.pdf');
+        }
+
+        return back();
     }
 }

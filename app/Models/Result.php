@@ -52,6 +52,10 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam09($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereParam10($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereUpdatedAt($value)
+ * @property int $is_approved
+ * @property int $is_checked
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereIsApproved($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Result whereIsChecked($value)
  * @mixin \Eloquent
  */
 class Result extends Model

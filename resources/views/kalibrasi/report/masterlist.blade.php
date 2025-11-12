@@ -115,6 +115,18 @@
             <div class="pagination">
                 {{ $results->links() }}
             </div>
+            <div class="col-auto">
+                <form id="exportForm" method="GET" action="{{ route('kalibrasi.admin.master-lists.export') }}">
+                    <input type="hidden" name="keyword" id="export-keyword">
+                    <input type="hidden" name="format" id="export-format">
+                    <button type="button" class="btn btn-success btn-sm me-2" id="btn-export-excel">
+                        Export Excel
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" id="btn-export-pdf">
+                        Export PDF
+                    </button>
+                </form>
+            </div>
             <a href="{{ route('kalibrasi.report.menu') }}" class="btn btn-primary">Back</a>
         </div>
     </div>
@@ -136,6 +148,18 @@
         $(document).ready(function() {
             $('.pagination nav').addClass('w-100');
             $('.pagination nav ul').addClass('my-0 me-3');
+
+            // Export current search results as Excel or PDF.
+            $(document).on('click', '#btn-export-excel, #btn-export-pdf', function() {
+                const format = $(this).is('#btn-export-excel') ? 'excel' : 'pdf';
+                $('#export-keyword').val($('#search-master-list').val() || '');
+                $('#export-format').val(format);
+
+                // Build URL and open in new tab so file downloads without disrupting the page
+                const $form = $('#exportForm');
+                const url = $form.attr('action') + '?' + $form.serialize();
+                window.open(url, '_blank');
+            });
         })
         $(document).on('click', '.btn-view-certificate', function() {
             const path = $(this).data('path');

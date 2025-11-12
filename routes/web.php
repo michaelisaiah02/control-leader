@@ -125,6 +125,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
                     Route::post('/update-master-list/{id}', 'update')->name('admin.master-lists.update');
                     Route::delete('/delete-master-list/{id}', 'destroy');
                     Route::get('/search', 'search')->name('admin.master-lists.search');
+                    Route::get('/master/export', 'export')->name('admin.master-lists.export');
                 });
             });
         });
