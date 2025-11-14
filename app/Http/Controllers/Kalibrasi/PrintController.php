@@ -18,25 +18,29 @@ class PrintController extends Controller
         return view('kalibrasi.print-label', compact('equipment'));
     }
 
-    public function reportMasterlist($id)
+    public function reportMasterlist($id, Request $request)
     {
         $result = Result::with(['masterList'])->where('id_num', $id)->orderByDesc('updated_at')->firstOrFail();
         $approved = User::where('approved', true)->first();
         $checked = User::where('checked', true)->first();
 
-        return view('kalibrasi.print-report-masterlist', compact('result'), [
+        $returnUrl = $request->query('return_url');
+
+        return view('kalibrasi.print-report-masterlist', compact('result', 'returnUrl'), [
             'approved' => $approved,
             'checked' => $checked,
         ]);
     }
 
-    public function reportRepair($id)
+    public function reportRepair($id, Request $request)
     {
         $repair = Repair::with(['masterList'])->where('id_num', $id)->firstOrFail();
         $approved = User::where('approved', true)->first();
         $checked = User::where('checked', true)->first();
 
-        return view('kalibrasi.print-report-repair', compact('repair'), [
+        $returnUrl = $request->query('return_url');
+
+        return view('kalibrasi.print-report-repair', compact('repair', 'returnUrl'), [
             'approved' => $approved,
             'checked' => $checked,
         ]);
@@ -50,9 +54,9 @@ class PrintController extends Controller
                 'is_checked' => 'nullable|boolean',
             ]);
 
-            if ($request->input('is_approved'))
+            if ($request->has('is_approved'))
                 $result->is_approved = $request->input('is_approved');
-            if ($request->input('is_checked'))
+            if ($request->has('is_checked'))
                 $result->is_checked = $request->input('is_checked');
             $result->save();
 

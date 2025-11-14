@@ -295,19 +295,19 @@
 
             previewCheckboxContainer.innerHTML = `
     ${isApprovedUser ? `
-                                        <div style="margin-bottom:5px;">
-                                            <input type="checkbox" id="preview-approved-checkbox" style="margin-right: 5px;"
-                                                ${isAlreadyApproved ? 'checked' : ''}>
-                                            <label for="preview-approved-checkbox" style="color: #333; font-size: 14px;">Has Approved?</label>
-                                        </div>
-                                        ` : ''}
+                                                                    <div style="margin-bottom:5px;">
+                                                                        <input type="checkbox" id="preview-approved-checkbox" style="margin-right: 5px;"
+                                                                            ${isAlreadyApproved ? 'checked' : ''}>
+                                                                        <label for="preview-approved-checkbox" style="color: #333; font-size: 14px;">Has Approved?</label>
+                                                                    </div>
+                                                                    ` : ''}
     ${isCheckedUser ? `
-                                        <div>
-                                            <input type="checkbox" id="preview-checked-checkbox" style="margin-right: 5px;"
-                                                ${isAlreadyChecked ? 'checked' : ''}>
-                                            <label for="preview-checked-checkbox" style="color: #333; font-size: 14px;">Has Checked?</label>
-                                        </div>
-                                        ` : ''}
+                                                                    <div>
+                                                                        <input type="checkbox" id="preview-checked-checkbox" style="margin-right: 5px;"
+                                                                            ${isAlreadyChecked ? 'checked' : ''}>
+                                                                        <label for="preview-checked-checkbox" style="color: #333; font-size: 14px;">Has Checked?</label>
+                                                                    </div>
+                                                                    ` : ''}
     `;
             document.body.appendChild(previewCheckboxContainer);
 
@@ -399,7 +399,7 @@
             printButton.addEventListener('click', function() {
                 window.print();
                 setTimeout(() => {
-                    window.location.href = "{{ route('kalibrasi.report.menu') }}";
+                    window.location.href = "{!! $returnUrl ?? route('kalibrasi.report.menu') !!}";
                 }, 1000);
             });
             document.body.appendChild(printButton);
@@ -421,7 +421,7 @@
 
             backButton.addEventListener('click', function() {
                 setTimeout(() => {
-                    window.location.href = "{{ route('kalibrasi.report.menu') }}";
+                    window.location.href = "{!! $returnUrl ?? route('kalibrasi.report.menu') !!}";
                 }, 1000);
             });
             document.body.appendChild(backButton);
