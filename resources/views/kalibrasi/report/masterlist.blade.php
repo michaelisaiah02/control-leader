@@ -78,7 +78,7 @@
                                     {{-- Last Result --}}
                                     @if ($item->latestResult && $item->latestResult->judgement)
                                         <a class="btn btn-sm btn-primary"
-                                            href="{{ route('kalibrasi.print.report.masterlist', $item->id_num) }}">
+                                            href="{{ route('kalibrasi.print.report.masterlist', $item->id_num) }}{!! '?return_url=' . urlencode(url()->full()) !!}">
                                             {{ $item->latestResult->judgement }}
                                         </a>
                                     @else

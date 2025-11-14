@@ -25,7 +25,7 @@
                         @foreach ($repairs as $repair)
                             <tr class="text-center">
                                 <td><a class="btn btn-primary btn-select-id"
-                                        href="{{ route('kalibrasi.print.report.repair', ['id' => $repair->id_num]) }}">{{ $loop->iteration }}</a>
+                                        href="{{ route('kalibrasi.print.report.repair', $repair->id_num) }}{!! '?return_url=' . urlencode(url()->full()) !!}">{{ $loop->iteration }}</a>
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($repair->problem_date)->format('d-m-Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($repair->repair_date)->format('d-m-Y') }}</td>

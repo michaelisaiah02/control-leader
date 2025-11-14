@@ -31,6 +31,8 @@ class ReportController extends Controller
         $cal = $request->input('calibration_type');
         $typeId = $request->input('type_id');
         $judg = $request->input('judgement');
+        $approved = $request->input('is_approved');
+        $checked = $request->input('is_checked');
 
         // Jika tombol Masterlist diklik
         if ($request->has('master_lists')) {
@@ -59,6 +61,18 @@ class ReportController extends Controller
             if ($judg) {
                 $query->whereHas('latestResult', function ($q) use ($judg) {
                     $q->where('judgement', $judg);
+                });
+            }
+
+            if ($approved !== null) {
+                $query->whereHas('latestResult', function ($q) use ($approved) {
+                    $q->where('is_approved', $approved);
+                });
+            }
+
+            if ($checked !== null) {
+                $query->whereHas('latestResult', function ($q) use ($checked) {
+                    $q->where('is_checked', $checked);
                 });
             }
 

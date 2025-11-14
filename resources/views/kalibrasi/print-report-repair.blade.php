@@ -152,7 +152,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             let route = document.referrer || "{{ route('kalibrasi.report.menu') }}";
             if (route === "{{ url('/kalibrasi/report/search') }}") {
-                route = "{{ route('kalibrasi.report.menu') }}"
+                route = "{!! $returnUrl ?? route('kalibrasi.report.menu') !!}";
+
             }
             const printButton = document.createElement('button');
             printButton.textContent = 'Print';
@@ -193,7 +194,7 @@
 
             backButton.addEventListener('click', function() {
                 setTimeout(() => {
-                    window.location.href = "{{ route('kalibrasi.report.menu') }}";
+                    window.location.href = "{!! $returnUrl ?? route('kalibrasi.report.menu') !!}";
                 }, 1000);
             });
 
