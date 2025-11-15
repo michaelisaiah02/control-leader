@@ -185,13 +185,18 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
 
 // Reports (Sementara)
 Route::controller(App\Http\Controllers\ControlLeader\ReportController::class)->group(function () {
-    Route::get("/reports/daily", 'daily');
-    Route::get("/reports/monthly", 'monthly');
-    Route::get("/reports/leader-score", 'leaderScore');
-    Route::get("/reports/leader-consistency", 'leaderConsistency');
+    Route::get("/reports", 'index')->name('control.reports.index');
+    Route::get("/reports/daily", 'daily')->name('control.reports.daily');
+    Route::get("/reports/monthly", 'monthly')->name('control.reports.monthly');
+    Route::get("/reports/leader-score", 'leaderScore')->name('control.reports.leaderScore');
+    Route::get("/reports/leader-consistency", 'leaderConsistency')->name('control.reports.leaderConsistency');
     // API
     Route::get("api/reports/daily", 'apiDaily');
     Route::get("api/reports/monthly", 'apiMonthly');
     Route::get("api/reports/leader-score", 'apiLeaderScore');
     Route::get("api/reports/leader-consistency", 'apiLeaderConsistency');
+});
+
+Route::controller(App\Http\Controllers\ProblemListController::class)->group(function() {
+    Route::get('/list-problem', 'index')->name("control.listProblem.index");
 });
