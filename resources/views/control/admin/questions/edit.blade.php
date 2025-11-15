@@ -20,7 +20,7 @@
 @endsection
 
 @section('content')
-    <form method="POST" action="{{ route('control.question.update', $question->id) }}" class="px-5">
+    <form method="POST" action="{{ route('control.admin.question.update', $question->id) }}" class="px-5">
         @csrf
         @method('PUT')
         <!-- Header -->
