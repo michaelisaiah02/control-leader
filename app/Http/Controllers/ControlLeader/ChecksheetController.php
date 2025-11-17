@@ -177,7 +177,7 @@ class ChecksheetController extends Controller
         if (!$u)
             return '';
         $code = $u->employeeID ?: ($u->role === 'leader' ? 'LDR' . $u->id : 'OP' . $u->id);
-        return $code . ' - ' . $u->name;
+        return $code;
     }
 
     public function store(Request $req)
