@@ -1,42 +1,43 @@
-<div class="table-responsive">
-    <table class="mt-1 mb-0 table table-sm table-striped table-bordered" id="sortableTable">
-        <thead class="table-primary text-center">
-            <tr>
-                <th scope="col">No</th>
-                <th scope="col">Pertanyaan</th>
-                <th scope="col">Type</th>
-                <th scope="col">Action</th>
-            </tr>
-        </thead>
-        <tbody id="sortableBody">
-            @forelse($questions as $question)
+<div id="questionTableWrapper">
+    <div class="table-responsive">
+        <table class="mt-1 mb-0 table table-sm table-striped table-bordered" id="sortableTable">
+            <thead class="table-primary text-center">
+                <tr>
+                    <th scope="col">No</th>
+                    <th scope="col">Pertanyaan</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody id="sortableBody">
+                @forelse($questions as $question)
                 <tr data-id="{{ $question->id }}">
-                    <!-- <td scope="col" class="handle cursor-grab">{{ $question->display_order }}</td> -->
-                    <td scope="col" class="handle cursor-grab text-center">
-                        {{ ($questions->currentPage() - 1) * $questions->perPage() + $loop->iteration }}</td>
+                    <td scope="col" class="handle cursor-grab text-center">{{ $question->display_order }}</td>
+                    <!-- <td scope="col" class="handle cursor-grab text-center">
+                        {{ ($questions->currentPage() - 1) * $questions->perPage() + $loop->iteration }}</td> -->
                     <td>{{ $question->question_text }}</td>
                     <td>
                         @switch($question->package)
                             @case('awal_shift')
                                 Awal Shift
                             @break
-
+    
                             @case('saat_bekerja')
                                 Saat Bekerja
                             @break
-
+    
                             @case('setelah_istirahat')
                                 Setelah Istirahat
                             @break
-
+    
                             @case('akhir_shift')
                                 Akhir Shift
                             @break
-
+    
                             @case('leader')
                                 Leader
                             @break
-
+    
                             @default
                                 Tidak Teridenfikasi
                             @break
@@ -61,6 +62,7 @@
             </tbody>
         </table>
     </div>
-    <div class="mt-3">
+    <div id="paginationWrapper" class="mt-3">
         {{ $questions->links() }}
     </div>
+</div>

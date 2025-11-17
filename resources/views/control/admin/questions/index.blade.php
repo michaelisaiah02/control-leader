@@ -54,19 +54,15 @@
             const filterPackage = document.querySelector('#filterPackage');
 
             function loadQuestions(url) {
-                fetch(url, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
+                fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
                     .then(res => res.json())
                     .then(data => {
-                        tableContainer.innerHTML = data.html;
+                        document.querySelector('#questionTableWrapper').outerHTML = data.html;
                         attachPaginationEvents();
-                        initSortable(); // re-init setelah update table
-                    })
-                    .catch(err => console.error(err));
+                        initSortable();
+                    });
             }
+
 
             // Filter: Type Pertanyaan
             filterPackage.addEventListener('change', () => {
