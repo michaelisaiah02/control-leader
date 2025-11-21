@@ -2,7 +2,23 @@
 
 @push('subtitle')
     <p class="fs-2 w-75 p-0 my-auto sub-judul border border-white rounded-2 text-uppercase">
-        List Leader Performance Problem <!--  Text Dinamis lewat URL, untuk sementara Statis dulu -->
+        @switch($type)
+            @case('leader-performance')
+                List Leader Performance Problem
+                @break
+            @case('leader-consistency')
+                List Leader Consistency Problem
+                @break
+            @case('supervisor-performance')
+                List Supervisor Performance Problem
+                @break
+            @case('supervisor-consistency')
+                List Supervisor Consistency Problem
+                @break
+            @default
+                Tidak Vaild.
+                @break
+        @endswitch
     </p>
 @endpush
 
@@ -19,31 +35,27 @@
         </select>
     </form>
 
-    <div class="table-responsive">
-        <table class="mt-1 mb-0 table table-sm table-striped table-bordered" id="sortableTable">
-            <thead class="table-primary text-center">
-                <tr>
-                    <th scope="col">Tanggal</th>
-                    <th scope="col">Leader</th>
-                    <th scope="col">Operator</th>
-                    <th scope="col">Problem</th>
-                    <th scope="col">Countermeasure</th>
-                    <th scope="col">Due Date</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan="8">Tidak ada data.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    @switch($type)
+        @case('leader-performance')
+            @include('control.problem_list.table._leader-performance')
+            @break
+        @case('leader-consistency')
+            @include('control.problem_list.table._leader-consistency')
+            @break
+        @case('supervisor-performance')
+            @include('control.problem_list.table._supervisor-performance')
+            @break
+        @case('supervisor-consistency')
+            @include('control.problem_list.table._supervisor-consistency')
+            @break
+        @default
+            <div></div>
+            @break
+    @endswitch
 
     <div class="py-1 d-flex justify-content-between">
         <div>
-            <a href="#" class="btn btn-primary text-white py-2 px-4">Back</a>
+            <a href="{{ route('control.listProblem.index') }}" class="btn btn-primary text-white py-2 px-4">Back</a>
         </div>
     </div>
 </div>

@@ -11,14 +11,14 @@
     <div class="d-flex flex-column gap-5 justify-content-center align-items-center">
         <div class="d-flex justify-content-between gap-5 align-items-center">
             <div class="my-2 col-12 col-md-12 d-flex gap-5 justify-content-center align-items-center">
-                <a href="" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-4 align-content-center rounded-4 position-relative text-uppercase">
+                <a href="{{ route('control.listProblem.list', 'leader-performance') }}" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-4 align-content-center rounded-4 position-relative text-uppercase">
                     List Leader Performance Problem
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                         99+
                         <span class="visually-hidden">unread messages</span>
                     </span>
                 </a>
-                <a href="" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-4 align-content-center rounded-4 position-relative text-uppercase">
+                <a href="{{ route('control.listProblem.list', 'leader-consistency') }}" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-4 align-content-center rounded-4 position-relative text-uppercase">
                     List Leader Consistency Problem
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                         99+
@@ -29,14 +29,14 @@
         </div>
         <div class="d-flex justify-content-between gap-5 align-items-center">
             <div class="my-2 col-12 col-md-12 d-flex gap-5 justify-content-center align-items-center">
-                <a href="" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-4 align-content-center rounded-4 position-relative text-uppercase">
+                <a href="{{ route('control.listProblem.list', 'supervisor-performance') }}" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-4 align-content-center rounded-4 position-relative text-uppercase">
                     List Supervisor Performance Problem
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                         99+
                         <span class="visually-hidden">unread messages</span>
                     </span>
                 </a>
-                <a href="" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-4 align-content-center rounded-4 position-relative text-uppercase">
+                <a href="{{ route('control.listProblem.list', 'supervisor-consistency') }}" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-4 align-content-center rounded-4 position-relative text-uppercase">
                     List Supervisor Consistency Problem
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                         99+
