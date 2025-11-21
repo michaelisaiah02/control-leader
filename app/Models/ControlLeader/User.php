@@ -59,18 +59,38 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'employeeID',
+        'department_id',
+        'division_id',
         'password',
         'role',
+        'superior_id',
+        'can_login',
+        'is_active',
     ];
 
     protected $hidden = [
         'password',
     ];
 
+    public function superior(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'superior_id', 'employeeID');
+    }
+
+    public function inferiors(): HasMany
+    {
+        return $this->hasMany(User::class, 'superior_id', 'employeeID');
+    }
+
     // User ini milik satu departemen
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    public function division(): BelongsTo
+    {
+        return $this->belongsTo(Division::class, 'division_id');
     }
 
     // User ini (sebagai scheduler) membuat banyak jadwal

@@ -51,8 +51,40 @@
             </a>
             <div class="row text-center justify-content-center @if (request()->is('login')) text-light @else text-bg-primary @endif"
                 id="title-section">
-                <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
-                    @yield('title', $pageTitle)</p>
+                @if (request()->is('login'))
+                    <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
+                        @yield('title', $pageTitle)</p>
+                @else
+                    @switch($pageTitle)
+                        @case('Control Leader')
+                            <div class="row justify-content-md-end align-self-center mx-0 px-0">
+                                <div class="col-10 mx-0 px-0">
+                                    <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
+                                        @yield('title', $pageTitle)
+                                    </p>
+                                </div>
+                                <div
+                                    class="col-2 text-center border border-1 p-0 mt-2 mb-0 h-50 text-uppercase justify-content-center">
+                                    <div class="fs-6 fw-semibold row-cols-auto m-0">
+                                        {{ \Illuminate\Support\Str::limit(auth()->guard('web_control_leader')->user()->name, 10, '') }}
+                                    </div>
+                                    <div class="fs-6 row-cols-auto my-0 mx-auto text-center w-100">
+                                        {{ auth()->guard('web_control_leader')->user()->role }}
+                                    </div>
+                                </div>
+                            </div>
+                        @break
+
+                        @case('Kalibrasi')
+                            <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
+                                @yield('title', $pageTitle)</p>
+                        @break
+
+                        @default
+                            <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
+                                @yield('title', $pageTitle)</p>
+                    @endswitch
+                @endif
                 <p class="align-self-center company-name p-0 m-0">PT. CATURINDO AGUNGJAYA RUBBER</p>
                 @stack('subtitle')
             </div>

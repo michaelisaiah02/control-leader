@@ -13,8 +13,10 @@ class ScheduleController extends Controller
 {
     public function index()
     {
-        $authUser = User::find(auth()->guard('web_control_leader')->id());
-
+        // Kalau input supervisor true, redirect langsung ke jadwal supervisor yang login
+        if (request()->has('supervisor') && request('supervisor') == true) {
+            return redirect()->route('control.schedule.edit', ['id' => SchedulePlan::where('scheduler_id', auth()->guard('web_control_leader')->user()->id)->latest()->first()->id]);
+        }
         // Validasi role supervisor
         // if ($authUser->role !== 'supervisor') {
         //     abort(403, 'Unauthorized access. Only supervisors can access this page.');
@@ -34,10 +36,7 @@ class ScheduleController extends Controller
         // Data untuk dropdown filter
         $users = User::whereIn('role', ['leader'])->orderBy('name')->get();
 
-        // Tambahkan user yang sedang login sebagai data pertama
-        $users = $users->reject(fn($u) => $u->id === $authUser->id)->prepend($authUser);
-
-        return view('control.schedule.index', compact('plans', 'users'));
+        return view('control.schedule.schedule_leader', compact('plans', 'users'));
     }
     public function edit($id)
     {

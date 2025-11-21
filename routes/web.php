@@ -6,6 +6,7 @@ use App\Http\Controllers\ControlLeader\Admin\QuestionController;
 use App\Http\Controllers\ControlLeader\ScheduleDetailController;
 use App\Http\Controllers\ControlLeader\ScheduleController;
 use App\Http\Controllers\ControlLeader\Admin\UserController as UserControlLeaderController;
+use App\Http\Controllers\ControlLeader\OperatorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Kalibrasi\Admin\EquipmentController;
 use App\Http\Controllers\Kalibrasi\Admin\MasterListController;
@@ -140,6 +141,15 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
         Route::post('/schedule/{id}/add-user', [ScheduleController::class, 'addUser'])->name('schedule.addUser');
         Route::delete('/schedule/{id}/remove-user/{userId}', [ScheduleController::class, 'removeUser'])->name('schedule.removeUser');
 
+        // Operator data view
+        Route::prefix('operator')->as('operator.')->controller(OperatorController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/store', 'store')->name('store');
+            Route::post('/update-operator/{id}', 'update')->name('update');
+            Route::delete('/delete-operator/{id}', 'destroy');
+            Route::get('/search', 'search')->name('search');
+        });
+
         Route::middleware(CheckRoleIsAdmin::class)->group(function () {
             // ------------------------
             // QUESTIONS CRUD
@@ -156,6 +166,7 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
                 Route::post('/update-user/{id}', 'update')->name('update');
                 Route::delete('/delete-user/{id}', 'destroy');
                 Route::get('/search', 'search')->name('search');
+                Route::get('/get-superiors', 'getSuperiors')->name('getSuperiors');
             });
         });
 
@@ -182,4 +193,3 @@ Route::middleware(CheckAppAuthentication::class)->group(function () {
             ->name('api.schedules.options'); // ?type=leader_checks_operator&date=YYYY-MM-DD&shift=1
     });
 });
-
