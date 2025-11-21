@@ -1,24 +1,17 @@
 @extends('layouts.app')
 
+@php
+    $map = [
+        'leader-performance'      => 'edit leader performance problem',
+        'leader-consistency'      => 'edit leader consistency problem',
+        'supervisor-performance'  => 'edit supervisor performance problem',
+        'supervisor-consistency'  => 'edit supervisor consistency problem',
+    ];
+@endphp
+
 @push('subtitle')
     <p class="fs-2 w-75 p-0 my-auto sub-judul border border-white rounded-2 text-uppercase">
-        @switch($type)
-            @case('leader-performance')
-                edit leader performance problem
-                @break
-            @case('leader-consistency')
-                edit leader consistency problem
-                @break
-            @case('supervisor-performance')
-                edit supervisor performance problem
-                @break
-            @case('supervisor-consistency')
-                edit supervisor consistency problem
-                @break
-            @default
-                tidak vaild.
-                @break
-        @endswitch
+        {{ $map[$type] ?? 'tidak vaild' }}
     </p>
 @endpush
 
@@ -30,16 +23,16 @@
             <!-- Read-Only -->
             @switch($type)
                 @case('leader-performance')
-                    @include('control.problem_list.form.performance')
+                    @include('control.problem_list.form._performance')
                     @break
                 @case('leader-consistency')
-                    @include('control.problem_list.form.consistency')
+                    @include('control.problem_list.form._consistency')
                     @break
                 @case('supervisor-performance')
-                    @include('control.problem_list.form.performance')
+                    @include('control.problem_list.form._performance')
                     @break
                 @case('supervisor-consistency')
-                    @include('control.problem_list.form.consistency')
+                    @include('control.problem_list.form._consistency')
                     @break
                 @default
                     <div></div>
