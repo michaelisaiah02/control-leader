@@ -14,6 +14,11 @@ class ReportController extends Controller
         return view("control.reports.index");
     }
 
+    public function form($type)
+    {
+        return view("control.reports.form", compact(['type']));
+    }
+
     public function monthly()
     {
         return view('control.reports.monthly');
