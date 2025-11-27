@@ -13,9 +13,9 @@
                 <div class="input-group">
                     <span class="input-group-text bg-secondary-subtle fw-bold" id="basic-addon1">Leader</span>
                     <select name="leader" id="leader" class="form-select bg-warning-subtle" onchange="">
-                        <option value="" disabled selected>Pilih Leader</option>
+                        <option value="" selected>Semua Operator</option>
                         @foreach ($leaders as $leader)
-                            <option value="{{ $leader->id }}"
+                            <option value="{{ $leader->employeeID }}"
                                 data-department="{{ $leader->department->department_name }}">{{ $leader->name }}
                                 ({{ $leader->employeeID }})
                             </option>
@@ -40,7 +40,8 @@
         </div>
 
         <div class="table-responsive text-nowrap mb-3">
-            <table class="table table-striped m-0 table-sm align-middle" id="operator-table">
+            <table class="table table-striped m-0 table-sm align-middle" id="operator-table"
+                style="max-height: 280px; overflow-y: auto;">
                 <thead class="table-primary">
                     <tr class="text-center">
                         <th>No</th>
@@ -104,6 +105,18 @@
                         </select>
                         <div class="invalid-feedback">Bagian harus dipilih</div>
                     </div>
+                    <div class="mb-3">
+                        <label for="leader" class="form-label">Leader</label>
+                        <select class="form-select" id="leaderModal" name="superior_id" required>
+                            <option value="" disabled selected>Pilih Leader</option>
+                            @foreach ($leaders as $leader)
+                                <option value="{{ $leader->employeeID }}">{{ $leader->name }}
+                                    ({{ $leader->employeeID }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="invalid-feedback">Leader harus dipilih</div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -138,7 +151,8 @@
 
 @section('scripts')
     <script type="module">
-        function fetchOperators(keyword = '', page = 1, leader = '') {
+        function fetchOperators(keyword = '', leader = '') {
+            console.log(leader);
             const DEPARTMENT = $('#leader option:selected').data('department') || '-';
             $('#loading').show();
             $.ajax({
@@ -146,10 +160,11 @@
                 type: 'GET',
                 data: {
                     keyword: keyword,
-                    page: page,
                     leader: leader
                 },
                 success: function(response) {
+                    console.log(response.leader);
+                    console.log(response.users);
                     $('#operator-table-body').html(response.html);
                     $('#pagination-links').html(response.pagination);
                     $('html, body').animate({
@@ -182,6 +197,7 @@
                 $('#name').val($(this).data('name'));
                 $('#employeeID').val($(this).data('employeeid'));
                 $('#division').val($(this).data('division'));
+                $('#leaderModal').val($(this).data('leader'));
                 $('#operatorModalLabel').text('EDIT DATA OPERATOR');
                 $('#operatorForm').attr('action', `{{ url('control/operator/update-operator') }}/${id}`);
                 new bootstrap.Modal(document.getElementById('operatorModal')).show();
@@ -209,24 +225,16 @@
             $('#search-operator').on('keyup', function() {
                 clearTimeout(debounceTimer);
                 const keyword = $(this).val();
+                const leader = $('#leader').val();
                 debounceTimer = setTimeout(() => {
-                    fetchOperators(keyword);
+                    fetchOperators(keyword, leader);
                 }, 400);
             });
 
-            // AJAX pagination
-            $(document).on('click', '#pagination-links .pagination a', function(e) {
-                e.preventDefault();
-                const page = $(this).attr('href').split('page=')[1];
+            $('#leader').on('change', function() {
                 const keyword = $('#search-operator').val();
-                fetchOperators(keyword, page);
-            });
-
-
-            $('#filter-role').on('change', function() {
-                const keyword = $('#search-operator').val();
-                const role = $(this).val();
-                fetchOperators(keyword, 1, role); // reset ke halaman 1
+                const leader = $(this).val();
+                fetchOperators(keyword, leader);
             });
 
             // Initial fetch

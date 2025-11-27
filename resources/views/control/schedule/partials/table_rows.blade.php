@@ -7,7 +7,7 @@
         <td>
             <button class="btn btn-sm btn-primary btn-edit-operator" data-id="{{ $operator->id }}"
                 data-name="{{ $operator->name }}" data-employeeid="{{ $operator->employeeID }}"
-                data-division="{{ $operator->division->id }}">
+                data-division="{{ $operator->division->id }}" data-leader="{{ $operator->superior_id }}">
                 Edit
             </button>
             <button class="btn btn-sm btn-danger btn-delete-operator" data-id="{{ $operator->id }}"

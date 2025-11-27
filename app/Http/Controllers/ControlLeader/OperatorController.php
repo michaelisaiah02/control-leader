@@ -14,7 +14,7 @@ class OperatorController extends Controller
 {
     public function index()
     {
-        $users = User::where('role', 'operator')->paginate(5);
+        $users = User::where('role', 'operator')->with('division')->get();
         $leaders = User::where('role', 'leader')->where('superior_id', auth()->guard('web_control_leader')->user()->employeeID)->get();
         $divisions = Division::all();
         return view('control.schedule.operator', compact('users', 'divisions', 'leaders'), [
@@ -75,21 +75,31 @@ class OperatorController extends Controller
     public function search(Request $request)
     {
         $keyword = $request->query('keyword');
-        $leader = $request->query('leader');
+        $leaderInput = $request->query('leader');
 
-        $query = User::query()
-            ->when($keyword, function ($q) use ($keyword) {
-                $q->where(function ($query) use ($keyword) {
-                    $query->where('name', 'like', "%{$keyword}%")
+        $leaderIds = collect($leaderInput === null ? [] : (array) $leaderInput)
+            ->flatMap(fn($value) => is_array($value) ? $value : explode(',', (string) $value))
+            ->map(fn($value) => trim((string) $value))
+            ->filter()
+            ->values();
+
+        $users = User::query()
+            ->where('role', 'operator')
+            ->when($keyword, function ($query, $keyword) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('name', 'like', "%{$keyword}%")
                         ->orWhere('employeeID', 'like', "%{$keyword}%");
                 });
-            });
-
-        $users = $query->where('role', 'like', 'operator')->where('superior_id', $request)->with('division')->orderBy('created_at', 'desc')->paginate(5);
+            })
+            ->when($leaderIds->isNotEmpty(), function ($query) use ($leaderIds) {
+                $query->whereIn('superior_id', $leaderIds->all());
+            })
+            ->with('division')
+            ->orderBy('employeeID', 'asc')
+            ->get();
 
         return response()->json([
-            'html' => view('control.schedule.partials.table_rows', compact('users'))->render(),
-            'pagination' => view('control.schedule.partials.pagination', compact('users'))->render(),
+            'html' => view('control.schedule.partials.table_rows', compact('users'))->render()
         ]);
     }
 }

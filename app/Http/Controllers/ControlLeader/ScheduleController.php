@@ -11,33 +11,54 @@ use App\Models\ControlLeader\ScheduleDetail;
 
 class ScheduleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Kalau input supervisor true, redirect langsung ke jadwal supervisor yang login
-        if (request()->has('supervisor') && request('supervisor') == true) {
-            return redirect()->route('control.schedule.edit', ['id' => SchedulePlan::where('scheduler_id', auth()->guard('web_control_leader')->user()->id)->latest()->first()->id]);
+        $authUser = auth()->guard('web_control_leader')->user();
+
+        // Kalo user pilih month → gunakan itu
+        if ($request->has('month')) {
+
+            $year = intval(substr($request->month, 0, 4));
+            $month = intval(substr($request->month, 5, 2));
+
+            // Cari plan sesuai bulan
+            $plan = SchedulePlan::where('scheduler_id', $authUser->employeeID)
+                ->where('year', $year)
+                ->where('month', $month)
+                ->first();
+
+            // Kalau belum ada → buat baru
+            if (!$plan) {
+                $plan = SchedulePlan::create([
+                    'scheduler_id' => $authUser->employeeID,
+                    'year' => $year,
+                    'month' => $month,
+                ]);
+            }
+
+            return redirect()->route('control.schedule.edit', $plan->id);
         }
-        // Validasi role supervisor
-        // if ($authUser->role !== 'supervisor') {
-        //     abort(403, 'Unauthorized access. Only supervisors can access this page.');
-        // }
 
-        $query = SchedulePlan::withCount('details')
-            ->orderBy('year', 'desc')
-            ->orderBy('month', 'desc');
+        // Default: bulan sekarang
+        $year = now()->year;
+        $month = now()->month;
 
-        // Filter berdasarkan scheduler_id jika ada input
-        if (request()->has('scheduler_id') && request('scheduler_id')) {
-            $query->where('scheduler_id', request('scheduler_id'));
+        $plan = SchedulePlan::where('scheduler_id', $authUser->id)
+            ->where('year', $year)
+            ->where('month', $month)
+            ->first();
+
+        if (!$plan) {
+            $plan = SchedulePlan::create([
+                'scheduler_id' => $authUser->employeeID,
+                'year' => $year,
+                'month' => $month,
+            ]);
         }
 
-        $plans = $query->get();
-
-        // Data untuk dropdown filter
-        $users = User::whereIn('role', ['leader'])->orderBy('name')->get();
-
-        return view('control.schedule.schedule_leader', compact('plans', 'users'));
+        return redirect()->route('control.schedule.edit', $plan->id);
     }
+
     public function edit($id)
     {
         $plan = SchedulePlan::with(['details'])->findOrFail($id);
@@ -54,23 +75,32 @@ class ScheduleController extends Controller
         $authUser = auth()->guard('web_control_leader')->user();
         $targetRole = $authUser->role === 'leader' ? 'operator' : 'leader';
 
-        $availableUsers = User::where('role', $targetRole)->orderBy('name')->get();
+        $availableUsers = User::where('role', $targetRole)
+            ->orderBy('name')
+            ->get();
 
-        $targets = $plan->details
-            ->groupBy('target_user_id')
-            ->map(function ($details) {
-                $user = $details->first()->targetUser;
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'division' => $details->first()->division,
-                    'dates' => $details->mapWithKeys(fn($d) => [$d->scheduled_date => $d->shift])->toArray(),
-                ];
-            });
+        // group schedule by user
+        $detailGroups = $plan->details
+            ->groupBy('target_user_id');
+
+        // convert ke targets final
+        $targets = $availableUsers->map(function ($user) use ($detailGroups) {
+
+            $details = $detailGroups[$user->employeeID] ?? collect([]);
+
+            return [
+                'id'    => $user->employeeID,
+                'name'  => $user->name,
+                'division' => optional($details->first())->division ?? null,
+                'dates' => $details->mapWithKeys(function ($d) {
+                    return [$d->scheduled_date => $d->shift];
+                })->toArray(),
+            ];
+        });
 
         $divisionOptions = Division::orderBy('division_name')->get();
 
-        return view('control.schedule.edit', compact(
+        return view('control.schedule.schedule_supervisor', compact(
             'plan',
             'targets',
             'daysInMonth',
@@ -82,104 +112,142 @@ class ScheduleController extends Controller
         ));
     }
 
-    public function store(Request $request)
-    {
-        // dd($request->all());
-        $request->validate([
-            'month' => 'required|date_format:Y-m',
-            'employeeID' => 'required|exists:users,employeeID',
-        ]);
-
-        $month = date('m', strtotime($request->input('month')));
-        $year = date('Y', strtotime($request->input('month')));
-
-        $exists = SchedulePlan::where('scheduler_id', $request->input('employeeID'))
-            ->where('month', $month)
-            ->where('year', $year)
-            ->exists();
-
-        if ($exists) {
-            return back()->with('error', 'Rencana untuk user dan bulan tersebut sudah ada!');
-        }
-
-        $plan = SchedulePlan::create([
-            'month' => $month,
-            'year' => $year,
-            'scheduler_id' => $request->input('employeeID'),
-        ]);
-
-        return redirect()->route('control.schedule.index', $plan->id)
-            ->with('success', 'Rencana jadwal baru berhasil dibuat.');
-    }
-
-    public function updateCell(Request $request, $id)
+    public function updateCellLeader(Request $request, $id)
     {
         $plan = SchedulePlan::findOrFail($id);
-        $userId = $request->input('user_id');
-        $date = $request->input('date');
-        $shift = $request->input('shift');
-        $division = $request->input('division');
 
-        // cari record lama kalau ada berarti update record tersebut
+        $validator = \Validator::make($request->all(), [
+            'user_id'  => 'required|exists:mysql_control_leader.users,employeeID',
+            'date'     => 'required|date_format:Y-m-d',
+            'shift'    => 'nullable|in:1,2,3,L'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        $data = $validator->validated();
+
+        $employeeID = $data['user_id'];   // ini employeeID
+        $date       = $data['date'];
+        $shift      = $data['shift'];
+
         $existSchedule = ScheduleDetail::where('schedule_plan_id', $plan->id)
-            ->where('target_user_id', $userId)
-            ->where('scheduled_date', $date)->first();
+            ->where('target_user_id', $employeeID)   // pakai employeeID
+            ->where('scheduled_date', $date)
+            ->first();
 
-        // Hapus kalau shift dikosongkan
-        if (empty($shift)) {
+        if ($shift === null || $shift === '') {
             if ($existSchedule) {
                 $existSchedule->delete();
             }
         } else {
             if ($existSchedule) {
                 $existSchedule->update([
-                    'division' => $division,
-                    'shift' => (int) $shift,
+                    'shift'    => $shift,
                 ]);
             } else {
                 ScheduleDetail::create([
                     'schedule_plan_id' => $plan->id,
-                    'target_user_id' => $userId,
-                    'division' => $division,
-                    'shift' => (int) $shift,
-                    'scheduled_date' => $date,
+                    'target_user_id'   => $employeeID, // FK ke employeeID
+                    'scheduled_date'   => $date,
+                    'shift'            => $shift,
                 ]);
             }
         }
 
-        return response()->json(['success' => true, 'schedule_plan_id' => $plan->id, 'user_id' => $userId, 'date' => $date, 'shift' => $shift, 'division' => $division]);
+        return response()->json(['success' => true]);
+    }
+
+    public function updateCellOperator(Request $request, $id)
+    {
+        $plan = SchedulePlan::findOrFail($id);
+
+        $validator = \Validator::make($request->all(), [
+            'user_id'  => 'required|exists:mysql_control_leader.users,employeeID',
+            'date'     => 'required|date_format:Y-m-d',
+            'shift'    => 'nullable|in:1,2,3,L',
+            'division' => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        $data = $validator->validated();
+
+        $employeeID = $data['user_id'];   // ini employeeID
+        $date       = $data['date'];
+        $shift      = $data['shift'];
+        $division   = $data['division'] ?? null;
+
+        $existSchedule = ScheduleDetail::where('schedule_plan_id', $plan->id)
+            ->where('target_user_id', $employeeID)   // pakai employeeID
+            ->where('scheduled_date', $date)
+            ->first();
+
+        if ($shift === null || $shift === '') {
+            if ($existSchedule) {
+                $existSchedule->delete();
+            }
+        } else {
+            if ($existSchedule) {
+                $existSchedule->update([
+                    'shift'    => $shift,
+                    'division' => $division,
+                ]);
+            } else {
+                ScheduleDetail::create([
+                    'schedule_plan_id' => $plan->id,
+                    'target_user_id'   => $employeeID, // FK ke employeeID
+                    'scheduled_date'   => $date,
+                    'shift'            => $shift,
+                    'division'         => $division,
+                ]);
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateDivision(Request $request, $id)
+    {
+        $plan = SchedulePlan::findOrFail($id);
+
+        $data = $request->validate([
+            'user_id'  => 'required|exists:users,employeeID',
+            'division' => 'required|string|max:100',
+        ]);
+
+        $employeeID = $data['user_id'];
+
+        ScheduleDetail::where('schedule_plan_id', $plan->id)
+            ->where('target_user_id', $employeeID)
+            ->update(['division' => $data['division']]);
+
+        return response()->json(['success' => true]);
     }
 
     public function addUser(Request $request, $id)
     {
         $plan = SchedulePlan::findOrFail($id);
 
-        $exists = ScheduleDetail::where('schedule_plan_id', $plan->id)
-            ->where('target_user_id', $request->user_id)
-            ->exists();
-
-        if ($exists) {
-            return response()->json(['success' => false, 'message' => 'User sudah ada di jadwal']);
-        }
-
-        ScheduleDetail::create([
-            'schedule_plan_id' => $plan->id,
-            'target_user_id' => $request->user_id,
-            'division' => $request->division,
-            'shift' => null,
-            'scheduled_date' => sprintf('%04d-%02d-01', $plan->year, $plan->month), // placeholder
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,employeeID',
+            'division' => 'nullable|string'
         ]);
 
-        return response()->json(['success' => true]);
-    }
-
-    public function removeUser($id, $userId)
-    {
-        $plan = SchedulePlan::findOrFail($id);
-        ScheduleDetail::where('schedule_plan_id', $plan->id)
-            ->where('target_user_id', $userId)
-            ->delete();
-
-        return response()->json(['success' => true]);
+        // Tidak menambah schedule_detail dulu
+        // Cukup return nilai user_id agar row bisa aktif
+        return response()->json([
+            'success' => true,
+            'user_id' => $validated['user_id']
+        ]);
     }
 }
