@@ -188,7 +188,8 @@ Route::controller(App\Http\Controllers\ControlLeader\ReportController::class)->g
     Route::get("/reports", 'index')->name('control.reports.index');
     Route::get("/report/{type}", 'form')->name('control.reports.form');
     Route::get("/reports/daily", 'daily')->name('control.reports.daily');
-    Route::get("/reports/monthly", 'monthly')->name('control.reports.monthly');
+    Route::get("/reports/{type}/monthly", 'monthly')->name('control.reports.monthly');
+    Route::get("/reports/{type}/score", 'score')->name('control.reports.score');
     Route::get("/reports/leader-score", 'leaderScore')->name('control.reports.leaderScore');
     Route::get("/reports/leader-consistency", 'leaderConsistency')->name('control.reports.leaderConsistency');
     // API
@@ -198,7 +199,7 @@ Route::controller(App\Http\Controllers\ControlLeader\ReportController::class)->g
     Route::get("api/reports/leader-consistency", 'apiLeaderConsistency');
 });
 
-Route::controller(App\Http\Controllers\ProblemListController::class)->group(function() {
+Route::controller(App\Http\Controllers\ProblemListController::class)->group(function () {
     Route::get('/list-problem', 'index')->name("control.listProblem.index");
     Route::get('/list-problem/{type}', 'list')->name("control.listProblem.list");
     // Route::get('/list-problem/{type}/{id}', 'edit')->name("control.listProblem.edit");
