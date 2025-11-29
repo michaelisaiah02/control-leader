@@ -26,7 +26,8 @@ return new class extends Migration {
             // Kolom untuk 4 jawaban Bagian A yang tetap
             $table->integer('shift', false, true)
                 ->comment('Shift: 1, 2, 3');
-            $table->foreignId('target')->constrained('users')->cascadeOnDelete();
+            $table->string('target');
+            $table->foreign('target')->references('employeeID')->on('users')->cascadeOnDelete();
             $table->string('division');
             $table->string('attendance');
             $table->string('condition')->nullable();
