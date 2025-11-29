@@ -170,9 +170,9 @@ class ChecksheetController extends Controller
         ]);
     }
 
-    private function userLabel(int $uid): string
+    private function userLabel(string $uid): string
     {
-        $u = User::find($uid);
+        $u = User::where('employeeID', $uid)->first();
         if (!$u)
             return '';
         $code = $u->employeeID ?: ($u->role === 'leader' ? 'LDR' . $u->id : 'OP' . $u->id);
@@ -208,7 +208,7 @@ class ChecksheetController extends Controller
         // return response()->json(['success' => true, 'message' => $draft]);
         // --- Parse target pick
         [$detailId, $uidStr, $division] = explode('::', $req->input('part_a.target'));
-        $uid = (int) $uidStr;
+        $uid = $uidStr;
         $scheduledLabel = $this->userLabel($uid);
 
         // --- Ambil division dari schedule_details
@@ -220,7 +220,7 @@ class ChecksheetController extends Controller
 
         // === Case 1: HADIR → simpan satu checksheet (evaluated = scheduled)
         if ($isPresent) {
-            // dd($data);
+            // dd($scheduledLabel);
             $cs = Checksheet::create([
                 'schedule_plan_id' => $data['schedule_plan_id'],
                 'phase' => $phase,
