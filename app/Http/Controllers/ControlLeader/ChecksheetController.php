@@ -40,10 +40,9 @@ class ChecksheetController extends Controller
     {
         $me = auth('web_control_leader')->user();
         $phase = $req->query('type', 'awal_shift');
-
         // Ambil plan paling baru milik scheduler=me untuk direction sesuai role
         $direction = $this->directionFor($me);
-        $plan = SchedulePlan::where('scheduler_id', $me->id)
+        $plan = SchedulePlan::where('scheduler_id', $me->employeeID)
             ->where('type', $direction)
             ->orderByDesc('year')->orderByDesc('month')->first();
 
