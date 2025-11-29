@@ -53,7 +53,7 @@ class MasterListController extends Controller
         $validated = $request->validate([
             'sn_num' => ['required', 'string'],
             'capacity' => ['required', 'string'],
-            'accuracy' => ['required', 'integer', 'min:0'],
+            'accuracy' => ['required', 'numeric', 'min:0.01'],
             'unit_id' => ['required', 'exists:units,id'],
             'brand' => ['required', 'string'],
             'calibration_type' => ['required', 'in:Internal,External'],

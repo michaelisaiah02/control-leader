@@ -1,21 +1,14 @@
 @extends('layouts.app')
 
+@push('subtitle')
+    <p class="fs-2 w-75 p-0 my-auto sub-judul border border-1 border-white rounded-2 text-uppercase">
+        MANAGEMENT USER
+    </p>
+@endpush
+
 @section('content')
     <div class="container mt-3">
-        <div class="row justify-content-md-between justify-content-center align-items-center mb-3">
-            <div class="col-auto">
-                <h3 class="mb-0">Users Management</h3>
-            </div>
-            <div class="col-auto ms-md-auto my-2 my-md-0 d-flex align-items-center">
-                <select class="form-select" id="filter-role">
-                    <option value="">All Roles</option>
-                    <option value="admin">Admin</option>
-                    <option value="leader">Leader</option>
-                    <option value="supervisor">Supervisor</option>
-                    <option value="operator">Operator</option>
-                    <option value="guest">Guest</option>
-                </select>
-            </div>
+        <div class="row justify-content-md-end justify-content-center align-items-center mb-3">
             <div class="col-auto my-2 my-md-0 d-flex align-items-center">
                 <div id="loading-spinner" style="display: none;" class="text-center me-3">
                     <div class="spinner-border text-primary" role="status">
@@ -24,23 +17,18 @@
                 </div>
                 <input type="search" class="form-control" placeholder="Search..." id="search-user" autocomplete="off">
             </div>
-            <div class="col-auto">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal" id="btn-add-user">
-                    Add New User
-                </button>
-            </div>
         </div>
-
-        <div class="table-responsive text-nowrap mb-3">
+        <div class="table-responsive text-nowrap mb-3" style="max-height: 280px; overflow-y: auto;">
             <table class="table table-striped m-0" id="user-table">
-                <thead class="table-primary">
+                <thead class="table-primary sticky-top">
                     <tr class="text-center">
-                        <th>Employee ID</th>
-                        <th>Name</th>
+                        <th>No</th>
+                        <th>ID User</th>
+                        <th>User Name</th>
                         <th>Role</th>
-                        <th>Registered</th>
-                        <th>Approved</th>
-                        <th>Checked</th>
+                        <th>ID Superior</th>
+                        <th>Superior Name</th>
+                        <th>Departement</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -50,12 +38,14 @@
             </table>
         </div>
         <div class="text-center row justify-content-between align-items-start">
-            <div id="pagination-links" class="col-md col align-items-center"
-                data-url="{{ route('control.admin.users.search') }}">
-                {{-- Generate by AJAX --}}
-            </div>
             <div class="col-auto">
                 <a href="{{ route('dashboard') }}" class="btn btn-primary">Back</a>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary btn-lg text-white rounded-pill m-0 py-1" data-bs-toggle="modal"
+                    data-bs-target="#userModal" id="btn-add-user">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -71,44 +61,56 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="user_id" id="user-id">
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
-                        <div class="invalid-feedback">Name is required.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="employeeID" class="form-label">Employee ID</label>
-                        <input type="text" class="form-control" id="employeeID" name="employeeID" minlength="5"
-                            maxlength="5" required>
-                        <div class="invalid-feedback">Employee ID must be 5 characters.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="role" class="form-label">Role</label>
-                        <select class="form-select" id="role" name="role" required>
-                            <option value="" disabled selected>Choose Role</option>
-                            <option value="admin">Admin</option>
-                            <option value="user">User</option>
-                            <option value="guest">Guest</option>
-                        </select>
-                        <div class="invalid-feedback">Role must be selected.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" minlength="6">
-                        <div class="invalid-feedback">Password must be at least 6 characters.</div>
-                    </div>
-                    <div class="col d-flex align-items-center justify-content-around">
-                        <div class="col d-flex align-items-center">
-                            <input type="hidden" name="approved" value="0">
-                            <input class="form-check-input mt-0" type="checkbox" value="1" id="approved"
-                                name="approved">
-                            <label for="approved" class="form-label p-0 m-0 ms-2">Approved</label>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label for="employeeID" class="form-label">ID User</label>
+                            <input type="text" class="form-control" id="employeeID" name="employeeID" minlength="5"
+                                maxlength="5" required>
+                            <div class="invalid-feedback">ID User must be 5 characters.</div>
                         </div>
-                        <div class="col d-flex align-items-center">
-                            <input type="hidden" name="checked" value="0">
-                            <input class="form-check-input mt-0" type="checkbox" value="1" id="checked"
-                                name="checked">
-                            <label for="checked" class="form-label p-0 m-0 ms-2">Checked</label>
+                        <div class="col-6 mb-3">
+                            <label for="role" class="form-label">Role</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="" disabled selected>Choose Role</option>
+                                <option value="management">Management</option>
+                                <option value="ypq">YPQ Team</option>
+                                <option value="admin">Admin</option>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="leader">Leader</option>
+                                <option value="guest">Guest</option>
+                            </select>
+                            <div class="invalid-feedback">Role must be selected.</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label for="name" class="form-label">User Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            <div class="invalid-feedback">Name is required.</div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label for="department" class="form-label">Department</label>
+                            <select class="form-select" id="department" name="department_id">
+                                <option value="" disabled selected>Choose Department</option>
+                                @foreach ($departments as $department)
+                                    <option value="{{ $department->id }}">{{ $department->department_name }}</option>
+                                @endforeach
+                            </select>
+                            <div class="invalid-feedback">Department must be selected.</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" minlength="6">
+                            <div class="invalid-feedback">Password must be at least 6 characters.</div>
+                        </div>
+                        <div class="col-6 mb-3" id="superiorForm">
+                            <label for="superior" class="form-label">Superior</label>
+                            <select class="form-select" id="superior" name="superior_id" required>
+                                <option value="" disabled selected>Choose Superior</option>
+                            </select>
+                            <div class="invalid-feedback">Superior must be selected.</div>
                         </div>
                     </div>
                 </div>
@@ -172,6 +174,36 @@
             });
         }
 
+        function fetchSuperiors() {
+            $.ajax({
+                url: `{{ route('control.admin.users.getSuperiors') }}`,
+                type: 'GET',
+                data: {
+                    role: $('#role').val(),
+                    department_id: $('#department').val()
+                },
+                success: function(response) {
+                    $('#superior').empty().append(
+                        `<option value="" disabled selected>Choose Superior</option>`);
+                    console.log(response[0]);
+                    const superiors = response && Array.isArray(response[0].superiors) ? response[0].superiors :
+                        [];
+                    if (superiors.length === 0) {
+                        $('#superior').append(`<option value="" disabled>No superior available</option>`);
+                        return;
+                    }
+                    superiors.forEach(function(superior) {
+                        $('#superior').append(
+                            `<option value="${superior.id}">${superior.name} (${superior.employeeID})</option>`
+                        );
+                    });
+                },
+                error: function() {
+                    alert('Gagal memuat data atasan.');
+                }
+            });
+        }
+
         $(document).ready(function() {
             // Add User
             $('#btn-add-user').click(function() {
@@ -211,6 +243,24 @@
                 $('#deleteUserName').text(name);
             });
 
+            const $superiorGroup = $('#superiorForm');
+            $superiorGroup.hide();
+
+            function toggleSuperior() {
+                const roleFilled = $('#role').val();
+                const departmentFilled = $('#department').val();
+
+                if (roleFilled && departmentFilled) {
+                    $superiorGroup.show();
+                    fetchSuperiors();
+                } else {
+                    $superiorGroup.hide();
+                    $('#superior').val('');
+                }
+            }
+
+            $('#role, #department').on('change', toggleSuperior);
+
             // Form Validation
             $('.needs-validation').on('submit', function(e) {
                 if (!this.checkValidity()) {
@@ -227,22 +277,6 @@
                 debounceTimer = setTimeout(() => {
                     fetchUsers(keyword);
                 }, 400);
-            });
-
-            // AJAX pagination
-            $(document).on('click', '#pagination-links .pagination a', function(e) {
-                e.preventDefault();
-                const page = $(this).attr('href').split('page=')[1];
-                const keyword = $('#search-user').val();
-                const role = $('#filter-role').val();
-                fetchUsers(keyword, page);
-            });
-
-
-            $('#filter-role').on('change', function() {
-                const keyword = $('#search-user').val();
-                const role = $(this).val();
-                fetchUsers(keyword, 1, role); // reset ke halaman 1
             });
 
             // Initial fetch
