@@ -16,7 +16,7 @@ class ScheduleSeeder extends Seeder
 
         // Ambil semua leader dan supervisor
         $leaders = User::where('role', 'leader')->get();
-        $supervisor = User::where('role', 'supervisor')->orderBy('id')->first();
+        $supervisors = User::where('role', 'supervisor')->get();
 
         if ($leaders->isEmpty() || ! $supervisor) {
             $this->command->warn('⚠️ Tidak menemukan user Leader/Supervisor. Pastikan ControlLeaderUserSeeder jalan.');
@@ -38,14 +38,16 @@ class ScheduleSeeder extends Seeder
             );
         }
 
-        $planSCL = SchedulePlan::firstOrCreate(
-            ['type' => 'supervisor_checks_leader'],
-            [
-                'scheduler_id' => $supervisor->employeeID,
-                'month' => $today->format('m'),
-                'year' => $today->format('Y'),
-            ]
-        );
+        foreach ($supervisors as $supervisor) {
+            $planSCL = SchedulePlan::firstOrCreate(
+                ['type' => 'supervisor_checks_leader'],
+                [
+                    'scheduler_id' => $supervisor->employeeID,
+                    'month' => $today->format('m'),
+                    'year' => $today->format('Y'),
+                ]
+            );
+        }
 
         // ========== Details (hari ini) ==========
         // LCO: evaluator = Leader, target = random operator
