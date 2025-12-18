@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\ControlLeader;
 
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use App\Models\ControlLeader\User;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Hash;
 use App\Models\ControlLeader\Division;
+use App\Models\ControlLeader\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class OperatorController extends Controller
 {
@@ -17,6 +17,7 @@ class OperatorController extends Controller
         $users = User::where('role', 'operator')->with('division')->get();
         $leaders = User::where('role', 'leader')->where('superior_id', auth()->guard('web_control_leader')->user()->employeeID)->get();
         $divisions = Division::all();
+
         return view('control.schedule.operator', compact('users', 'divisions', 'leaders'), [
             'title' => 'DATA OPERATOR',
         ]);
@@ -78,8 +79,8 @@ class OperatorController extends Controller
         $leaderInput = $request->query('leader');
 
         $leaderIds = collect($leaderInput === null ? [] : (array) $leaderInput)
-            ->flatMap(fn($value) => is_array($value) ? $value : explode(',', (string) $value))
-            ->map(fn($value) => trim((string) $value))
+            ->flatMap(fn ($value) => is_array($value) ? $value : explode(',', (string) $value))
+            ->map(fn ($value) => trim((string) $value))
             ->filter()
             ->values();
 
@@ -99,7 +100,7 @@ class OperatorController extends Controller
             ->get();
 
         return response()->json([
-            'html' => view('control.schedule.partials.table_rows', compact('users'))->render()
+            'html' => view('control.schedule.partials.table_rows', compact('users'))->render(),
         ]);
     }
 }

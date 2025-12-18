@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\ControlLeader;
 
-use Illuminate\Http\Request;
-use App\Models\ControlLeader\User;
 use App\Http\Controllers\Controller;
 use App\Models\ControlLeader\Division;
-use App\Models\ControlLeader\SchedulePlan;
 use App\Models\ControlLeader\ScheduleDetail;
+use App\Models\ControlLeader\SchedulePlan;
+use App\Models\ControlLeader\User;
+use Illuminate\Http\Request;
 
 class ScheduleController extends Controller
 {
@@ -28,7 +28,7 @@ class ScheduleController extends Controller
                 ->first();
 
             // Kalau belum ada → buat baru
-            if (!$plan) {
+            if (! $plan) {
                 $plan = SchedulePlan::create([
                     'scheduler_id' => $authUser->employeeID,
                     'year' => $year,
@@ -48,7 +48,7 @@ class ScheduleController extends Controller
             ->where('month', $month)
             ->first();
 
-        if (!$plan) {
+        if (! $plan) {
             $plan = SchedulePlan::create([
                 'scheduler_id' => $authUser->employeeID,
                 'year' => $year,
@@ -89,8 +89,8 @@ class ScheduleController extends Controller
             $details = $detailGroups[$user->employeeID] ?? collect([]);
 
             return [
-                'id'    => $user->employeeID,
-                'name'  => $user->name,
+                'id' => $user->employeeID,
+                'name' => $user->name,
                 'division' => optional($details->first())->division ?? null,
                 'dates' => $details->mapWithKeys(function ($d) {
                     return [$d->scheduled_date => $d->shift];
@@ -117,23 +117,23 @@ class ScheduleController extends Controller
         $plan = SchedulePlan::findOrFail($id);
 
         $validator = \Validator::make($request->all(), [
-            'user_id'  => 'required|exists:mysql_control_leader.users,employeeID',
-            'date'     => 'required|date_format:Y-m-d',
-            'shift'    => 'nullable|in:1,2,3,L'
+            'user_id' => 'required|exists:mysql_control_leader.users,employeeID',
+            'date' => 'required|date_format:Y-m-d',
+            'shift' => 'nullable|in:1,2,3,L',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors'  => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         $data = $validator->validated();
 
         $employeeID = $data['user_id'];   // ini employeeID
-        $date       = $data['date'];
-        $shift      = $data['shift'];
+        $date = $data['date'];
+        $shift = $data['shift'];
 
         $existSchedule = ScheduleDetail::where('schedule_plan_id', $plan->id)
             ->where('target_user_id', $employeeID)   // pakai employeeID
@@ -147,14 +147,14 @@ class ScheduleController extends Controller
         } else {
             if ($existSchedule) {
                 $existSchedule->update([
-                    'shift'    => $shift,
+                    'shift' => $shift,
                 ]);
             } else {
                 ScheduleDetail::create([
                     'schedule_plan_id' => $plan->id,
-                    'target_user_id'   => $employeeID, // FK ke employeeID
-                    'scheduled_date'   => $date,
-                    'shift'            => $shift,
+                    'target_user_id' => $employeeID, // FK ke employeeID
+                    'scheduled_date' => $date,
+                    'shift' => $shift,
                 ]);
             }
         }
@@ -167,25 +167,25 @@ class ScheduleController extends Controller
         $plan = SchedulePlan::findOrFail($id);
 
         $validator = \Validator::make($request->all(), [
-            'user_id'  => 'required|exists:mysql_control_leader.users,employeeID',
-            'date'     => 'required|date_format:Y-m-d',
-            'shift'    => 'nullable|in:1,2,3,L',
-            'division' => 'nullable|string'
+            'user_id' => 'required|exists:mysql_control_leader.users,employeeID',
+            'date' => 'required|date_format:Y-m-d',
+            'shift' => 'nullable|in:1,2,3,L',
+            'division' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors'  => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         $data = $validator->validated();
 
         $employeeID = $data['user_id'];   // ini employeeID
-        $date       = $data['date'];
-        $shift      = $data['shift'];
-        $division   = $data['division'] ?? null;
+        $date = $data['date'];
+        $shift = $data['shift'];
+        $division = $data['division'] ?? null;
 
         $existSchedule = ScheduleDetail::where('schedule_plan_id', $plan->id)
             ->where('target_user_id', $employeeID)   // pakai employeeID
@@ -199,16 +199,16 @@ class ScheduleController extends Controller
         } else {
             if ($existSchedule) {
                 $existSchedule->update([
-                    'shift'    => $shift,
+                    'shift' => $shift,
                     'division' => $division,
                 ]);
             } else {
                 ScheduleDetail::create([
                     'schedule_plan_id' => $plan->id,
-                    'target_user_id'   => $employeeID, // FK ke employeeID
-                    'scheduled_date'   => $date,
-                    'shift'            => $shift,
-                    'division'         => $division,
+                    'target_user_id' => $employeeID, // FK ke employeeID
+                    'scheduled_date' => $date,
+                    'shift' => $shift,
+                    'division' => $division,
                 ]);
             }
         }
@@ -221,7 +221,7 @@ class ScheduleController extends Controller
         $plan = SchedulePlan::findOrFail($id);
 
         $data = $request->validate([
-            'user_id'  => 'required|exists:users,employeeID',
+            'user_id' => 'required|exists:users,employeeID',
             'division' => 'required|string|max:100',
         ]);
 
@@ -240,14 +240,14 @@ class ScheduleController extends Controller
 
         $validated = $request->validate([
             'user_id' => 'required|exists:users,employeeID',
-            'division' => 'nullable|string'
+            'division' => 'nullable|string',
         ]);
 
         // Tidak menambah schedule_detail dulu
         // Cukup return nilai user_id agar row bisa aktif
         return response()->json([
             'success' => true,
-            'user_id' => $validated['user_id']
+            'user_id' => $validated['user_id'],
         ]);
     }
 }

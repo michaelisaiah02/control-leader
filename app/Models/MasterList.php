@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property int $id
@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  * @property-read int|null $results_count
  * @property-read \App\Models\Standard|null $standard
  * @property-read \App\Models\Unit|null $unit
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList query()
@@ -51,7 +52,9 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereTypeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereUnitId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MasterList whereUpdatedAt($value)
+ *
  * @property-read mixed $status
+ *
  * @mixin \Eloquent
  */
 class MasterList extends Model
@@ -110,7 +113,7 @@ class MasterList extends Model
     protected function status(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->calculateStatus(),
+            get: fn () => $this->calculateStatus(),
         );
     }
 
@@ -118,7 +121,7 @@ class MasterList extends Model
     {
         $latestResult = $this->latestResult;
 
-        if (!$latestResult) {
+        if (! $latestResult) {
             return 'NEW';
         }
 
@@ -127,7 +130,7 @@ class MasterList extends Model
             ->orderBy('calibration_date', 'desc')
             ->first();
 
-        if (!$previousResult) {
+        if (! $previousResult) {
             return 'NEW';
         }
 

@@ -25,7 +25,7 @@ class LoginController extends Controller
         $appType = $request->session()->get('login_app_type');
 
         // Jika session-nya pun tidak ada, baru lempar ke welcome
-        if (!$appType || !in_array($appType, ['kalibrasi', 'control_leader'])) {
+        if (! $appType || ! in_array($appType, ['kalibrasi', 'control_leader'])) {
             return redirect()->route('welcome');
         }
 
@@ -69,7 +69,7 @@ class LoginController extends Controller
             // >>> Tambahan: single-device hanya untuk control_leader
             if ($activeApp === 'control_leader') {
                 $user = $guard->user();
-                if (!$user->can_login) {
+                if (! $user->can_login) {
                     $guard->logout();
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
@@ -84,7 +84,7 @@ class LoginController extends Controller
                     && $user->cl_last_ping
                     && now()->diffInMinutes($user->cl_last_ping) < $LOCK_TTL_MIN;
 
-                if (!empty($user->control_session_id) && $user->control_session_id !== $sid && $lockActive) {
+                if (! empty($user->control_session_id) && $user->control_session_id !== $sid && $lockActive) {
                     $guard->logout();
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
@@ -143,7 +143,7 @@ class LoginController extends Controller
 
         if (Auth::guard('web_control_leader')->check()) {
             Auth::guard('web_control_leader')->user()
-                    ?->forceFill(['control_session_id' => null, 'cl_in_progress' => false])
+                ?->forceFill(['control_session_id' => null, 'cl_in_progress' => false])
                 ->save();
         }
 

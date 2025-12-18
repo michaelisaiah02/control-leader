@@ -21,11 +21,11 @@ class QuestionController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'html' => view('control.admin.questions._table', compact(['questions']))->render(),
-                'paginate' => $questions->links()->toHtml()
+                'paginate' => $questions->links()->toHtml(),
             ]);
         }
 
-        return view("control.admin.questions.index", compact(['questions']));
+        return view('control.admin.questions.index', compact(['questions']));
     }
 
     public function create()
@@ -36,6 +36,7 @@ class QuestionController extends Controller
     public function destroy(Question $question)
     {
         $question->delete();
+
         return redirect()->route('control.question.index')->with('success', 'Question deleted.');
     }
 
@@ -46,7 +47,7 @@ class QuestionController extends Controller
             'question_text' => 'required|string',
             'choices' => 'nullable|array',
             'problem_label' => 'nullable|string',
-            'countermeasure_label' => 'nullable|string'
+            'countermeasure_label' => 'nullable|string',
         ]);
 
         $validated['extra_fields'] = $request->countermeasure_label && $request->problem_label ? true : false;
@@ -67,7 +68,7 @@ class QuestionController extends Controller
             'question_text' => 'required|string',
             'choices' => 'nullable|array',
             'problem_label' => 'nullable|string',
-            'countermeasure_label' => 'nullable|string'
+            'countermeasure_label' => 'nullable|string',
         ]);
 
         $validated['extra_fields'] = $request->countermeasure_label && $request->problem_label ? true : false;

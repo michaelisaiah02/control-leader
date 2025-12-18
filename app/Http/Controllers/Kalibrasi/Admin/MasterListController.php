@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Kalibrasi\Admin;
 
-use App\Models\Unit;
-use App\Models\MasterList;
-use Illuminate\Http\Request;
 use App\Exports\MasterExport;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
+use App\Models\MasterList;
+use App\Models\Unit;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class MasterListController extends Controller
@@ -113,6 +113,7 @@ class MasterListController extends Controller
         } elseif ($format === 'pdf') {
             $pdf = Pdf::loadView('pdf.master', ['data' => $data])
                 ->setPaper('a4', 'landscape');
+
             return $pdf->download('master-list.pdf');
         }
 

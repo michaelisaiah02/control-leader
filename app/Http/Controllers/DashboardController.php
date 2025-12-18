@@ -75,7 +75,7 @@ class DashboardController extends Controller
 
                 // Build notification message
                 $baseMessage = sprintf(
-                    "The equipment %s - %s needs to be recalibrated. Last calibrate: %s.",
+                    'The equipment %s - %s needs to be recalibrated. Last calibrate: %s.',
                     $eq->id_num,
                     $eq->sn_num,
                     $lastCalDate->format('d-m-Y')
@@ -86,7 +86,7 @@ class DashboardController extends Controller
                     $warnings[] = $baseMessage;
                 } elseif ($now->gt($dueDate)) {
                     $dangers[] = sprintf(
-                        "%s (should be calibrated before: %s)",
+                        '%s (should be calibrated before: %s)',
                         $baseMessage,
                         $dueDate->format('d-m-Y')
                     );

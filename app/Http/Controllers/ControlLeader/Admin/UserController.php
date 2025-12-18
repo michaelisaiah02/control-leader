@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\ControlLeader\Admin;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use App\Models\ControlLeader\User;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Hash;
 use App\Models\ControlLeader\Department;
+use App\Models\ControlLeader\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -142,7 +142,6 @@ class UserController extends Controller
             ->when($role, function ($q) use ($role) {
                 $q->where('role', $role); // <-- filter role kalau ada
             });
-
 
         $users = $query->orderBy('created_at', 'desc')->get();
 

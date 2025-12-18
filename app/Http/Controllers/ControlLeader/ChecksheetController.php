@@ -47,7 +47,7 @@ class ChecksheetController extends Controller
             ->where('type', $direction)
             ->orderByDesc('year')->orderByDesc('month')->first();
 
-        if (!$plan) {
+        if (! $plan) {
             return back()->with('error', 'Belum ada Schedule Plan untuk Anda.');
         }
 
@@ -55,9 +55,9 @@ class ChecksheetController extends Controller
         if ($direction === 'supervisor_checks_leader') {
             $leaders = User::where('role', 'leader')->where('is_active', true)->orderBy('name')->get();
             $targetLabel = 'ID & Nama Leader';
-            $options = $leaders->map(fn($u) => [
-                'value' => 'U::' . $u->id,
-                'label' => ($u->employeeID ?? "LDR{$u->id}") . ' - ' . $u->name
+            $options = $leaders->map(fn ($u) => [
+                'value' => 'U::'.$u->id,
+                'label' => ($u->employeeID ?? "LDR{$u->id}").' - '.$u->name,
             ])->all();
         } else {
             $scheduleDetails = ScheduleDetail::where('schedule_plan_id', $plan->id)
@@ -66,9 +66,9 @@ class ChecksheetController extends Controller
                 ->get();
 
             $targetLabel = 'ID & Nama Operator';
-            $options = $scheduleDetails->map(fn($detail) => [
+            $options = $scheduleDetails->map(fn ($detail) => [
                 'value' => "{$detail->id}::{$detail->target_user_id}::{$detail->division}",
-                'label' => ($detail->targetUser->employeeID ?: "OP{$detail->target_user_id}") . ' - ' . $detail->targetUser->name
+                'label' => ($detail->targetUser->employeeID ?: "OP{$detail->target_user_id}").' - '.$detail->targetUser->name,
             ])->all();
         }
 
@@ -85,7 +85,7 @@ class ChecksheetController extends Controller
         }
 
         // Buat draft baru jika belum ada
-        if (!$draft) {
+        if (! $draft) {
             $draft = ChecksheetDraft::updateOrCreate([
                 'user_id' => $me->id,
                 'schedule_plan_id' => $plan->id,
@@ -128,7 +128,7 @@ class ChecksheetController extends Controller
             ['user_id' => $me->id, 'schedule_plan_id' => $data['schedule_plan_id'], 'phase' => $data['phase']],
             ['session_id' => session()->getId(), 'is_active' => true, 'last_ping' => now()]
         );
-        if (!$draft->started_at) {
+        if (! $draft->started_at) {
             $draft->started_at = now();
             $draft->save();
         }
@@ -174,9 +174,11 @@ class ChecksheetController extends Controller
     private function userLabel(int $uid): string
     {
         $u = User::find($uid);
-        if (!$u)
+        if (! $u) {
             return '';
-        $code = $u->employeeID ?: ($u->role === 'leader' ? 'LDR' . $u->id : 'OP' . $u->id);
+        }
+        $code = $u->employeeID ?: ($u->role === 'leader' ? 'LDR'.$u->id : 'OP'.$u->id);
+
         return $code;
     }
 
@@ -287,7 +289,7 @@ class ChecksheetController extends Controller
 
         // === Case 2: ABSEN tanpa pengganti → buat satu checksheet (evaluated = scheduled)
         $hasReplacement = isset($data['part_a']['has_replacement']) && $data['part_a']['has_replacement'];
-        if (!$isPresent && !$hasReplacement) {
+        if (! $isPresent && ! $hasReplacement) {
             Checksheet::create([
                 'schedule_plan_id' => $data['schedule_plan_id'],
                 'phase' => $phase,
@@ -305,6 +307,7 @@ class ChecksheetController extends Controller
             if ($draft) {
                 $draft->update(['is_active' => false]);
             }
+
             return response()->json(['success' => true, 'message' => $draft]);
         }
 
@@ -332,7 +335,7 @@ class ChecksheetController extends Controller
         // --- Bangun label evaluated dari pengganti
         //   NB: kalau kamu minta input "ID pengganti", tinggal gabung "ID - Nama".
         $evaluatedLabel = trim(($req->input('part_a.operator_id_pengganti', '') ?: '')
-            . ' - ' . $data['part_a']['nama_pengganti']);
+            .' - '.$data['part_a']['nama_pengganti']);
 
         // === Buat CHILD (replacement, yang akan dipakai untuk jawaban B)
         $child = Checksheet::create([

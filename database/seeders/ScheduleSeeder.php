@@ -18,7 +18,7 @@ class ScheduleSeeder extends Seeder
         $leaders = User::where('role', 'leader')->get();
         $supervisor = User::where('role', 'supervisor')->orderBy('id')->first();
 
-        if ($leaders->isEmpty() || !$supervisor) {
+        if ($leaders->isEmpty() || ! $supervisor) {
             $this->command->warn('⚠️ Tidak menemukan user Leader/Supervisor. Pastikan ControlLeaderUserSeeder jalan.');
 
             return;
@@ -64,7 +64,7 @@ class ScheduleSeeder extends Seeder
                     ],
                     [
                         'division' => 'Finishing',
-                        'shift' => rand(1, 3)
+                        'shift' => rand(1, 3),
                     ]
                 );
             }

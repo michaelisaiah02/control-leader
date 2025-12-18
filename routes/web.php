@@ -1,12 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\ControlLeader\ChecksheetController;
 use App\Http\Controllers\ControlLeader\Admin\QuestionController;
-use App\Http\Controllers\ControlLeader\ScheduleDetailController;
-use App\Http\Controllers\ControlLeader\ScheduleController;
 use App\Http\Controllers\ControlLeader\Admin\UserController as UserControlLeaderController;
+use App\Http\Controllers\ControlLeader\ChecksheetController;
 use App\Http\Controllers\ControlLeader\OperatorController;
+use App\Http\Controllers\ControlLeader\ScheduleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Kalibrasi\Admin\EquipmentController;
 use App\Http\Controllers\Kalibrasi\Admin\MasterListController;
