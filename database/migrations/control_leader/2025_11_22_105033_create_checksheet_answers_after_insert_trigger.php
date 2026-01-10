@@ -22,7 +22,7 @@ return new class extends Migration
                 DECLARE v_leader_name VARCHAR(255);
                 DECLARE v_operator_id CHAR(5);
                 DECLARE v_operator_name VARCHAR(255);
-                
+
                 IF NEW.problem IS NOT NULL AND NEW.problem != '' THEN
                     -- Ambil leader dari schedule plan
                     SELECT u.name INTO v_leader_name
@@ -35,7 +35,7 @@ return new class extends Migration
                     -- Ambil operator yang dinilai
                     SELECT u.employeeID, u.name INTO v_operator_id, v_operator_name
                     FROM checksheets c
-                    JOIN users u ON u.id = c.target
+                    JOIN users u ON u.employeeID = c.target
                     WHERE c.id = NEW.checksheet_id
                     LIMIT 1;
 
