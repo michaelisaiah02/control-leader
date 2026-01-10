@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read int|null $divisions_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
  * @property-read int|null $users_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Department newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Department newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Department query()
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Department whereDepartmentName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Department whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Department whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Department extends ControlLeaderModel

@@ -1,9 +1,18 @@
 @forelse ($users as $user)
     <tr class="text-center">
+        <td>{{ $loop->iteration }}</td>
         <td>{{ $user->employeeID }}</td>
         <td class="text-start">{{ $user->name }}</td>
         <td>
             @switch($user->role)
+                @case('management')
+                    <i class="bi bi-person-badge-fill"></i> Management
+                @break
+
+                @case('ypq')
+                    <i class="bi bi-person-rolodex"></i> YPQ Team
+                @break
+
                 @case('admin')
                     <i class="bi bi-person-gear"></i> Admin
                 @break
@@ -16,27 +25,13 @@
                     <i class="bi bi-person-lines-fill"></i> Leader
                 @break
 
-                @case('operator')
-                    <i class="bi bi-person"></i> Operator
-                @break
-
                 @default
                     <i class="bi bi-person-badge"></i> Guest
             @endswitch
         </td>
-        <td>{{ $user->created_at->format('j F Y H:i') }}</td>
-        <td>
-            @if ($user->approved)
-                <i class="bi bi-check-lg text-success"></i>
-            @else
-            @endif
-        </td>
-        <td>
-            @if ($user->checked)
-                <i class="bi bi-check-lg text-success"></i>
-            @else
-            @endif
-        </td>
+        <td>{{ $user->superior?->employeeID ?? '-' }}</td>
+        <td>{{ $user->superior?->name ?? '-' }}</td>
+        <td>{{ $user->department?->department_name ?? '-' }}</td>
         <td>
             @if (auth()->guard('web_control_leader')->user()->role === 'admin')
                 <button class="btn btn-sm btn-primary btn-edit-user" data-id="{{ $user->id }}"

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\ControlLeader\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ControlLeader\Department;
 use App\Models\ControlLeader\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,9 +13,10 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::paginate(5);
+        $users = User::with('superior')->whereNotIn('role', ['operator'])->get();
+        $departments = Department::all();
 
-        return view('control.admin.users.index', compact('users'), [
+        return view('control.admin.users.index', compact('users', 'departments'), [
             'title' => 'MASTER DATA INPUT - USERS TABLE',
         ]);
     }
@@ -130,7 +132,7 @@ class UserController extends Controller
         $keyword = $request->query('keyword');
         $role = $request->query('role');
 
-        $query = User::query()
+        $query = User::query()->where('role', '!=', 'operator')
             ->when($keyword, function ($q) use ($keyword) {
                 $q->where(function ($query) use ($keyword) {
                     $query->where('name', 'like', "%{$keyword}%")
@@ -141,12 +143,34 @@ class UserController extends Controller
                 $q->where('role', $role); // <-- filter role kalau ada
             });
 
-
-        $users = $query->orderBy('created_at', 'desc')->paginate(5);
+        $users = $query->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'html' => view('control.admin.users.partials.table_rows', compact('users'))->render(),
-            'pagination' => view('control.admin.users.partials.pagination', compact('users'))->render(),
         ]);
+    }
+
+    public function getSuperiors(Request $request)
+    {
+        $role = $request->query('role');
+        $departmentId = $request->query('department_id');
+
+        switch ($role) {
+            case 'leader':
+                $rolesToFetch = ['supervisor'];
+                break;
+            case 'supervisor':
+                $rolesToFetch = ['ypq'];
+                break;
+            case 'ypq':
+                $rolesToFetch = ['management'];
+                break;
+            default:
+                return response()->json([]);
+        }
+
+        $superiors = User::whereIn('role', $rolesToFetch)->where('department_id', '=', $departmentId)->get();
+
+        return response()->json($superiors);
     }
 }

@@ -85,8 +85,11 @@
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" minlength="6">
-                        <div class="invalid-feedback">Password must be at least 6 characters.</div>
+                        <input type="password" class="form-control" id="password" name="password" minlength="8"
+                            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$" required>
+                        <div class="invalid-feedback">
+                            Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.
+                        </div>
                     </div>
                     <div class="col d-flex align-items-center justify-content-around">
                         <div class="col d-flex align-items-center">

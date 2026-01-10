@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Exports;
 
 use Illuminate\Contracts\View\View;
@@ -16,7 +17,7 @@ class MasterExport implements FromView
     public function view(): View
     {
         return view('exports.master', [
-            'data' => $this->data
+            'data' => $this->data,
         ]);
     }
 }

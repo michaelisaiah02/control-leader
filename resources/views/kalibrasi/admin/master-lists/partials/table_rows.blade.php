@@ -29,7 +29,7 @@
         <td>
             <button class="btn btn-primary btn-sm btn-edit-masterlist" data-id="{{ $masterlist->id }}"
                 data-id-num="{{ $masterlist->id_num }}" data-sn-num="{{ $masterlist->sn_num }}"
-                data-id-unit="{{ optional($masterlist->unit)->symbol ?? 'N/A' }}"
+                data-id-unit="{{ optional($masterlist->unit)->id ?? 'N/A' }}"
                 data-capacity="{{ $masterlist->capacity }}" data-accuracy="{{ $masterlist->accuracy }}"
                 data-brand="{{ $masterlist->brand }}" data-calibration-type="{{ $masterlist->calibration_type }}"
                 data-first-used="{{ $masterlist->first_used->format('Y-m-d') }}" data-rank="{{ $masterlist->rank }}"

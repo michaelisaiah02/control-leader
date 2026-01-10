@@ -25,7 +25,12 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'employeeID' => ['required', 'size:5', 'unique:users,employeeID'],
             'role' => ['required', 'in:admin,user,guest'],
-            'password' => ['required', 'string', 'min:6'],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/',
+            ],
             'approved' => ['boolean'],
             'checked' => ['boolean'],
         ]);

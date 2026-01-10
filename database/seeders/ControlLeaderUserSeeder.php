@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class ControlLeaderUserSeeder extends Seeder
 {
@@ -15,10 +15,11 @@ class ControlLeaderUserSeeder extends Seeder
         $conn = 'mysql_control_leader';
 
         // Helper buat bikin ID 5 digit
-        $makeID = fn($n) => str_pad($n, 5, '0', STR_PAD_LEFT);
+        $makeID = fn ($n) => str_pad($n, 5, '0', STR_PAD_LEFT);
 
-        // Ambil daftar department_id yang ada
+        // Ambil daftar department_id dan division_id yang ada
         $departmentIds = DB::connection($conn)->table('departments')->pluck('id')->toArray();
+        $divisionIds = DB::connection($conn)->table('divisions')->pluck('id')->toArray();
 
         if (empty($departmentIds)) {
             throw new \Exception('No departments found. Please run DepartmentSeeder first.');
@@ -29,7 +30,8 @@ class ControlLeaderUserSeeder extends Seeder
                 'employeeID' => $makeID(1),
                 'name' => 'Admin System',
                 'role' => 'admin',
-                'department_id' => $departmentIds[array_rand($departmentIds)],
+                'department_id' => null,
+                'division_id' => null,
                 'can_login' => true,
                 'password' => Hash::make($password),
             ],
@@ -37,7 +39,8 @@ class ControlLeaderUserSeeder extends Seeder
                 'employeeID' => $makeID(2),
                 'name' => 'Guest Viewer',
                 'role' => 'guest',
-                'department_id' => $departmentIds[array_rand($departmentIds)],
+                'department_id' => null,
+                'division_id' => null,
                 'can_login' => true,
                 'password' => Hash::make($password),
             ],
@@ -46,6 +49,7 @@ class ControlLeaderUserSeeder extends Seeder
                 'name' => 'Supervisor Deni',
                 'role' => 'supervisor',
                 'department_id' => $departmentIds[array_rand($departmentIds)],
+                'division_id' => null,
                 'can_login' => true,
                 'password' => Hash::make($password),
             ],
@@ -53,7 +57,9 @@ class ControlLeaderUserSeeder extends Seeder
                 'employeeID' => 24556,
                 'name' => 'Leader Rina',
                 'role' => 'leader',
+                'superior_id' => $makeID(3),
                 'department_id' => $departmentIds[array_rand($departmentIds)],
+                'division_id' => null,
                 'can_login' => true,
                 'password' => Hash::make($password),
             ],
@@ -61,7 +67,9 @@ class ControlLeaderUserSeeder extends Seeder
                 'employeeID' => 12025,
                 'name' => 'Leader Fajar',
                 'role' => 'leader',
+                'superior_id' => $makeID(3),
                 'department_id' => $departmentIds[array_rand($departmentIds)],
+                'division_id' => null,
                 'can_login' => true,
                 'password' => Hash::make($password),
             ],
@@ -71,6 +79,7 @@ class ControlLeaderUserSeeder extends Seeder
                 'name' => 'Operator Budi',
                 'role' => 'operator',
                 'department_id' => null,
+                'division_id' => $divisionIds[array_rand($divisionIds)],
                 'can_login' => false,
                 'password' => Hash::make(Str::random(10)), // dummy
             ],
@@ -79,6 +88,7 @@ class ControlLeaderUserSeeder extends Seeder
                 'name' => 'Operator Siti',
                 'role' => 'operator',
                 'department_id' => null,
+                'division_id' => $divisionIds[array_rand($divisionIds)],
                 'can_login' => false,
                 'password' => Hash::make(Str::random(10)),
             ],
@@ -87,6 +97,7 @@ class ControlLeaderUserSeeder extends Seeder
                 'name' => 'Operator Andi',
                 'role' => 'operator',
                 'department_id' => null,
+                'division_id' => $divisionIds[array_rand($divisionIds)],
                 'can_login' => false,
                 'password' => Hash::make(Str::random(10)),
             ],
@@ -95,6 +106,7 @@ class ControlLeaderUserSeeder extends Seeder
                 'name' => 'Operator Lina',
                 'role' => 'operator',
                 'department_id' => null,
+                'division_id' => $divisionIds[array_rand($divisionIds)],
                 'can_login' => false,
                 'password' => Hash::make(Str::random(10)),
             ],
@@ -103,6 +115,7 @@ class ControlLeaderUserSeeder extends Seeder
                 'name' => 'Operator Rizky',
                 'role' => 'operator',
                 'department_id' => null,
+                'division_id' => $divisionIds[array_rand($divisionIds)],
                 'can_login' => false,
                 'password' => Hash::make(Str::random(10)),
             ],
@@ -113,6 +126,7 @@ class ControlLeaderUserSeeder extends Seeder
                 'name' => $u['name'],
                 'employeeID' => $u['employeeID'],
                 'department_id' => $u['department_id'],
+                'division_id' => $u['division_id'],
                 'password' => $u['password'],
                 'role' => $u['role'],
                 'can_login' => $u['can_login'],

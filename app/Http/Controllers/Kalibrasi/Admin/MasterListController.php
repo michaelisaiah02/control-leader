@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Kalibrasi\Admin;
 
-use App\Models\Unit;
-use App\Models\MasterList;
-use Illuminate\Http\Request;
 use App\Exports\MasterExport;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
+use App\Models\MasterList;
+use App\Models\Unit;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class MasterListController extends Controller
@@ -53,7 +53,7 @@ class MasterListController extends Controller
         $validated = $request->validate([
             'sn_num' => ['required', 'string'],
             'capacity' => ['required', 'string'],
-            'accuracy' => ['required', 'integer', 'min:0'],
+            'accuracy' => ['required', 'numeric', 'min:0.01'],
             'unit_id' => ['required', 'exists:units,id'],
             'brand' => ['required', 'string'],
             'calibration_type' => ['required', 'in:Internal,External'],
@@ -113,6 +113,7 @@ class MasterListController extends Controller
         } elseif ($format === 'pdf') {
             $pdf = Pdf::loadView('pdf.master', ['data' => $data])
                 ->setPaper('a4', 'landscape');
+
             return $pdf->download('master-list.pdf');
         }
 
