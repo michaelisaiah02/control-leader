@@ -14,9 +14,23 @@
             </tr>
         </thead>
         <tbody>
+            @forelse ($Problems as $problem)
+            <tr>
+                <th scope="col">{{ $problem->created_at }}</th>
+                <th scope="col">{{ $problem->leader_name }}</th>
+                <th scope="col">{{ $problem->operator_name }}</th>
+                <th scope="col">{{ $problem->problem }}</th>
+                <th scope="col">{{ $problem->countermeasure}}</th>
+                <th scope="col">Remark</th>
+                <th scope="col">{{ $problem->due_date }}</th>
+                <th scope="col">{{ $problem->status }}</th>
+                <th scope="col">Action</th>
+            </tr>
+            @empty
             <tr>
                 <td colspan="9" class="text-center">Tidak ada data.</td>
             </tr>
+            @endforelse
         </tbody>
     </table>
 </div>

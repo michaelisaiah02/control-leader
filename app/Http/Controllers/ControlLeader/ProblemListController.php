@@ -1,7 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\ControlLeader;
 
+use App\Models\ControlLeader\Problem;
+
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class ProblemListController extends Controller
@@ -13,7 +16,8 @@ class ProblemListController extends Controller
 
     public function list($type)
     {
-        return view('control.problem_list.list', compact(['type']));
+        $Problems = Problem::all();
+        return view('control.problem_list.list', compact(['type', 'Problems']));
     }
 
     public function editTemplate($type)

@@ -2,6 +2,7 @@
 
 namespace App\Models\ControlLeader;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
@@ -73,6 +74,7 @@ class Checksheet extends ControlLeaderModel
     use HasFactory;
 
     protected $table = 'checksheets';
+    protected $appends = ['remark'];
 
     protected $fillable = [
         'schedule_plan_id',
@@ -91,6 +93,31 @@ class Checksheet extends ControlLeaderModel
         'replacement_division',
         'replacement_condition',
     ];
+
+    public function getRemarkAttribute(): string
+    {
+        $createdAt = Carbon::parse($this->created_at);
+        $schedule  = $this->getSchedule();
+
+        if ($createdAt->diffInDays(now()) >= 7) {
+            return 'Miss';
+        }
+
+        if ($createdAt->gt($schedule)) {
+            return 'Late';
+        }
+
+        if ($createdAt->lt($schedule) && auth()->guard('web_control_leader')->user()->role === 'supervisor') {
+            return 'Advanced';
+        }
+
+        return "On Time";
+    }
+
+    private function getSchedule(): Carbon
+    {
+        return Carbon::parse($this->created_at->format('Y-m-d'));
+    }
 
     public function answers()
     {
