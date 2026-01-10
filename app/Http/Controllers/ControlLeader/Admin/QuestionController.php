@@ -16,12 +16,12 @@ class QuestionController extends Controller
             $query->where('package', $request->package);
         }
 
-        $questions = $query->orderBy('display_order')->paginate(5);
+        $query->orderBy('display_order');
+        $questions = $query->paginate(5);
 
         if ($request->ajax()) {
             return response()->json([
-                'html' => view('control.admin.questions._table', compact(['questions']))->render(),
-                'paginate' => $questions->links()->toHtml(),
+                'html' => view('control.admin.questions._table', compact(['questions']))->render()
             ]);
         }
 

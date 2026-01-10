@@ -91,9 +91,19 @@ class Question extends ControlLeaderModel
 
     protected static function booted()
     {
+
+        // Saat CREATE
         static::creating(function ($question) {
-            $lastOrder = self::where('package', $question->package)->max('display_order');
-            $question->display_order = $lastOrder ? $lastOrder + 1 : 1;
+            $max = self::where('package', $question->package)->max('display_order') ?? 0;
+            $question->display_order = $max + 1;
+        });
+
+        // Saat UPDATE → hanya jika package berubah
+        static::updating(function ($question) {
+            if ($question->isDirty('package')) {
+                $max = self::where('package', $question->package)->max('display_order') ?? 0;
+                $question->display_order = $max + 1;
+            }
         });
     }
 }

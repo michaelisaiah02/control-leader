@@ -42,23 +42,13 @@
 
                 {{-- Tombol Report --}}
                 <div class="row justify-content-center g-5">
-                    <div class="col-12 col-md-2">
-                        <button class="btn btn-primary btn-lg w-100 h-100 py-3 fs-3 align-content-center report">REPORT</button>
+                    <div class="col-12 col-md-4">
+                        <a href="{{ route('control.reports.index') }}" class="btn btn-primary btn-lg w-100 h-100 py-3 fs-3 rounded-4 align-content-center report">REPORT</a>
                     </div>
-                    <div class="col-12 col-md-3">
-                        <a href="#"
+                    <div class="col-12 col-md-4">
+                        <a href="{{ route('control.listProblem.index') }}"
                             class="btn btn-primary btn-lg w-100 h-100 py-3 fs-4 align-content-center rounded-4 position-relative">
-                            PERFORMANCE PROBLEM
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                99+
-                                <span class="visually-hidden">unread messages</span>
-                            </span>
-                        </a>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <a href="#"
-                            class="btn btn-primary btn-lg w-100 h-100 py-3 fs-4 align-content-center rounded-4 position-relative">
-                            CONSISTENCY PROBLEM
+                            LIST PROBLEM
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                                 99+
                                 <span class="visually-hidden">unread messages</span>
