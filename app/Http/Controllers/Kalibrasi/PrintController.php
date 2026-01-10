@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Kalibrasi;
 
-use App\Models\User;
+use App\Http\Controllers\Controller;
+use App\Models\MasterList;
 use App\Models\Repair;
 use App\Models\Result;
-use App\Models\MasterList;
+use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
 class PrintController extends Controller
 {
@@ -54,10 +54,12 @@ class PrintController extends Controller
                 'is_checked' => 'nullable|boolean',
             ]);
 
-            if ($request->has('is_approved'))
+            if ($request->has('is_approved')) {
                 $result->is_approved = $request->input('is_approved');
-            if ($request->has('is_checked'))
+            }
+            if ($request->has('is_checked')) {
                 $result->is_checked = $request->input('is_checked');
+            }
             $result->save();
 
             return response()->json(['status' => 'success']);

@@ -25,6 +25,7 @@ class CheckRoleIsAdmin
                     return redirect()->back()->with('error', 'Tidak ada izin akses!');
                 }
             }
+
             return redirect()->back()->with('error', 'Khusus admin!');
         }
 

@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\MasterList $masterList
+ *
  * @method static \Database\Factories\RepairFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Repair newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Repair newQuery()
@@ -31,6 +32,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Repair whereProblemDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Repair whereRepairDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Repair whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Repair extends Model

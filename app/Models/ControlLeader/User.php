@@ -23,6 +23,7 @@ use Illuminate\Notifications\Notifiable;
  * @property-read Department|null $department
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
@@ -35,14 +36,29 @@ use Illuminate\Notifications\Notifiable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRole($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
+ *
  * @property int $cl_in_progress
  * @property string|null $cl_last_ping
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereClInProgress($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereClLastPing($value)
+ *
  * @property int $can_login
  * @property int $is_active
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCanLogin($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIsActive($value)
+ *
+ * @property int|null $division_id
+ * @property string|null $superior_id
+ * @property-read \App\Models\ControlLeader\Division|null $division
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $inferiors
+ * @property-read int|null $inferiors_count
+ * @property-read User|null $superior
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereDivisionId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereSuperiorId($value)
+ *
  * @mixin \Eloquent
  */
 class User extends Authenticatable

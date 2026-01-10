@@ -15,6 +15,7 @@ namespace App\Models\ControlLeader;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read Checksheet $checksheet
  * @property-read Question $question
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer query()
@@ -28,16 +29,19 @@ namespace App\Models\ControlLeader;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereQuestionOptionsSnapshot($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereQuestionTextSnapshot($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereUpdatedAt($value)
+ *
  * @property string $question_text
  * @property string $answer_type
  * @property array<array-key, mixed>|null $choices
  * @property string|null $answer_value
  * @property string|null $answer_label
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereAnswerLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereAnswerType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereAnswerValue($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereChoices($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChecksheetAnswer whereQuestionText($value)
+ *
  * @mixin \Eloquent
  */
 class ChecksheetAnswer extends ControlLeaderModel

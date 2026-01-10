@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class ControlLeaderUserSeeder extends Seeder
 {
@@ -15,7 +15,7 @@ class ControlLeaderUserSeeder extends Seeder
         $conn = 'mysql_control_leader';
 
         // Helper buat bikin ID 5 digit
-        $makeID = fn($n) => str_pad($n, 5, '0', STR_PAD_LEFT);
+        $makeID = fn ($n) => str_pad($n, 5, '0', STR_PAD_LEFT);
 
         // Ambil daftar department_id dan division_id yang ada
         $departmentIds = DB::connection($conn)->table('departments')->pluck('id')->toArray();
