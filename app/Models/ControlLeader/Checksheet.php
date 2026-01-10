@@ -1,0 +1,145 @@
+<?php
+
+namespace App\Models\ControlLeader;
+
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+/**
+ * @property int $id
+ * @property int $schedule_detail_id
+ * @property string $type
+ * @property int $stopwatch_duration Durasi dalam detik
+ * @property string|null $part_a_answer_1
+ * @property string|null $part_a_answer_2
+ * @property string|null $part_a_answer_3
+ * @property string|null $part_a_answer_4
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ChecksheetAnswer> $answers
+ * @property-read int|null $answers_count
+ * @property-read ScheduleDetail $scheduleDetail
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet wherePartAAnswer1($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet wherePartAAnswer2($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet wherePartAAnswer3($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet wherePartAAnswer4($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScheduleDetailId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereStopwatchDuration($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereUpdatedAt($value)
+ *
+ * @property int $schedule_plan_id
+ * @property string $phase
+ * @property-read ScheduleDetail|null $detail
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet wherePhase($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereSchedulePlanId($value)
+ *
+ * @property string $shift
+ * @property string $target Format: id - nama
+ * @property string $division
+ * @property string $attendance
+ * @property string|null $condition
+ * @property string|null $replacement_name
+ * @property string|null $replacement_division
+ * @property string|null $replacement_condition
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereAttendance($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereCondition($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereDivision($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereReplacementCondition($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereReplacementDivision($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereReplacementName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereShift($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereTarget($value)
+ *
+ * @property int $replacement false = scheduled/original; true = replacement (yang dinilai)
+ * @property int|null $replacement_of_id ID checksheet parent (scheduled). Null bila scheduled/hadir
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereReplacement($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereReplacementOfId($value)
+ *
+ * @property string|null $scheduled_target Snapshot target yang dijadwalkan: "id - nama"
+ * @property int $has_replacement Apakah ada operator pengganti untuk checksheet ini?
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereHasReplacement($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScheduledTarget($value)
+ *
+ * @property int $leader_id
+ * @property int $schedule_id
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereLeaderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScheduleId($value)
+ *
+ * @property int $score Skor checksheet (jumlah poin benar)
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Checksheet whereScore($value)
+ *
+ * @mixin \Eloquent
+ */
+class Checksheet extends ControlLeaderModel
+{
+    use HasFactory;
+
+    protected $table = 'checksheets';
+    protected $appends = ['remark'];
+
+    protected $fillable = [
+        'schedule_plan_id',
+        'stopwatch_duration',
+        'score',
+        'scheduled_target',
+        'phase',
+        'shift',
+        'target',
+        'division',
+        'attendance',
+        'condition',
+        'replacement',
+        'replacement_of_id',
+        'replacement_name',
+        'replacement_division',
+        'replacement_condition',
+    ];
+
+    public function getRemarkAttribute(): string
+    {
+        $createdAt = Carbon::parse($this->created_at);
+        $schedule  = $this->getSchedule();
+
+        if ($createdAt->diffInDays(now()) >= 7) {
+            return 'Miss';
+        }
+
+        if ($createdAt->gt($schedule)) {
+            return 'Late';
+        }
+
+        if ($createdAt->lt($schedule) && auth()->guard('web_control_leader')->user()->role === 'supervisor') {
+            return 'Advanced';
+        }
+
+        return "On Time";
+    }
+
+    private function getSchedule(): Carbon
+    {
+        return Carbon::parse($this->created_at->format('Y-m-d'));
+    }
+
+    public function answers()
+    {
+        return $this->hasMany(ChecksheetAnswer::class, 'checksheet_id');
+    }
+
+    public function detail()
+    {
+        return $this->belongsTo(ScheduleDetail::class, 'schedule_detail_id');
+    }
+}

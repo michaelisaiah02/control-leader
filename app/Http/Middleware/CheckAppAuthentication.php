@@ -18,9 +18,9 @@ class CheckAppAuthentication
         $guard = $activeApp === 'control_leader' ? 'web_control_leader' : 'web';
 
         // 3. Periksa apakah user sudah login MENGGUNAKAN GUARD YANG BENAR
-        if (!Auth::guard($guard)->check()) {
+        if (! Auth::guard($guard)->check()) {
             // 4. Jika belum, lempar ke halaman login
-            return redirect()->route('login');
+            return redirect()->route('welcome');
         }
 
         // 5. Jika sudah, lanjutkan ke halaman yang dituju (misal: dashboard)

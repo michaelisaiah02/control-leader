@@ -1,0 +1,85 @@
+{
+    "bagianA_1": [
+        {
+            "id": "shift",
+            "label": "Shift",
+            "type": "radio",
+            "name": "shift",
+            "options": [
+                "1",
+                "2",
+                "3"
+            ]
+        },
+        {
+            "id": "operator",
+            "label": "ID & Nama Operator",
+            "type": "select",
+            "name": "operator",
+            "options": [
+                "OP001 - Budi",
+                "OP002 - Andi",
+                "OP003 - Siti"
+            ]
+        },
+        {
+            "id": "bagian",
+            "label": "Bagian",
+            "type": "text",
+            "name": "bagian",
+            "placeholder": "Masukkan Bagian"
+        }
+    ],
+    "bagianA_2": [
+        {
+            "id": "kehadiran",
+            "label": "Kehadiran Operator",
+            "type": "radio",
+            "name": "kehadiran",
+            "options": [
+                "0) Absen",
+                "1) Hadir"
+            ],
+            "conditional": {
+                "0) Absen": [
+                    {
+                        "id": "nama_pengganti",
+                        "label": "Nama Operator Pengganti",
+                        "type": "text",
+                        "placeholder": "Nama Lengkap",
+                        "name": "nama_pengganti"
+                    },
+                    {
+                        "id": "bagian_pengganti",
+                        "label": "Bagian Operator Pengganti",
+                        "type": "text",
+                        "placeholder": "Contoh: Finishing",
+                        "name": "bagian_pengganti"
+                    },
+                    {
+                        "id": "kondisi_pengganti",
+                        "label": "Kondisi Operator Pengganti",
+                        "type": "radio",
+                        "name": "kondisi_pengganti",
+                        "options": [
+                            "Sehat",
+                            "Sakit"
+                        ]
+                    }
+                ],
+                "1) Hadir": [
+                    {
+                        "id": "kondisi",
+                        "label": "Kondisi Operator",
+                        "type": "radio",
+                        "name": "kondisi",
+                        "options": [
+                            "Sehat",
+                            "Sakit"
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

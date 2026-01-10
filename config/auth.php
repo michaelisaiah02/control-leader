@@ -72,7 +72,7 @@ return [
 
         'users_control_leader' => [
             'driver' => 'eloquent',
-            'model' => App\Models\ControlLeaderUser::class,
+            'model' => App\Models\ControlLeader\User::class,
         ],
     ],
 

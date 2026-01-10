@@ -19,6 +19,24 @@
                         <input type="text" aria-label="Location" placeholder="Search" class="form-control w-25"
                             name="location" id="location">
                     </div>
+                    <div class="input-group mb-md-5 mb-1">
+                        @if (auth()->user()->approved == true)
+                            <span class="input-group-text bg-primary text-light">Approved</span>
+                            <select class="form-select" id="is_approved" name="is_approved">
+                                <option value="" selected>All</option>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        @endif
+                        @if (auth()->user()->checked == true)
+                            <span class="input-group-text bg-primary text-light">Checked</span>
+                            <select class="form-select" id="is_checked" name="is_checked">
+                                <option value="" selected>All</option>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        @endif
+                    </div>
                 </div>
                 <div class="col-md">
                     <div class="input-group mb-md-5 mb-1">
@@ -67,6 +85,13 @@
 @endsection
 
 @section('scripts')
+    <script type="module">
+        $(document).ready(function() {
+            $('[name="type_id"]').selectize({
+                theme: 'bootstrap5'
+            })[0].selectize;
+        });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const dateFrom = document.getElementById('date-from');

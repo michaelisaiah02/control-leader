@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Kalibrasi;
 
-use App\Models\Repair;
+use App\Http\Controllers\Controller;
 use App\Models\Equipment;
 use App\Models\MasterList;
+use App\Models\Repair;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
 class ReportController extends Controller
 {
@@ -14,7 +14,7 @@ class ReportController extends Controller
     {
         return view('kalibrasi.report.menu', [
             'title' => 'REPORT',
-            'equipments' => Equipment::all(),
+            'equipments' => Equipment::all()->sortBy('name'),
         ]);
     }
 
@@ -31,6 +31,8 @@ class ReportController extends Controller
         $cal = $request->input('calibration_type');
         $typeId = $request->input('type_id');
         $judg = $request->input('judgement');
+        $approved = $request->input('is_approved');
+        $checked = $request->input('is_checked');
 
         // Jika tombol Masterlist diklik
         if ($request->has('master_lists')) {
@@ -61,6 +63,21 @@ class ReportController extends Controller
                     $q->where('judgement', $judg);
                 });
             }
+
+            if ($approved !== null) {
+                $query->whereHas('latestResult', function ($q) use ($approved) {
+                    $q->where('is_approved', $approved);
+                });
+            }
+
+            if ($checked !== null) {
+                $query->whereHas('latestResult', function ($q) use ($checked) {
+                    $q->where('is_checked', $checked);
+                });
+            }
+
+            // sort id_num ascending
+            $query->orderBy('id_num', 'asc');
 
             $results = $query->paginate(5)->withQueryString();
 

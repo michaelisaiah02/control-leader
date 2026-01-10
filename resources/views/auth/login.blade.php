@@ -18,11 +18,23 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
             margin-bottom: 1rem;
         }
+
+        .control-leader {
+            padding-top: 10vh;
+            ;
+            /* Warna biru untuk control leader */
+        }
+
+        .kalibrasi {
+            padding-top: 25vh;
+            ;
+            /* Warna merah untuk kalibrasi */
+        }
     </style>
 @endsection
 
 @section('content')
-    <div class="container" style="padding-top: 25vh;">
+    <div class="container {{ $appType === 'control_leader' ? 'control-leader' : 'kalibrasi' }}">
         <div class="row justify-content-center">
             <div class="col-auto">
                 <div class="card bg-primary bg-opacity-50 shadow-sm border-0 rounded-4">
@@ -42,14 +54,25 @@
                                     id="password" name="password" required autocomplete="current-password">
                                 <label for="password">Password</label>
                             </div>
-                            <div class="row justify-content-center mx-auto px-2">
-                                @if ($errors->any())
-                                    <div class="alert alert-danger py-2">
-                                        @foreach ($errors->all() as $error)
-                                            {{ $error }}
-                                        @endforeach
+                            @if ($appType === 'control_leader')
+                                <div class="mb-3 mx-auto text-center">
+                                    <label class="form-label text-light fw-bold text-center">Pilih Shift</label>
+                                    <div class="btn-group w-100" role="group" aria-label="Shift selection">
+                                        <input type="radio" class="btn-check" name="shift" id="shift1" value="1"
+                                            checked>
+                                        <label class="btn btn-outline-light" for="shift1">1</label>
+
+                                        <input type="radio" class="btn-check" name="shift" id="shift2"
+                                            value="2">
+                                        <label class="btn btn-outline-light" for="shift2">2</label>
+
+                                        <input type="radio" class="btn-check" name="shift" id="shift3"
+                                            value="3">
+                                        <label class="btn btn-outline-light" for="shift3">3</label>
                                     </div>
-                                @endif
+                                </div>
+                            @endif
+                            <div class="row justify-content-center mx-auto px-2">
                                 <button type="submit"
                                     class="btn btn-primary text-light fw-bold text-center mb-2 mx-auto">Login</button>
                                 <p class="text-center fst-italic text-light small">Jika login gagal, hubungi (IT)</p>
@@ -60,6 +83,7 @@
             </div>
         </div>
     </div>
+    <x-toast />
 @endsection
 
 @section('scripts')

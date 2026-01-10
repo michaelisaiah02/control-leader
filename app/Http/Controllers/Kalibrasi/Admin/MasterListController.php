@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Kalibrasi\Admin;
 
+use App\Exports\MasterExport;
 use App\Http\Controllers\Controller;
 use App\Models\MasterList;
 use App\Models\Unit;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MasterListController extends Controller
 {
@@ -50,7 +53,7 @@ class MasterListController extends Controller
         $validated = $request->validate([
             'sn_num' => ['required', 'string'],
             'capacity' => ['required', 'string'],
-            'accuracy' => ['required', 'integer', 'min:0'],
+            'accuracy' => ['required', 'numeric', 'min:0.01'],
             'unit_id' => ['required', 'exists:units,id'],
             'brand' => ['required', 'string'],
             'calibration_type' => ['required', 'in:Internal,External'],
@@ -91,5 +94,29 @@ class MasterListController extends Controller
             'html' => view('kalibrasi.admin.master-lists.partials.table_rows', compact('masterlists'))->render(),
             'pagination' => view('kalibrasi.admin.master-lists.partials.pagination', compact('masterlists'))->render(),
         ]);
+    }
+
+    public function export(Request $request)
+    {
+        $keyword = $request->keyword;
+        $format = $request->format;
+
+        // ambil data sesuai filter
+        $query = MasterList::query();
+        if ($keyword) {
+            $query->where('name', 'like', "%$keyword%");
+        }
+        $data = $query->get();
+
+        if ($format === 'excel') {
+            return Excel::download(new MasterExport($data), 'master-list.xlsx');
+        } elseif ($format === 'pdf') {
+            $pdf = Pdf::loadView('pdf.master', ['data' => $data])
+                ->setPaper('a4', 'landscape');
+
+            return $pdf->download('master-list.pdf');
+        }
+
+        return back();
     }
 }

@@ -54,7 +54,7 @@ class StandardController extends Controller
         $standard = Standard::findOrFail($id);
 
         $validated = $request->validate([
-            'id_num' => ['required', 'string', 'max:255', 'unique:standards,id_num,' . $standard->id],
+            'id_num' => ['required', 'string', 'max:255', 'unique:standards,id_num,'.$standard->id],
             'param_01' => ['required', 'numeric'],
             'param_02' => ['required', 'numeric'],
             'param_03' => ['required', 'numeric'],
@@ -86,8 +86,7 @@ class StandardController extends Controller
 
         $query = Standard::query()
             ->when($keyword, function ($q) use ($keyword) {
-                $q->where('name', 'like', "%{$keyword}%")
-                    ->orWhere('id', 'like', "%{$keyword}%");
+                $q->where('id_num', 'like', "%{$keyword}%");
             });
 
         $standards = $query->orderBy('created_at', 'desc')->paginate(5);

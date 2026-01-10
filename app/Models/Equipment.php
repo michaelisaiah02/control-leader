@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\MasterList> $masterLists
  * @property-read int|null $master_lists_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Equipment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Equipment newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Equipment query()
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Equipment whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Equipment whereTypeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Equipment whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Equipment extends Model

@@ -56,8 +56,19 @@
                     <img src="{{ asset('icon/input.svg') }}" class="mx-auto mt-1 icon menu-btn" alt="Input"
                         data-target="menu-input" id="img-input">
                     <div class="card-body mx-auto" id="btn-input">
-                        <button class="btn btn-primary py-2 px-5 rounded-4 menu-btn btn1"
-                            data-target="menu-input">INPUT</button>
+                        <button class="btn btn-primary py-2 px-5 rounded-4 menu-btn btn1 position-relative"
+                            data-target="menu-input">INPUT
+                            <a href="{{ route('kalibrasi.input.calibration.data', ['data' => 'warning']) }}"
+                                class="position-absolute top-0 start-0 translate-middle bg-warning border border-light rounded-circle fs-6 text-decoration-none text-primary px-2 {{ $count['warning'] == 0 ? 'd-none' : '' }}">
+                                {{ $count['warning'] }}
+                                <span class="visually-hidden">Warning</span>
+                            </a>
+                            <a href="{{ route('kalibrasi.input.calibration.data', ['data' => 'danger']) }}"
+                                class="position-absolute top-0 start-100 translate-middle bg-danger border border-light rounded-circle fs-6 text-decoration-none text-primary px-2 {{ $count['danger'] == 0 ? 'd-none' : '' }}">
+                                {{ $count['danger'] }}
+                                <span class="visually-hidden">Dangers</span>
+                            </a>
+                        </button>
                     </div>
                     <div class="menu-input menu-section row d-none mx-1 mx-md-0">
                         <a class="btn btn-primary py-2 my-3 rounded-4 btn1"
@@ -140,60 +151,60 @@
                         <div class="input-group input-group-sm mb-3">
                             <div class="form-floating">
                                 <input type="number" class="form-control form-control-sm" id="param-01"
-                                    placeholder="Parameter 1" name="param_01" step="0.01" min="0.01" required>
+                                    placeholder="Parameter 1" name="param_01" step="0.0001" required>
                                 <label for="param-01">Parameter 1</label>
                             </div>
                             <div class="form-floating">
                                 <input type="number" class="form-control form-control-sm" id="param-02"
-                                    placeholder="Parameter 2" name="param_02" step="0.01" min="0.01" required>
+                                    placeholder="Parameter 2" name="param_02" step="0.0001" required>
                                 <label for="param-02">Parameter 2</label>
                             </div>
                         </div>
                         <div class="input-group mb-3">
                             <div class="form-floating">
                                 <input type="number" class="form-control" id="param-03" placeholder="Parameter 3"
-                                    name="param_03" step="0.01" min="0.01" required>
+                                    name="param_03" step="0.0001" required>
                                 <label for="param-03">Parameter 3</label>
                             </div>
                             <div class="form-floating">
                                 <input type="number" class="form-control" id="param-04" placeholder="Parameter 4"
-                                    name="param_04" step="0.01" min="0.01" required>
+                                    name="param_04" step="0.0001" required>
                                 <label for="param-04">Parameter 4</label>
                             </div>
                         </div>
                         <div class="input-group mb-3">
                             <div class="form-floating">
                                 <input type="number" class="form-control" id="param-05" placeholder="Parameter 5"
-                                    name="param_05" step="0.01" min="0.01" required>
+                                    name="param_05" step="0.0001" required>
                                 <label for="param-05">Parameter 5</label>
                             </div>
                             <div class="form-floating">
                                 <input type="number" class="form-control" id="param-06" placeholder="Parameter 6"
-                                    name="param_06" step="0.01" min="0.01" required>
+                                    name="param_06" step="0.0001" required>
                                 <label for="param-06">Parameter 6</label>
                             </div>
                         </div>
                         <div class="input-group mb-3">
                             <div class="form-floating">
                                 <input type="number" class="form-control" id="param-07" placeholder="Parameter 7"
-                                    name="param_07" step="0.01" min="0.01" required>
+                                    name="param_07" step="0.0001" required>
                                 <label for="param-07">Parameter 7</label>
                             </div>
                             <div class="form-floating">
                                 <input type="number" class="form-control" id="param-08" placeholder="Parameter 8"
-                                    name="param_08" step="0.01" min="0.01" required>
+                                    name="param_08" step="0.0001" required>
                                 <label for="param-08">Parameter 8</label>
                             </div>
                         </div>
                         <div class="input-group mb-3">
                             <div class="form-floating">
                                 <input type="number" class="form-control" id="param-09" placeholder="Parameter 9"
-                                    name="param_09" step="0.01" min="0.01" required>
+                                    name="param_09" step="0.0001" required>
                                 <label for="param-09">Parameter 9</label>
                             </div>
                             <div class="form-floating">
                                 <input type="number" class="form-control" id="param-10" placeholder="Parameter 10"
-                                    name="param_10" step="0.01" min="0.01" required>
+                                    name="param_10" step="0.0001" required>
                                 <label for="param-10">Parameter 10</label>
                             </div>
                         </div>
