@@ -37,7 +37,6 @@
         @include('control.admin.questions._table', ['questions' => $questions])
     </div>
 
-
     <div class="py-0 d-flex justify-content-between align-items-center">
         <a href="{{ route('control.admin.question.create') }}"
             class="btn btn-primary btn-lg text-white rounded-circle">&plus;</a>
@@ -50,7 +49,7 @@
 <script src="{{ asset('js/Sortable.min.js') }}"></script>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const tableContainer = document.querySelector('#questionTable');
+        const tableContainer = document.querySelector('#sortableTable');
         const filterForm = document.querySelector('#filterForm');
         const filterPackage = document.querySelector('#filterPackage');
 
@@ -110,7 +109,8 @@
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                             },
                             body: JSON.stringify({
-                                order
+                                order,
+                                package: document.querySelector('#filterPackage').value
                             }),
                         }).then(res => res.json())
                         .then(() => console.log('Urutan berhasil disimpan'))

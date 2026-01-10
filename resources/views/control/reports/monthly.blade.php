@@ -5,46 +5,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   @vite(['resources/css/app.css', 'resources/sass/app.scss', 'resources/js/app.js'])
-  @if (!request()->is('login'))
-  <style>
-    #navbar-kalibrasi {
-      border-bottom-left-radius: 180px;
-      border-bottom-right-radius: 180px;
-    }
-
-    #title-section {
-      height: 10rem
-    }
-  </style>
-  @endif
   <title>Monthly Score Control Member Report</title>
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light text-light @if (request()->is('login')) bg-transparent px-3 @else mx-5 px-5 pb-3 bg-primary @endif"
-    id="navbar-kalibrasi">
-    <div class="container-fluid justify-content-center">
-      <a class="navbar-brand mx-0 mx-md-4" href="/">
+  <div class="w-100">
+    <div class="d-flex w-100 justify-content-between align-items-stretch">
+      <a class="border border-black" href="/">
         <img src="{{ asset('image/logo-pt.png') }}" alt="Logo" class="mt-0 logo">
       </a>
-      <div class="row text-center justify-content-center" id="title-section">
-        <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">CONTROL LEADER</p>
-        <p class="align-self-center company-name p-0 m-0">PT. CATURINDO AGUNGJAYA RUBBER</p>
-        <p id="title" class="fs-2 w-75 p-0 my-auto sub-judul border border-1 border-white rounded-2 text-uppercase">
-          Monthly Score Control Member Report
-        </p>
+      <div class="border border-black w-100 d-flex justify-content-center align-items-center">
+        <p class="text-center" style="text-transform: capitalize; font-size: 2rem">Monthly Consistency {{ $type }} Report</p>
       </div>
-      <a class="navbar-brand mx-0 mx-md-4" href="/">
+      <a class="border border-black" href="/">
         <img src="{{ asset('image/logo-rice.png') }}" alt="Logo" class="mt-0 logo">
       </a>
     </div>
-  </nav>
+  </div>
   <div class="card p-3 shadow-sm">
     <div class="d-flex justify-content-center">
-      <div class="col-md-8 border border-1 border-black">
+      <div class="col-md-8 col-sm-8 border border-1 border-black">
         <canvas id="chart"></canvas>
       </div>
-      <div class="col-md-4 border border-1 border-black">
+      <div class="col-md-4 border border-1 border-black d-flex flex-column justify-content-between">
         <table>
           <tr>
             <th>Periode</th>
@@ -78,7 +61,7 @@
               <td>Disetujui</td>
             </tr>
             <tr>
-              <td></td>
+              <td style="height: 80px;"></td>
             </tr>
             <tr>
               <td>Daniel T</td>
@@ -89,7 +72,7 @@
               <td>Diperiksa</td>
             </tr>
             <tr>
-              <td></td>
+              <td style="height: 80px;"></td>
             </tr>
             <tr>
               <td>Febby</td>
@@ -116,6 +99,16 @@
           </tr>
         </thead>
         <tbody>
+          @forelse ($problems as $problem)
+          <tr>
+            <td class="text-center">{{ $loop->iteration }}</td>
+            <td class="text-center">{{ $problem->created_at }}</td>
+            <td class="text-center">{{ $problem->problem }}</td>
+            <td class="text-center">{{ $problem->countermeasure }}</td>
+            <td class="text-center">{{ $problem->due_date }}</td>
+            <td class="text-center">{{ $problem->status }}</td>
+          </tr>
+          @empty
           <tr>
             <td class="text-center">1</td>
             <td class="text-center">25 Juli 2025</td>
@@ -124,12 +117,13 @@
             <td class="text-center">29 Juli 2025</td>
             <td class="text-center">Close</td>
           </tr>
+          @endforelse
         </tbody>
       </table>
     </div>
 
     <div class="pt-2 pb-5 d-flex gap-3 justify-content-end align-items-center">
-      <a href="#" class="btn btn-primary text-white py-2 px-4">Back</a>
+      <a href="{{ route('control.reports.form', ['type' => $type]) }}" class="btn btn-primary text-white py-2 px-4">Back</a>
       <button onclick="window.print()" class="btn btn-primary py-2 px-4">Print</button>
     </div>
   </div>

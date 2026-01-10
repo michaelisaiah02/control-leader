@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ControlLeader;
 
 use App\Http\Controllers\Controller;
 use App\Models\ControlLeader\Checksheet;
+use App\Models\ControlLeader\Problem;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -14,9 +15,15 @@ class ReportController extends Controller
         return view("control.reports.index");
     }
 
-    public function monthly()
+    public function form($type)
     {
-        return view('control.reports.monthly');
+        return view("control.reports.form", compact(['type']));
+    }
+
+    public function monthly($type)
+    {
+        $problems = Problem::all();
+        return view('control.reports.monthly', compact(['type', 'problems']));
     }
 
     public function daily()

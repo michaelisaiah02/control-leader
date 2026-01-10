@@ -70,4 +70,9 @@ class ChecksheetAnswer extends ControlLeaderModel
     {
         return $this->belongsTo(Question::class, 'question_id');
     }
+
+    public function problem()
+    {
+        return $this->belongsTo(Problem::class, 'checksheet_answer_id');
+    }
 }

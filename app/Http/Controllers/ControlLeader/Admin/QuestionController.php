@@ -16,8 +16,9 @@ class QuestionController extends Controller
             $query->where('package', $request->package);
         }
 
-        $query->orderBy('display_order');
-        $questions = $query->paginate(5);
+        $questions = $query->orderBy('package')
+            ->orderBy('display_order')
+            ->paginate(5);
 
         if ($request->ajax()) {
             return response()->json([
@@ -79,10 +80,13 @@ class QuestionController extends Controller
 
     public function updateOrder(Request $request)
     {
-        $order = $request->input('order'); // array of {id, display_order}
+        $order = $request->input('order');
+        $package = $request->input('package');
 
         foreach ($order as $item) {
-            Question::where('id', $item['id'])->update(['display_order' => $item['display_order']]);
+            Question::where('id', $item['id'])
+                ->where('package', $package)
+                ->update(['display_order' => $item['display_order']]);
         }
 
         return response()->json(['success' => true]);

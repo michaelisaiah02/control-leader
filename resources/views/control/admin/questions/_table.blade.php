@@ -3,6 +3,7 @@
         <thead class="table-primary text-center">
             <tr>
                 <th scope="col">No</th>
+                <th scope="col">Display Order</th>
                 <th scope="col">Pertanyaan</th>
                 <th scope="col">Type</th>
                 <th scope="col">Action</th>
@@ -13,9 +14,9 @@
             <tr data-id="{{ $question->id }}">
                 <!-- <td scope="col" class="handle cursor-grab">{{ $question->display_order }}</td> -->
                 <td scope="col" class="handle cursor-grab text-center">
-                    <!-- {{ ($questions->currentPage() - 1) * $questions->perPage() + $loop->iteration }} -->
-                    {{ $question->display_order }}
+                    {{ ($questions->currentPage() - 1) * $questions->perPage() + $loop->iteration }}
                 </td>
+                <td>{{ $question->display_order }}</td>
                 <td>{{ $question->question_text }}</td>
                 <td>
                     @switch($question->package)
