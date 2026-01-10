@@ -1,7 +1,5 @@
 @extends('layouts.app')
 
-@section('title', $appName)
-
 @section('styles')
     <style>
         body {
@@ -22,28 +20,18 @@
         .control-leader {
             padding-top: 10vh;
             ;
-            /* Warna biru untuk control leader */
-        }
-
-        .kalibrasi {
-            padding-top: 25vh;
-            ;
-            /* Warna merah untuk kalibrasi */
         }
     </style>
 @endsection
 
 @section('content')
-    <div class="container {{ $appType === 'control_leader' ? 'control-leader' : 'kalibrasi' }}">
+    <div class="container control-leader">
         <div class="row justify-content-center">
             <div class="col-auto">
                 <div class="card bg-primary bg-opacity-50 shadow-sm border-0 rounded-4">
                     <div class="card-body p-4">
                         <form action="{{ route('login') }}" method="POST" id="loginForm">
                             @csrf
-
-                            <input type="hidden" name="app" value="{{ $appType ?? '' }}">
-
                             <div class="form-floating mb-3 mx-auto">
                                 <input type="text" class="form-control text-center bg-light" placeholder="Employee ID"
                                     id="employeeID" name="employeeID" value="{{ old('employeeID') }}" required autofocus>
@@ -54,24 +42,20 @@
                                     id="password" name="password" required autocomplete="current-password">
                                 <label for="password">Password</label>
                             </div>
-                            @if ($appType === 'control_leader')
-                                <div class="mb-3 mx-auto text-center">
-                                    <label class="form-label text-light fw-bold text-center">Pilih Shift</label>
-                                    <div class="btn-group w-100" role="group" aria-label="Shift selection">
-                                        <input type="radio" class="btn-check" name="shift" id="shift1" value="1"
-                                            checked>
-                                        <label class="btn btn-outline-light" for="shift1">1</label>
+                            <div class="mb-3 mx-auto text-center">
+                                <label class="form-label text-light fw-bold text-center">Pilih Shift</label>
+                                <div class="btn-group w-100" role="group" aria-label="Shift selection">
+                                    <input type="radio" class="btn-check" name="shift" id="shift1" value="1"
+                                        checked>
+                                    <label class="btn btn-outline-light" for="shift1">1</label>
 
-                                        <input type="radio" class="btn-check" name="shift" id="shift2"
-                                            value="2">
-                                        <label class="btn btn-outline-light" for="shift2">2</label>
+                                    <input type="radio" class="btn-check" name="shift" id="shift2" value="2">
+                                    <label class="btn btn-outline-light" for="shift2">2</label>
 
-                                        <input type="radio" class="btn-check" name="shift" id="shift3"
-                                            value="3">
-                                        <label class="btn btn-outline-light" for="shift3">3</label>
-                                    </div>
+                                    <input type="radio" class="btn-check" name="shift" id="shift3" value="3">
+                                    <label class="btn btn-outline-light" for="shift3">3</label>
                                 </div>
-                            @endif
+                            </div>
                             <div class="row justify-content-center mx-auto px-2">
                                 <button type="submit"
                                     class="btn btn-primary text-light fw-bold text-center mb-2 mx-auto">Login</button>

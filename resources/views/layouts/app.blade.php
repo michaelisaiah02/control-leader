@@ -1,27 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 
-@php
-    // Penjelasan: Logika ini sekarang ada di layout, bukan di controller.
-    // 1. Tentukan judul default.
-    $pageTitle = 'Application';
-
-    // 2. Cek apakah ada sesi 'active_app' setelah login.
-    if (session()->has('active_app')) {
-        // 3. Jika ada, gunakan array map untuk menentukan judulnya.
-        $appMap = [
-            'kalibrasi' => 'Kalibrasi',
-            'control_leader' => 'Control Leader',
-        ];
-        $pageTitle = $appMap[session('active_app')] ?? 'Application';
-    }
-@endphp
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', $pageTitle)</title>
+    <title>Control Leader</title>
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -31,7 +15,7 @@
     @yield('styles')
     @if (!request()->is('login'))
         <style>
-            #navbar-kalibrasi {
+            #navbar-control-leader {
                 border-bottom-left-radius: 180px;
                 border-bottom-right-radius: 180px;
             }
@@ -45,7 +29,7 @@
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-light text-light @if (request()->is('login')) bg-transparent px-3 @else mx-5 px-5 pb-3 bg-primary @endif"
-        id="navbar-kalibrasi">
+        id="navbar-control-leader">
         <div class="container-fluid justify-content-center">
             <a class="navbar-brand mx-0 mx-md-4" href="/">
                 <img src="{{ asset('image/logo-pt.png') }}" alt="Logo" class="mt-0 logo">
@@ -53,38 +37,24 @@
             <div class="row text-center justify-content-center @if (request()->is('login')) text-light @else text-bg-primary @endif"
                 id="title-section">
                 @if (request()->is('login'))
-                    <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
-                        @yield('title', $pageTitle)</p>
+                    <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">Control Leader</p>
                 @else
-                    @switch($pageTitle)
-                        @case('Control Leader')
-                            <div class="row justify-content-md-end align-self-center mx-0 px-0">
-                                <div class="col-10 mx-0 px-0">
-                                    <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
-                                        @yield('title', $pageTitle)
-                                    </p>
-                                </div>
-                                <div
-                                    class="col-2 text-center border border-1 p-0 mt-2 mb-0 h-50 text-uppercase justify-content-center">
-                                    <div class="fs-6 fw-semibold row-cols-auto m-0">
-                                        {{ \Illuminate\Support\Str::limit(auth()->guard('web_control_leader')->user()->name, 10, '') }}
-                                    </div>
-                                    <div class="fs-6 row-cols-auto my-0 mx-auto text-center w-100">
-                                        {{ auth()->guard('web_control_leader')->user()->role }}
-                                    </div>
-                                </div>
+                    <div class="row justify-content-md-end align-self-center mx-0 px-0">
+                        <div class="col-10 mx-0 px-0">
+                            <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
+                                @yield('title', 'Control Leader')
+                            </p>
+                        </div>
+                        <div
+                            class="col-2 text-center border border-1 p-0 mt-2 mb-0 h-50 text-uppercase justify-content-center">
+                            <div class="fs-6 fw-semibold row-cols-auto m-0">
+                                {{ \Illuminate\Support\Str::limit(auth()->user()->name, 10, '') }}
                             </div>
-                        @break
-
-                        @case('Kalibrasi')
-                            <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
-                                @yield('title', $pageTitle)</p>
-                        @break
-
-                        @default
-                            <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
-                                @yield('title', $pageTitle)</p>
-                    @endswitch
+                            <div class="fs-6 row-cols-auto my-0 mx-auto text-center w-100">
+                                {{ auth()->user()->role }}
+                            </div>
+                        </div>
+                    </div>
                 @endif
                 <p class="align-self-center company-name p-0 m-0">PT. CATURINDO AGUNGJAYA RUBBER</p>
                 @stack('subtitle')

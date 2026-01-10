@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ControlLeader\ChecksheetField;
-use App\Models\ControlLeader\Question;
+use App\Models\ChecksheetField;
+use App\Models\Question;
 use Illuminate\Http\Request;
 
 class ChecksheetFormController extends Controller
 {
     public function create()
     {
-        return view('control.admin.checksheet.create');
+        return view('admin.checksheet.create');
     }
 
     public function store(Request $request)
@@ -25,7 +25,7 @@ class ChecksheetFormController extends Controller
     public function edit($id)
     {
         $question = Question::findOrFail($id);
-        return view('control.admin.checksheet.create', compact(['question']));
+        return view('admin.checksheet.create', compact(['question']));
     }
 
     public function update(Request $request, $id)
