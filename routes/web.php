@@ -209,7 +209,7 @@ Route::controller(App\Http\Controllers\ControlLeader\ReportController::class)->g
 Route::controller(App\Http\Controllers\ControlLeader\ProblemListController::class)->group(function () {
     Route::get('/list-problem', 'index')->name("control.listProblem.index");
     Route::get('/list-problem/{type}', 'list')->name("control.listProblem.list");
-    // Route::get('/list-problem/{type}/{id}', 'edit')->name("control.listProblem.edit");
-    Route::put('/list-problem/{type}/{id}', 'update')->name("control.listProblem.update");
+    Route::get('/list-problem/{type}/{id}', 'edit')->name("control.listProblem.edit");
+    Route::put('/list-problem/{type}/{id}/update', 'update')->name("control.listProblem.update");
     Route::get('/list-problem/{type}/edit', 'editTemplate');
 });

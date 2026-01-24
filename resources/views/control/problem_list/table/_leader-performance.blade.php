@@ -9,20 +9,30 @@
                 <th scope="col">Countermeasure</th>
                 <th scope="col">Due Date</th>
                 <th scope="col">Status</th>
+                @if(auth()->guard('web_control_leader')->user()->role === 'leader' || auth()->guard('web_control_leader')->user()->role === 'supervisor')
                 <th scope="col">Action</th>
+                @endif
             </tr>
         </thead>
         <tbody>
             @forelse ($Problems as $problem)
-            <tr>
-                <th scope="col">{{ $problem->created_at }}</th>
+            <tr class="text-center">
+                <th scope="col">{{ $problem->created_at->format("d/m/Y") }}</th>
                 <th scope="col">{{ $problem->leader_name }}</th>
-                <th scope="col">{{ $problem->operator_name }}</th>
+                <th scope="col">{{ $problem->operator_id }} - {{ $problem->operator_name }}</th>
                 <th scope="col">{{ $problem->problem }}</th>
                 <th scope="col">{{ $problem->countermeasure}}</th>
                 <th scope="col">{{ $problem->due_date }}</th>
-                <th scope="col">{{ $problem->status }}</th>
-                <th scope="col">Action</th>
+                <th scope="col" class="capitalize">{{ $problem->status }}</th>
+                @if(auth()->guard('web_control_leader')->user()->role === 'leader' || auth()->guard('web_control_leader')->user()->role === 'supervisor')
+                <th scope="col">
+                    @if ($problem->status != 'close')
+                    <a href="{{ route('control.listProblem.edit', ['type' => 'leader-performance', 'id' => $problem->id]) }}">Edit</a>
+                    @else
+                    -
+                    @endif
+                </th>
+                @endif
             </tr>
             @empty
             <tr>
