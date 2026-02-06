@@ -62,7 +62,7 @@ class ChecksheetController extends Controller
                 ->whereNotNull('target_user_id')
                 ->with('targetUser')
                 ->get();
-
+            dd($scheduleDetails);
             $targetLabel = 'ID & Nama Operator';
             $options = $scheduleDetails->map(fn($detail) => [
                 'value' => "{$detail->id}::{$detail->target_user_id}::{$detail->division}",

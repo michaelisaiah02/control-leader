@@ -70,6 +70,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::connection('mysql_control_leader')->unprepared("DROP TRIGGER IF EXISTS tr_checksheet_answers_after_insert");
+        DB::connection()->unprepared("DROP TRIGGER IF EXISTS tr_checksheet_answers_after_insert");
     }
 };

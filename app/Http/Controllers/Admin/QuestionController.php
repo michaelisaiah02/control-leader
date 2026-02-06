@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\Question;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 
 class QuestionController extends Controller
 {
@@ -18,7 +19,7 @@ class QuestionController extends Controller
 
         $questions = $query->orderBy('package')
             ->orderBy('display_order')
-            ->paginate(5);
+            ->get();
 
         if ($request->ajax()) {
             return response()->json([
@@ -54,7 +55,7 @@ class QuestionController extends Controller
         $validated['extra_fields'] = $request->countermeasure_label && $request->problem_label ? true : false;
         Question::create($validated);
 
-        return redirect()->route('question.index')->with('success', 'Question created successfully!');
+        return redirect()->route('admin.question.index')->with('success', 'Question created successfully!');
     }
 
     public function edit(Question $question)
@@ -75,20 +76,30 @@ class QuestionController extends Controller
         $validated['extra_fields'] = $request->countermeasure_label && $request->problem_label ? true : false;
         $question->update($validated);
 
-        return redirect()->route('question.index')->with('success', 'Question updated successfully!');
+        return redirect()->route('admin.question.index')->with('success', 'Question updated successfully!');
     }
 
     public function updateOrder(Request $request)
     {
+        // Validasi input biar aman
+        $request->validate([
+            'order' => 'required|array',
+            'order.*.id' => 'required|exists:questions,id',
+            'order.*.display_order' => 'required|integer',
+        ]);
+
         $order = $request->input('order');
-        $package = $request->input('package');
 
-        foreach ($order as $item) {
-            Question::where('id', $item['id'])
-                ->where('package', $package)
-                ->update(['display_order' => $item['display_order']]);
-        }
+        // Gunakan transaction biar kalau ada satu error, semua batal (data safety)
+        DB::transaction(function () use ($order) {
+            foreach ($order as $item) {
+                // Update display_order berdasarkan ID saja
+                // Kita tidak perlu filter package di sini karena ID sudah unik
+                Question::where('id', $item['id'])
+                    ->update(['display_order' => $item['display_order']]);
+            }
+        });
 
-        return response()->json(['success' => true]);
+        return response()->json(['status' => 'success', 'message' => 'Urutan berhasil diperbarui']);
     }
 }

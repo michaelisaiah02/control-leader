@@ -11,8 +11,9 @@ class CheckRoleIsAdmin
     public function handle(Request $request, Closure $next): Response
     {
         $role = auth()->user()->role;
+
         // Cek apakah user adalah admin
-        if ($role !== 'admin' || $role !== 'management' || $role !== 'ypq') {
+        if ($role !== 'admin' && $role !== 'management' && $role !== 'ypq') {
 
             return redirect()->back()->with('error', 'Tidak ada izin akses!');
         }

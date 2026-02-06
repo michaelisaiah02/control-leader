@@ -7,21 +7,7 @@ use App\Http\Controllers\ChecksheetController;
 use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Kalibrasi\Admin\EquipmentController;
-use App\Http\Controllers\Kalibrasi\Admin\MasterListController;
-use App\Http\Controllers\Kalibrasi\Admin\StandardController;
-use App\Http\Controllers\Kalibrasi\Admin\UnitController;
-use App\Http\Controllers\Kalibrasi\APIController;
-use App\Http\Controllers\Kalibrasi\Input\CalibrationDataController;
-use App\Http\Controllers\Kalibrasi\Input\NewEquipmentController;
-use App\Http\Controllers\Kalibrasi\Input\RepairDataController;
-use App\Http\Controllers\Kalibrasi\PrintController;
-use App\Http\Controllers\Kalibrasi\ReportController;
-use App\Http\Middleware\CheckAppAuthentication;
-use App\Http\Middleware\CheckIncompleteInput;
-use App\Http\Middleware\CheckLogin;
 use App\Http\Middleware\CheckRoleIsAdmin;
-use App\Http\Middleware\CheckRoleMinUser;
 use App\Http\Middleware\ResumeDraft;
 use App\Http\Middleware\SingleLogin;
 use Illuminate\Support\Facades\Route;
@@ -64,17 +50,24 @@ Route::middleware('auth')->group(function () {
             Route::get('/search', 'search')->name('search');
         });
 
-        Route::middleware(CheckRoleIsAdmin::class)->group(function () {
+        Route::middleware(CheckRoleIsAdmin::class)->prefix('admin')->as('admin.')->group(function () {
             // ------------------------
             // QUESTIONS CRUD
             // ------------------------
-            Route::resource('admin/question', QuestionController::class)->except(['show'])->names('admin.question');
-            Route::post('/admin/question/update-order', [QuestionController::class, 'updateOrder'])->name('admin.question.updateOrder');
+            Route::prefix('question')->as('question.')->controller(QuestionController::class)->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/store', 'store')->name('store');
+                Route::get('/{question}/edit', 'edit')->name('edit');
+                Route::put('/{question}', 'update')->name('update');
+                Route::delete('/{question}', 'destroy')->name('destroy');
+                Route::post('/update-order', [QuestionController::class, 'updateOrder'])->name('updateOrder');
+            });
 
             // =========================
             // USERS CRUD
             // =========================
-            Route::prefix('admin/users')->as('admin.users.')->controller(UserController::class)->group(function () {
+            Route::prefix('users')->as('users.')->controller(UserController::class)->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::post('/store', 'store')->name('store');
                 Route::post('/update-user/{id}', 'update')->name('update');

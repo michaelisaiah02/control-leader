@@ -5,14 +5,14 @@
         <td class="text-start">{{ $operator->name }}</td>
         <td>{{ $operator->division->division_name }}</td>
         <td>
-            <button class="btn btn-sm btn-primary btn-edit-operator" data-id="{{ $operator->id }}"
+            <button class="btn btn-sm btn-outline-primary btn-edit-operator" data-id="{{ $operator->id }}"
                 data-name="{{ $operator->name }}" data-employeeid="{{ $operator->employeeID }}"
                 data-division="{{ $operator->division->id }}" data-leader="{{ $operator->superior_id }}">
-                Edit
+                <i class="bi bi-pencil"></i>
             </button>
-            <button class="btn btn-sm btn-danger btn-delete-operator" data-id="{{ $operator->id }}"
+            <button class="btn btn-sm btn-outline-danger btn-delete-operator" data-id="{{ $operator->id }}"
                 data-name="{{ $operator->name }}" data-bs-toggle="modal" data-bs-target="#deleteOperatorModal">
-                Delete
+                <i class="bi bi-trash"></i>
             </button>
         </td>
     </tr>

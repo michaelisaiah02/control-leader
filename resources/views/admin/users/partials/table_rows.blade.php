@@ -34,15 +34,15 @@
         <td>{{ $user->department?->department_name ?? '-' }}</td>
         <td>
             @if (auth()->user()->role === 'admin')
-                <button class="btn btn-sm btn-primary btn-edit-user" data-id="{{ $user->id }}"
+                <button class="btn btn-sm btn-outline-primary btn-edit-user" data-id="{{ $user->id }}"
                     data-name="{{ $user->name }}" data-employeeid="{{ $user->employeeID }}"
                     data-role="{{ $user->role }}" data-approved="{{ $user->approved }}"
                     data-checked="{{ $user->checked }}">
-                    Edit
+                    <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-danger btn-delete-user" data-id="{{ $user->id }}"
+                <button class="btn btn-sm btn-outline-danger btn-delete-user" data-id="{{ $user->id }}"
                     data-name="{{ $user->name }}" data-bs-toggle="modal" data-bs-target="#deleteUserModal">
-                    Delete
+                    <i class="bi bi-trash"></i>
                 </button>
             @endif
         </td>

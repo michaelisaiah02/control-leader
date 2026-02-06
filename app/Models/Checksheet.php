@@ -44,7 +44,7 @@ class Checksheet extends Model
             return 'Late';
         }
 
-        if ($createdAt->lt($schedule) && auth()->guard('web_control_leader')->user()->role === 'supervisor') {
+        if ($createdAt->lt($schedule) && auth()->user()->role === 'supervisor') {
             return 'Advanced';
         }
 

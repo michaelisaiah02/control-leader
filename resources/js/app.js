@@ -9,3 +9,5 @@ import flatpickr from "flatpickr";
 window.flatpickr = flatpickr;
 import selectize from '@selectize/selectize';
 window.selectize = selectize;
+import "@fontsource-variable/montserrat";
+import 'bootstrap-icons/font/bootstrap-icons.css';
