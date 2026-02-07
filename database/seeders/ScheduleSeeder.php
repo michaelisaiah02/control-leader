@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\ControlLeader\ScheduleDetail;
-use App\Models\ControlLeader\SchedulePlan;
-use App\Models\ControlLeader\User;
+use App\Models\ScheduleDetail;
+use App\Models\SchedulePlan;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
@@ -18,8 +18,8 @@ class ScheduleSeeder extends Seeder
         $leaders = User::where('role', 'leader')->get();
         $supervisors = User::where('role', 'supervisor')->get();
 
-        if ($leaders->isEmpty() || !$supervisors) {
-            $this->command->warn('⚠️ Tidak menemukan user Leader/Supervisor. Pastikan ControlLeaderUserSeeder jalan.');
+        if ($leaders->isEmpty() || $supervisors->isEmpty()) {
+            $this->command->warn('⚠️ Tidak menemukan user Leader/Supervisor. Pastikan UserSeeder jalan.');
 
             return;
         }
@@ -66,7 +66,7 @@ class ScheduleSeeder extends Seeder
                     ],
                     [
                         'division' => 'Finishing',
-                        'shift' => rand(1, 3)
+                        'shift' => rand(1, 3),
                     ]
                 );
             }

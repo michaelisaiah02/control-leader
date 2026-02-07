@@ -2,75 +2,61 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-/**
- * @property int $id
- * @property string $name
- * @property string $employeeID
- * @property string $password
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
- * @property-read int|null $notifications_count
- * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmployeeID($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePassword($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
- * @property string $role
- * @property int $approved
- * @property int $checked
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereApproved($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereChecked($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRole($value)
- * @mixin \Eloquent
- */
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Beri tahu model ini nama tabelnya adalah 'users'.
      */
+    protected $table = 'users';
+
     protected $fillable = [
         'name',
         'employeeID',
+        'department_id',
+        'division_id',
         'password',
         'role',
-        'approved',
-        'checked',
+        'superior_id',
+        'can_login',
+        'is_active',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    public function superior(): BelongsTo
     {
-        return [
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(User::class, 'superior_id', 'employeeID');
+    }
+
+    public function inferiors(): HasMany
+    {
+        return $this->hasMany(User::class, 'superior_id', 'employeeID');
+    }
+
+    // User ini milik satu departemen
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    public function division(): BelongsTo
+    {
+        return $this->belongsTo(Division::class, 'division_id');
+    }
+
+    // User ini (sebagai scheduler) membuat banyak jadwal
+    public function createdSchedules(): HasMany
+    {
+        return $this->hasMany(SchedulePlan::class, 'scheduler_id');
     }
 }

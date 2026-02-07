@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\ControlLeader\ChecksheetDraft;
+use App\Models\ChecksheetDraft;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -10,13 +10,13 @@ class RedirectToActiveDraft
 {
     public function handle(Request $request, Closure $next)
     {
-        $user = auth('web_control_leader')->user();
+        $user = auth()->user();
         if (! $user) {
             return $next($request);
         }
 
         // jangan loop redirect sendiri
-        if ($request->routeIs('control.checksheets.*')) {
+        if ($request->routeIs('checksheets.*')) {
             return $next($request);
         }
 
@@ -27,7 +27,7 @@ class RedirectToActiveDraft
             ->first();
 
         if ($draft) {
-            return redirect()->route('control.checksheets.create', [
+            return redirect()->route('checksheets.create', [
                 'detail' => $draft->schedule_detail_id,
                 'type' => $draft->phase,
             ]);

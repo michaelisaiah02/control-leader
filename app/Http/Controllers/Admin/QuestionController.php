@@ -1,0 +1,105 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Models\Question;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+
+class QuestionController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = Question::query();
+
+        if ($request->has('package') && $request->package != '') {
+            $query->where('package', $request->package);
+        }
+
+        $questions = $query->orderBy('package')
+            ->orderBy('display_order')
+            ->get();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin.questions._table', compact(['questions']))->render()
+            ]);
+        }
+
+        return view('admin.questions.index', compact(['questions']));
+    }
+
+    public function create()
+    {
+        return view('admin.questions.create');
+    }
+
+    public function destroy(Question $question)
+    {
+        $question->delete();
+
+        return redirect()->route('question.index')->with('success', 'Question deleted.');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'package' => 'required|in:awal_shift,saat_bekerja,setelah_istirahat,akhir_shift,leader',
+            'question_text' => 'required|string',
+            'choices' => 'nullable|array',
+            'problem_label' => 'nullable|string',
+            'countermeasure_label' => 'nullable|string',
+        ]);
+
+        $validated['extra_fields'] = $request->countermeasure_label && $request->problem_label ? true : false;
+        Question::create($validated);
+
+        return redirect()->route('admin.question.index')->with('success', 'Question created successfully!');
+    }
+
+    public function edit(Question $question)
+    {
+        return view('admin.questions.edit', compact(['question']));
+    }
+
+    public function update(Request $request, Question $question)
+    {
+        $validated = $request->validate([
+            'package' => 'required|in:awal_shift,saat_bekerja,setelah_istirahat,akhir_shift,leader',
+            'question_text' => 'required|string',
+            'choices' => 'nullable|array',
+            'problem_label' => 'nullable|string',
+            'countermeasure_label' => 'nullable|string',
+        ]);
+
+        $validated['extra_fields'] = $request->countermeasure_label && $request->problem_label ? true : false;
+        $question->update($validated);
+
+        return redirect()->route('admin.question.index')->with('success', 'Question updated successfully!');
+    }
+
+    public function updateOrder(Request $request)
+    {
+        // Validasi input biar aman
+        $request->validate([
+            'order' => 'required|array',
+            'order.*.id' => 'required|exists:questions,id',
+            'order.*.display_order' => 'required|integer',
+        ]);
+
+        $order = $request->input('order');
+
+        // Gunakan transaction biar kalau ada satu error, semua batal (data safety)
+        DB::transaction(function () use ($order) {
+            foreach ($order as $item) {
+                // Update display_order berdasarkan ID saja
+                // Kita tidak perlu filter package di sini karena ID sudah unik
+                Question::where('id', $item['id'])
+                    ->update(['display_order' => $item['display_order']]);
+            }
+        });
+
+        return response()->json(['status' => 'success', 'message' => 'Urutan berhasil diperbarui']);
+    }
+}

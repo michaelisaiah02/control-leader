@@ -2,28 +2,23 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\ControlLeader\ChecksheetDraft;
+use App\Models\ChecksheetDraft;
 use Closure;
 use Illuminate\Http\Request;
 
 class ResumeDraft
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next)
     {
-        $user = auth('web_control_leader')->user();
+        $user = auth()->user();
         if (! $user) {
             return $next($request);
         }
 
         // Hindari loop kalau sudah di route checksheet
         if (
-            $request->routeIs('control.checksheets.*') ||
-            $request->is('control/details/*/checksheets/*')
+            $request->routeIs('checksheets.*') ||
+            $request->is('details/*/checksheets/*')
         ) {
             return $next($request);
         }
@@ -41,7 +36,7 @@ class ResumeDraft
                 'last_ping' => now(),
             ])->save();
 
-            return redirect()->route('control.checksheets.create', [
+            return redirect()->route('checksheets.create', [
                 'detail' => $draft->schedule_detail_id,
                 'type' => $draft->phase,
             ]);

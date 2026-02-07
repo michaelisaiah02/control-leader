@@ -48,7 +48,7 @@ class QuestionSeeder extends Seeder
     public function run(): void
     {
         // bersihin dulu biar rapi saat dev
-        DB::connection('mysql_control_leader')->table('questions')->truncate();
+        DB::table('questions')->truncate();
 
         $rows = [];
 
@@ -302,6 +302,6 @@ class QuestionSeeder extends Seeder
             5
         );
 
-        DB::connection('mysql_control_leader')->table('questions')->insert($rows);
+        DB::table('questions')->insert($rows);
     }
 }

@@ -7,14 +7,9 @@ use Illuminate\Http\Request;
 
 class SingleLogin
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next)
     {
-        $u = auth('web_control_leader')->user();
+        $u = auth()->user();
         if ($u) {
             $sid = $request->session()->getId();
             $lockActive = $u->cl_in_progress && $u->cl_last_ping
@@ -23,7 +18,7 @@ class SingleLogin
             if ($u->control_session_id !== $sid) {
                 if ($lockActive) {
                     // lagi ngisi di tempat lain → tendang
-                    auth('web_control_leader')->logout();
+                    auth()->logout();
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
 

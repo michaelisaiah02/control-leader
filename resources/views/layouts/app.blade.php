@@ -1,99 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 
-@php
-    // Penjelasan: Logika ini sekarang ada di layout, bukan di controller.
-    // 1. Tentukan judul default.
-    $pageTitle = 'Application';
-
-    // 2. Cek apakah ada sesi 'active_app' setelah login.
-    if (session()->has('active_app')) {
-        // 3. Jika ada, gunakan array map untuk menentukan judulnya.
-        $appMap = [
-            'kalibrasi' => 'Kalibrasi',
-            'control_leader' => 'Control Leader',
-        ];
-        $pageTitle = $appMap[session('active_app')] ?? 'Application';
-    }
-@endphp
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', $pageTitle)</title>
+    <title>Control Leader</title>
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    @vite(['resources/css/app.css', 'resources/sass/app.scss', 'resources/js/app.js'])
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     @yield('styles')
-    @if (!request()->is('login'))
-        <style>
-            #navbar-kalibrasi {
-                border-bottom-left-radius: 180px;
-                border-bottom-right-radius: 180px;
-            }
-
-            #title-section {
-                height: 10rem
-            }
-        </style>
-    @endif
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light text-light @if (request()->is('login')) bg-transparent px-3 @else mx-5 px-5 pb-3 bg-primary @endif"
-        id="navbar-kalibrasi">
-        <div class="container-fluid justify-content-center">
-            <a class="navbar-brand mx-0 mx-md-4" href="/">
-                <img src="{{ asset('image/logo-pt.png') }}" alt="Logo" class="mt-0 logo">
-            </a>
-            <div class="row text-center justify-content-center @if (request()->is('login')) text-light @else text-bg-primary @endif"
-                id="title-section">
-                @if (request()->is('login'))
-                    <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
-                        @yield('title', $pageTitle)</p>
-                @else
-                    @switch($pageTitle)
-                        @case('Control Leader')
-                            <div class="row justify-content-md-end align-self-center mx-0 px-0">
-                                <div class="col-10 mx-0 px-0">
-                                    <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
-                                        @yield('title', $pageTitle)
-                                    </p>
-                                </div>
-                                <div
-                                    class="col-2 text-center border border-1 p-0 mt-2 mb-0 h-50 text-uppercase justify-content-center">
-                                    <div class="fs-6 fw-semibold row-cols-auto m-0">
-                                        {{ \Illuminate\Support\Str::limit(auth()->guard('web_control_leader')->user()->name, 10, '') }}
-                                    </div>
-                                    <div class="fs-6 row-cols-auto my-0 mx-auto text-center w-100">
-                                        {{ auth()->guard('web_control_leader')->user()->role }}
-                                    </div>
-                                </div>
+    <nav class="navbar navbar-expand-lg navbar-light text-light sticky-top
+        {{ request()->is('login') ? 'bg-transparent px-3' : 'shadow-sm bg-primary px-3 px-lg-5 py-1' }}"
+        id="navbar-control-leader">
+
+        <div class="container-fluid px-0">
+            {{-- Wrapper Utama: Flex Column di HP, Row di Desktop --}}
+            <div class="d-flex flex-row align-items-center w-100 position-relative">
+
+                {{-- Kiri: Logo PT --}}
+                <div class="my-auto me-lg-auto">
+                    <a class="navbar-brand m-0" href="/">
+                        <img src="{{ asset('image/logo-pt.png') }}" alt="Logo PT" class="logo">
+                    </a>
+                </div>
+
+                {{-- Tengah: Judul & Info --}}
+                <div class="text-center flex-grow-1 {{ request()->is('login') ? 'text-light' : 'text-bg-primary' }}"
+                    id="title-section">
+
+                    {{-- Judul Utama --}}
+                    <p id="main-title" class="main-title text-uppercase m-0">
+                        Control Leader
+                    </p>
+
+                    {{-- Nama Perusahaan --}}
+                    <p class="company-name m-0">PT. CATURINDO AGUNGJAYA RUBBER</p>
+                    @stack('subtitle')
+                </div>
+
+                {{-- Kanan: Logo Rice & User Info --}}
+                <div class="my-auto ms-lg-auto d-flex flex-column flex-lg-row align-items-center gap-3">
+
+                    {{-- User Info Box (Hanya muncul kalau bukan login page) --}}
+                    @if (!request()->is('login') && !request()->is('dashboard') && auth()->check())
+                        <div class="user-badge border border-1 p-2 text-uppercase text-center rounded bg-primary-dark d-none d-lg-block"
+                            style="min-width: 140px;">
+                            <div class="fw-bold text-truncate" style="max-width: 150px;">
+                                {{ auth()->user()->name }}
                             </div>
-                        @break
+                            <small class="d-block text-white-50">
+                                {{ auth()->user()->role }}
+                            </small>
+                        </div>
+                    @endif
 
-                        @case('Kalibrasi')
-                            <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
-                                @yield('title', $pageTitle)</p>
-                        @break
+                    {{-- Logo Rice --}}
+                    <a class="navbar-brand m-0" href="/">
+                        <img src="{{ asset('image/logo-rice.png') }}" alt="Logo Rice" class="logo">
+                    </a>
+                </div>
 
-                        @default
-                            <p id="main-title" class="align-self-center main-title p-0 m-0 text-uppercase">
-                                @yield('title', $pageTitle)</p>
-                    @endswitch
-                @endif
-                <p class="align-self-center company-name p-0 m-0">PT. CATURINDO AGUNGJAYA RUBBER</p>
-                @stack('subtitle')
             </div>
-            <a class="navbar-brand mx-0 mx-md-4" href="/">
-                <img src="{{ asset('image/logo-rice.png') }}" alt="Logo" class="mt-0 logo">
-            </a>
         </div>
     </nav>
+
+    {{-- Content Wrapper --}}
+    <main class="py-4">
+        @yield('content')
+    </main>
+
     <!-- Modal Auto Logout -->
     <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true"
         data-bs-backdrop="static">
@@ -119,119 +101,138 @@
     <form id="auto-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
         @csrf
     </form>
-    @yield('content')
+
     @yield('scripts')
-    @auth
-        <script type="module">
-            const maxIdleTime = 5 * 60 * 1000; // 5 menit
-            const idleStartDelay = 5 * 1000; // 5 detik
-            let idleTimeout, idleInterval;
-            let lastActiveTime = Date.now();
 
-            function resetIdleTimer() {
-                if (localStorage.getItem('forceLogout') === 'true') return;
-                lastActiveTime = Date.now();
-                clearTimeout(idleTimeout);
-                clearInterval(idleInterval);
-                idleTimeout = setTimeout(startIdleCounter, idleStartDelay);
-                console.log('[Idle Timer] Reset by user activity');
-            }
-
-            function startIdleCounter() {
-                console.log('[Idle Timer] Start idle counter');
-                idleInterval = setInterval(() => {
-                    const now = Date.now();
-                    const idleDuration = now - lastActiveTime;
-                    console.log(`[Idle Timer] Idle duration: ${idleDuration}ms`);
-
-                    if (idleDuration >= maxIdleTime) {
-                        console.log('[Idle Timer] Max idle reached. Triggering logout...');
-                        localStorage.setItem('forceLogout', 'true');
-                        showLogoutModal();
-                    }
-                }, 1000);
-            }
-
-            function showLogoutModal() {
-                clearInterval(idleInterval);
-                clearTimeout(idleTimeout);
-
-                const modalEl = document.getElementById('logoutModal');
-                if (!modalEl || modalEl.classList.contains('show')) return;
-
-                const logoutModal = new bootstrap.Modal(modalEl);
-                logoutModal.show();
-
-                // Auto logout dalam 10 detik
-                setTimeout(() => {
-                    if (document.getElementById('logoutModal').classList.contains('show')) {
-                        localStorage.removeItem('forceLogout');
-                        document.getElementById('auto-logout-form').submit();
-                    }
-                }, 10 * 1000);
-            }
-
-            // Saat halaman load
-            window.addEventListener('load', () => {
-                if (localStorage.getItem('forceLogout') === 'true') {
-                    console.log('[Idle Timer] Detected forceLogout on page load');
-                    showLogoutModal();
-                } else {
-                    idleTimeout = setTimeout(startIdleCounter, idleStartDelay);
-                }
-            });
-
-            // Dengarkan event storage dari tab lain
-            window.addEventListener('storage', (event) => {
-                if (event.key === 'forceLogout' && event.newValue === 'true') {
-                    console.log('[Idle Timer] Detected forceLogout from another tab');
-                    showLogoutModal();
-                }
-            });
-
-            // Deteksi aktivitas user
-            ['mousemove', 'keydown', 'click', 'scroll'].forEach(event => {
-                document.addEventListener(event, resetIdleTimer);
-            });
-        </script>
-    @endauth
     <div id="connection-indicator" style="display: none; position: fixed; bottom: 1rem; right: 1rem; z-index: 9999;">
         <div class="alert alert-danger mb-0 py-2 px-3" role="alert">
             ⚠️ Connection was lost...
         </div>
     </div>
+
     @auth
-        <script>
-            const connectionIndicator = document.getElementById('connection-indicator');
+        <script type="module">
+            /**
+             * MODULE: Auto Logout & Connection Checker
+             * Refactored for modularity and readability.
+             */
+
+            // --- Config ---
+            const CONFIG = {
+                maxIdleTime: 5 * 60 * 1000, // 5 Menit
+                warningTime: 10 * 1000, // 10 Detik sebelum logout di modal
+                pingUrl: "{{ route('ping') }}",
+                pingInterval: 10000
+            };
+
+            // --- Auto Logout System ---
+            let idleTimeout, idleInterval;
+            let lastActiveTime = Date.now();
+            const logoutModalEl = document.getElementById('logoutModal');
+            const logoutForm = document.getElementById('auto-logout-form');
+            let logoutModalInstance;
+
+            function resetIdleTimer() {
+                if (localStorage.getItem('forceLogout') === 'true') return;
+                lastActiveTime = Date.now();
+                clearTimeout(idleTimeout);
+                clearInterval(idleInterval); // Stop counting logic if running
+
+                // Start waiting again
+                idleTimeout = setTimeout(checkIdleStatus, 1000);
+            }
+
+            function checkIdleStatus() {
+                idleInterval = setInterval(() => {
+                    const now = Date.now();
+                    const idleDuration = now - lastActiveTime;
+
+                    if (idleDuration >= CONFIG.maxIdleTime) {
+                        triggerLogoutSequence();
+                    }
+                }, 1000);
+            }
+
+            function triggerLogoutSequence() {
+                clearInterval(idleInterval);
+                clearTimeout(idleTimeout);
+                localStorage.setItem('forceLogout', 'true');
+
+                if (!logoutModalInstance) {
+                    logoutModalInstance = new bootstrap.Modal(logoutModalEl);
+                }
+                logoutModalInstance.show();
+
+                // Final countdown inside modal
+                setTimeout(() => {
+                    if (logoutModalEl.classList.contains('show')) {
+                        performLogout();
+                    }
+                }, CONFIG.warningTime);
+            }
+
+            window.forceLogoutNow = function() {
+                performLogout(); // Function globally accessible for button onclick
+            }
+
+            function performLogout() {
+                localStorage.removeItem('forceLogout');
+                logoutForm.submit();
+            }
+
+            // --- Connection Checker System ---
+            const connIndicator = document.getElementById('connection-indicator');
             let isOffline = false;
 
             async function checkConnection() {
                 try {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000); // timeout 5 detik
-                    const response = await fetch("{{ route('ping') }}", {
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                    const response = await fetch(CONFIG.pingUrl, {
                         method: 'GET',
                         signal: controller.signal,
                         cache: 'no-store',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
                     });
                     clearTimeout(timeoutId);
 
                     if (!response.ok) throw new Error('Server Error');
 
                     if (isOffline) {
-                        // Koneksi kembali normal
-                        connectionIndicator.style.display = 'none';
+                        connIndicator.classList.remove('show'); // Bootstrap toast hide
                         isOffline = false;
                     }
                 } catch (error) {
                     if (!isOffline) {
-                        connectionIndicator.style.display = 'block';
+                        connIndicator.classList.add('show'); // Bootstrap toast show
                         isOffline = true;
                     }
                 }
             }
 
-            setInterval(checkConnection, 10000); // cek tiap 10 detik
+            // --- Initialization ---
+            document.addEventListener('DOMContentLoaded', () => {
+                // 1. Idle Listeners
+                ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
+                    document.addEventListener(evt, resetIdleTimer, {
+                        passive: true
+                    });
+                });
+
+                // 2. Storage Sync (Tab lain logout, ini ikut logout)
+                window.addEventListener('storage', (event) => {
+                    if (event.key === 'forceLogout' && event.newValue === 'true') {
+                        triggerLogoutSequence();
+                    }
+                });
+
+                // 3. Start Systems
+                resetIdleTimer();
+                setInterval(checkConnection, CONFIG.pingInterval);
+            });
         </script>
     @endauth
 </body>

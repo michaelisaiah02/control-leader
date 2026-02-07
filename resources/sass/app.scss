@@ -1,52 +1,49 @@
-// 1) Wajib: fungsi dulu biar bisa pakai color functions
-@use "sass:map";
-@import "bootstrap/scss/functions";
+// ==========================================
+// 1. CONFIGURATION & OVERRIDES
+// ==========================================
 
-// Atau pakai map (lebih fleksibel):
+// Define Colors First (Biar rapi dan ke-load sama Bootstrap maps)
+$primary: #181d3d;
+$secondary: #6c757d;
+$success: #4caf50;
+$info: #17a2b8;
+$warning: #ffc107;
+$danger: #f44336;
+$light: #f8f9fa;
+$dark: #212529;
+
+// Re-assign ke Theme Colors map
 $theme-colors: (
-    "primary": #181d3d,
-    "light": #f8f9fa,
-    "dark": #212529,
-    "secondary": #6c757d,
-    "info": #17a2b8,
-    "warning": #ffc107,
-    "success": #4caf50,
-    "danger": #f44336
+    "primary": $primary,
+    "secondary": $secondary,
+    "success": $success,
+    "info": $info,
+    "warning": $warning,
+    "danger": $danger,
+    "light": $light,
+    "dark": $dark
 );
 
-// 2) Override variabel Bootstrap sesuai kebutuhan
-$table-bg-scale: 50%;
+// Typography & Grid Overrides
+$font-family-sans-serif: "Montserrat Variable", sans-serif; // Override variable bawaan BS langsung
+$table-bg-scale: 0.5; // 50% deprecated di dart-sass string number, use decimal
 
-// 3) Lanjut import sisa partial Bootstrap
+// ==========================================
+// 2. BOOTSTRAP IMPORTS
+// ==========================================
+@import "bootstrap/scss/functions";
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/maps";
 @import "bootstrap/scss/mixins";
 @import "bootstrap/scss/utilities";
-
-// 4) Terakhir: seluruh komponen
 @import "bootstrap/scss/bootstrap";
+
+// Selectize (Kalau masih kepake)
 @import "@selectize/selectize/dist/css/selectize.bootstrap5.css";
 
-// 1) Tokens
-$font-sans: "Montserrat", sans-serif;
-$breakpoints: (
-    "md": 1080px
-);
-
-// 2) Mixins breakpoint
-@mixin up($bp) {
-    @media (min-width: map.get($breakpoints, $bp)) {
-        @content;
-    }
-}
-
-@mixin down($bp) {
-    @media (max-width: map.get($breakpoints, $bp)) {
-        @content;
-    }
-}
-
-// 3) Fonts
+// ==========================================
+// 3. FONTS
+// ==========================================
 @font-face {
     font-family: "Montserrat";
     src: url("/fonts/Montserrat-VariableFont_wght.ttf") format("truetype");
@@ -55,104 +52,307 @@ $breakpoints: (
     font-display: swap;
 }
 
-// 4) Base
-body {
-    font-family: $font-sans !important;
+// ==========================================
+// 4. CUSTOM COMPONENT SYSTEM (The Rules)
+// ==========================================
+
+// Rule #2: Label Box
+.label-box {
+    min-width: 100px;
+    font-weight: 600; // Bold tapi elegan
+    background-color: var(--bs-gray-200); // Pakai CSS var biar reactive
+    display: flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-right: 0; // Gabung sama input
+    border-radius: 0.375rem 0 0 0.375rem;
+    color: var(--bs-gray-700);
 }
 
+// Rule #2: Sticky Action Bar (Footer)
+.action-bar {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(5px); // Efek kaca dikit biar modern
+    border-top: 1px solid var(--bs-border-color);
+    z-index: 1020; // Di atas elemen biasa, di bawah modal
+    padding: 1rem 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+// Rule #2: Sticky Table Header
+.table-container {
+    overflow-x: auto;
+    background: transparent;
+    max-height: 80vh; // Biar scrollable vertical juga kalau kepanjangan
+
+    table {
+        th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: $light; // Wajib ada background biar gak tembus
+            white-space: nowrap;
+            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+        }
+    }
+}
+
+// UX Interaction: Date Picker Hack
+input[type="date"] {
+    position: relative;
+
+    &::-webkit-calendar-picker-indicator {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0; // Transparan tapi bisa diklik full area
+        cursor: pointer;
+    }
+}
+
+// ==========================================
+// 5. PAGE SPECIFIC (Refactored to Mobile-First)
+// ==========================================
+
+body {
+    // Font family udah di-handle variable bootstrap, gak perlu manual override
+    background-color: #f4f6f9; // Kasih dikit warna biar gak putih mati
+}
+
+// Global Text Helpers
 .main-title {
     font-weight: 800;
+    font-size: clamp(0.7rem, 0.6rem + 2.5vw, 4rem);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+
+    // Scale up di layar besar (lg = standard laptop/PC)
+    @include media-breakpoint-up(lg) {
+        margin-bottom: 0; // Reset margin kalau perlu
+    }
 }
 
 .company-name {
     font-weight: 300;
+    font-size: clamp(0.6rem, 0.6rem + 1.2vw, 2rem);
+    line-height: 0.9;
+    color: $secondary;
 }
 
-img.icon {
-    transition: .3s;
-    transform: scale(1);
+.subtitle {
+    width: 100%; // Default full width
+    font-size: clamp(0.8rem, 0.6rem + 0.5vw, 1.5rem);
+    margin: 0 auto 1rem auto;
+    max-width: clamp(300px, 80vw, 800px);
+}
+
+// Icon & Logo Animations
+img.icon,
+.logo {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); // Bouncy effect
+    width: clamp(10px, 8vw, 70px);
+    height: auto;
 
     &:hover {
-        transform: scale(1.3);
+        transform: scale(1.15); // Jangan 1.3, terlalu lebay
     }
+}
+
+// Custom Buttons sizing (Better use Bootstrap classes .btn-lg / .btn-sm inside HTML)
+// Tapi kalau maksa simpan class lama:
+.btn1 {
+    font-size: clamp(1.25rem, 1rem + 1vw, 2rem);
+}
+
+.btn2 {
+    font-size: clamp(1rem, 0.9rem + 0.5vw, 1.4rem);
+}
+
+// Helper Widths (Sebaiknya ganti pakai col-* grid di HTML, tapi kita simpan logicnya)
+.width-label-1 {
+    width: 50%;
+
+    @include media-breakpoint-up(lg) {
+        width: 25%;
+    }
+}
+
+.width-label-2 {
+    width: 50%;
+
+    @include media-breakpoint-up(lg) {
+        width: 30%;
+    }
+}
+
+// Pagination Overrides
+.page-item.active .page-link {
+    background-color: $primary;
+    border-color: $primary;
 }
 
 .page-link {
+    color: $primary;
+
+    &:hover {
+        color: darken($primary, 10%);
+    }
+}
+
+/* Desktop Mode (Layar > 992px / Laptop & Monitor) */
+@media (min-width: 992px) {
+    .dashboard-container {
+        /* Tinggi layar - Tinggi Navbar (~80px) - Padding */
+        height: calc(100vh - 220px);
+        padding-top: 0;
+        padding-bottom: 0;
+
+        /* Center konten secara vertikal & horizontal */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+}
+
+// Dashboard Card Button
+.btn-dashboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: clamp(120px, 140px + 5vw, 160px);
+    padding: clamp(0.8rem, 0.6rem + 1vw, 1.6rem);
+    border: 0;
+    border-radius: 1rem; // Lebih rounded (modern)
+    background: white; // Default putih
     color: var(--bs-primary);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    i {
+        font-size: clamp(2rem, 1.5rem + 2vw, 2.75rem);
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    span {
+        font-weight: 700; // Bold text
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        line-height: 1.3;
+    }
+
+    &:hover {
+        transform: translateY(-5px); // Efek naik pas di-hover
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        background: var(--bs-primary);
+        color: white;
+
+        i {
+            transform: scale(1.1); // Ikon membesar dikit
+        }
+    }
+
+    // Varian khusus kalau mau beda warna
+    &.btn-dashboard-danger {
+        color: var(--bs-danger);
+
+        &:hover {
+            background: var(--bs-danger);
+            color: white;
+        }
+    }
 }
 
-.active .page-link {
-    background-color: var(--bs-primary);
-}
+// ==========================================
+// 6. GLOBAL WEB APP LAYOUT (The "No Scroll" System)
+// ==========================================
 
-// 5) Responsive
-@include down("md") {
-    .sub-judul {
-        width: 95% !important;
-        font-size: .8rem !important;
-    }
+// Class pembungkus utama halaman (pengganti container biasa)
+.layout-fixed {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 165px); // Sesuaikan dengan tinggi Navbar lo
+    padding-bottom: 0 !important;
+    overflow: hidden; // Kunci scroll body
 
-    .main-title,
-    .company-name {
-        font-size: 1rem;
-    }
-
-    .logo,
-    .icon {
-        width: 30px;
-        height: 40.5px;
-    }
-
-    .btn1 {
-        font-size: 1.5rem;
-    }
-
-    .btn2 {
-        font-size: 1rem;
-    }
-
-    .width-label-1,
-    .width-label-2 {
-        width: 50%;
+    @include media-breakpoint-down(lg) {
+        height: auto; // Di HP balik normal (scrollable)
+        overflow: visible;
     }
 }
 
-@include up("md") {
-    .sub-judul {
-        width: 75% !important;
-        font-size: 1.6rem !important;
-        transform: translateY(-20px);
+// Wrapper Card Tabel biar rakus height (Flex Grow)
+.card-fill {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    border-radius: 1rem;
+    border: 0;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    background-color: white;
+}
+
+// Container Tabel yang bisa di-scroll
+.table-responsive-wrapper {
+    flex: 1; // Ambil sisa tinggi
+    overflow-y: auto; // Scroll vertikal aktif disini
+    overflow-x: auto; // Scroll horizontal kalau tabel kelebaran
+    position: relative; // Konteks buat sticky
+
+    &::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
     }
 
-    .main-title {
-        font-size: 44pt;
-        transform: translateY(-10px);
+    &::-webkit-scrollbar-track {
+        background: #f1f1f1;
     }
 
-    .company-name {
-        font-size: 2rem;
-        transform: translateY(-30px);
+    &::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
     }
 
-    .logo,
-    .icon {
-        width: 75px;
-        height: 90.5px;
+    &::-webkit-scrollbar-thumb:hover {
+        background: #aaa;
     }
+}
 
-    .btn1 {
-        font-size: 2.2rem !important;
-    }
+// LOGIC STICKY HEADER (MAGIC NYA DISINI)
+.table-sticky-header {
+    margin-bottom: 0;
 
-    .btn2 {
-        font-size: 1.4rem !important;
-    }
+    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1020; // Di atas konten tabel
+        background-color: #f8f9fa; // Wajib dikasih warna biar gak transparan (numpuk)
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); // Garis bayangan biar tegas batasnya
 
-    .width-label-1 {
-        width: 25%;
-    }
+        // Fix border ilang pas sticky
+        border-bottom: none;
 
-    .width-label-2 {
-        width: 30%;
+        // Biar teks header vertikal align tengah
+        vertical-align: middle;
+        white-space: nowrap; // Biar header gak turun baris
     }
+}
+
+// Action Bar Statis (Nempel bawah tapi gak floating)
+.action-bar-static {
+    margin-top: 1rem;
+    flex-shrink: 0;
 }
