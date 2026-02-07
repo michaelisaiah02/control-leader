@@ -15,6 +15,7 @@ class OperatorController extends Controller
     {
         $users = User::where('role', 'operator')->with('division')->get();
         $leaders = User::where('role', 'leader')->where('superior_id', auth()->user()->employeeID)->get();
+        // dd($leaders);
         $divisions = Division::all();
 
         return view('schedule.operator', compact('users', 'divisions', 'leaders'), [

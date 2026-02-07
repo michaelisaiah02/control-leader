@@ -62,7 +62,7 @@ class ChecksheetController extends Controller
                 ->whereNotNull('target_user_id')
                 ->with('targetUser')
                 ->get();
-            dd($scheduleDetails);
+
             $targetLabel = 'ID & Nama Operator';
             $options = $scheduleDetails->map(fn($detail) => [
                 'value' => "{$detail->id}::{$detail->target_user_id}::{$detail->division}",
@@ -171,7 +171,7 @@ class ChecksheetController extends Controller
 
     private function userLabel(string $uid): string
     {
-        $u = User::find($uid);
+        $u = User::where('employeeID', $uid)->first();
         if (! $u) {
             return '';
         }
@@ -221,7 +221,6 @@ class ChecksheetController extends Controller
 
         // === Case 1: HADIR → simpan satu checksheet (evaluated = scheduled)
         if ($isPresent) {
-            // dd($scheduledLabel);
             $cs = Checksheet::create([
                 'schedule_plan_id' => $data['schedule_plan_id'],
                 'phase' => $phase,
@@ -282,7 +281,7 @@ class ChecksheetController extends Controller
                 $draft->update(['is_active' => false]);
             }
 
-            return redirect()->route('dashboard')->with('ok', 'Checksheet tersimpan.');
+            return redirect()->route('dashboard')->with('success', 'Checksheet tersimpan.');
         }
 
         // === Case 2: ABSEN tanpa pengganti → buat satu checksheet (evaluated = scheduled)
@@ -306,7 +305,7 @@ class ChecksheetController extends Controller
                 $draft->update(['is_active' => false]);
             }
 
-            return response()->json(['success' => true, 'message' => $draft]);
+            return redirect()->route('dashboard')->with('success', 'Checksheet tersimpan.');
         }
 
         // === Case 3: ABSEN → buat PARENT (scheduled, absen)
@@ -392,6 +391,6 @@ class ChecksheetController extends Controller
             $draft->update(['is_active' => false]);
         }
 
-        return redirect()->route('dashboard')->with('ok', 'Checksheet tersimpan.');
+        return redirect()->route('dashboard')->with('success', 'Checksheet tersimpan.');
     }
 }

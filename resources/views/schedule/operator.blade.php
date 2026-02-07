@@ -109,7 +109,7 @@
     {{-- MODAL: Create/Edit Operator (Compact & Standard Labels) --}}
     <div class="modal fade" id="operatorModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
-            <form class="modal-content rounded-3 border-0 shadow" id="operatorForm" novalidate>
+            <form class="modal-content rounded-3 border-0 shadow" method="POST" id="operatorForm" novalidate>
                 @csrf
                 <div class="modal-header border-bottom-0 pb-0 pt-3 px-3">
                     <h6 class="modal-title fw-bold text-uppercase" id="operatorModalLabel">Add Operator</h6>

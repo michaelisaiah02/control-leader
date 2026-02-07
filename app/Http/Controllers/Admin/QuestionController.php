@@ -39,7 +39,7 @@ class QuestionController extends Controller
     {
         $question->delete();
 
-        return redirect()->route('question.index')->with('success', 'Question deleted.');
+        return redirect()->route('admin.question.index')->with('success', 'Question deleted.');
     }
 
     public function store(Request $request)
