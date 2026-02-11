@@ -1,246 +1,312 @@
 @extends('layouts.app')
 
-@push('subtitle')
-    <p class="fs-2 w-75 p-0 my-auto sub-judul border border-white rounded-2 text-uppercase">
-        add question
-    </p>
-@endpush
-
 @section('styles')
     <style>
+        .builder-card {
+            transition: all 0.3s ease;
+            border: 1px solid var(--bs-gray-200);
+        }
+
+        .builder-card:hover {
+            border-color: var(--bs-primary);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+        }
+
         .cursor-grab {
             cursor: grab;
+            color: #adb5bd;
+        }
+
+        .cursor-grab:hover {
+            color: var(--bs-primary);
         }
 
         .sortable-ghost {
             opacity: 0.4;
-            background: #f0f0f0;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+        }
+
+        /* Style buat Toggle 2 vs 3 */
+        .option-mode-selector .btn-check:checked+.btn {
+            background-color: var(--bs-primary);
+            color: white;
+            border-color: var(--bs-primary);
+            box-shadow: 0 4px 6px rgba(var(--bs-primary-rgb), 0.3);
+        }
+
+        .option-mode-selector .btn {
+            border: 1px solid #dee2e6;
+            color: var(--bs-gray-600);
+            font-weight: 600;
         }
     </style>
 @endsection
 
-@section('content')
-    <form method="POST" action="{{ route('admin.question.store') }}" class="px-5">
-        @csrf
-        <!-- Header -->
-        <div class="d-flex gap-5 w-100 mt-1 justify-content-between align-items-center my-1">
-            <div class="d-flex align-items-center gap-2 w-100">
-                <label for="question_text"
-                    class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Pertanyaan</label>
-                <input id="question_text" type="text" name="question_text" class="form-control bg-warning-subtle" required>
-            </div>
-            <div class="d-flex align-items-center gap-2 w-100">
-                <label for="package"
-                    class="form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Type</label>
-                <select name="package" id="package" class="form-select bg-warning-subtle" required>
-                    <option value="" selected disabled>-- Pilih</option>
-                    <option value="awal_shift">Awal Shift</option>
-                    <option value="saat_bekerja">Saat Bekerja</option>
-                    <option value="setelah_istirahat">Setelah Istirahat</option>
-                    <option value="akhir_shift">Akhir Shift</option>
-                    <option value="leader">Leader</option>
-                </select>
-            </div>
-        </div>
+@push('subtitle')
+    <div
+        class="d-inline-flex align-items-center justify-content-center px-3 py-1 mt-1 mb-0 rounded-3 bg-white bg-opacity-10 border border-light text-white subtitle">
+        <i class="bi bi-plus-circle me-2 fs-6"></i>
+        <span class="fs-6 fw-bold text-uppercase">Add Question</span>
+    </div>
+@endpush
 
-        <div class="row my-2">
-            <!-- Kolom Kiri -->
-            <div class="col-md-8">
-                <div id="builder" class="border border-primary p-3 rounded overflow-y-scroll"
-                    style="height: 300px; max-height:300px;">
-                    <!-- Opsi Pilihan -->
-                    <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
-                        <label class="form-label my-2">Pilihan:</label>
-                        <div class="radio-options sortable-radio">
-                            <div class="input-group mb-1">
-                                <span class="input-group-text cursor-grab">☰</span>
-                                <div class="input-group-text">
-                                    <input type="radio" disabled>
+@section('content')
+    <div class="container-fluid layout-fixed pb-2">
+        <form method="POST" action="{{ route('admin.question.store') }}" id="questionForm" class="h-100 d-flex flex-column">
+            @csrf
+
+            {{-- SECTION 1: MAIN INFO --}}
+            <div class="card border-0 shadow-sm mb-2 rounded-3 shrink-0">
+                <div class="card-body p-3">
+                    <div class="row g-2">
+                        <div class="col-12 col-md-8">
+                            <label class="form-label small fw-bold text-secondary text-uppercase mb-1">Question Text</label>
+                            <input id="question_text" type="text" name="question_text" class="form-control fw-bold"
+                                placeholder="e.g., Apakah APD lengkap?" required autofocus>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label small fw-bold text-secondary text-uppercase mb-1">Category Type</label>
+                            <select name="package" id="package" class="form-select" required>
+                                <option value="" selected disabled>Select Type...</option>
+                                <option value="awal_shift">Awal Shift</option>
+                                <option value="saat_bekerja">Saat Bekerja</option>
+                                <option value="setelah_istirahat">Setelah Istirahat</option>
+                                <option value="akhir_shift">Akhir Shift</option>
+                                <option value="leader">Leader</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- SECTION 2: BUILDER AREA --}}
+            <div class="row g-2 grow overflow-hidden">
+
+                {{-- LEFT: FORM BUILDER --}}
+                <div class="col-12 col-md-8 h-100 d-flex flex-column">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-light">
+                        <div
+                            class="card-header bg-white border-bottom-0 py-2 d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold text-secondary mb-0"><i class="bi bi-ui-checks me-2"></i>Answer Options</h6>
+                            <span class="badge bg-light text-secondary border">Urutkan: Terbaik <i
+                                    class="bi bi-hand-thumbs-up-fill text-success"></i> ke Terburuk <i
+                                    class="bi bi-hand-thumbs-down-fill text-danger"></i></span>
+                        </div>
+
+                        <div class="card-body overflow-y-auto p-3">
+
+                            <div class="builder-card bg-white p-3 rounded-3 mb-3">
+
+                                {{-- MODE SELECTOR (2 vs 3) --}}
+                                <div class="text-center mb-3">
+                                    <label class="small text-uppercase fw-bold text-muted mb-1 d-block">Jumlah Pilihan
+                                        Jawaban</label>
+                                    <div class="btn-group option-mode-selector" role="group">
+                                        <input type="radio" class="btn-check" name="option_mode" id="mode2"
+                                            value="2" checked>
+                                        <label class="btn py-1" for="mode2">2 Opsi (A/B)</label>
+
+                                        <input type="radio" class="btn-check" name="option_mode" id="mode3"
+                                            value="3">
+                                        <label class="btn py-1" for="mode3">3 Opsi (A/B/C)</label>
+                                    </div>
                                 </div>
-                                <input type="text"
-                                    class="form-control border border-1 border-primary bg-warning-subtle radio-input"
-                                    name="choices[]" value="Option 1" required>
-                                <button type="button" class="btn btn-outline-danger btn-sm remove-radio"
-                                    onclick="removeRadio(this)">✕</button>
+
+                                <hr class="opacity-10 mt-2 mb-3">
+
+                                {{-- INPUT LIST (Sortable) --}}
+                                <div id="radio-options-list" class="d-flex flex-column gap-3">
+                                    {{-- Opsi 1 --}}
+                                    <div class="input-group option-item">
+                                        <span class="input-group-text bg-white border-end-0 cursor-grab ps-3"><i
+                                                class="bi bi-grip-vertical"></i></span>
+                                        <input type="text" class="form-control border-start-0 py-2 bg-light"
+                                            name="choices[]" value="OK" placeholder="Jawaban Terbaik" required>
+                                    </div>
+
+                                    {{-- Opsi 2 --}}
+                                    <div class="input-group option-item">
+                                        <span class="input-group-text bg-white border-end-0 cursor-grab ps-3"><i
+                                                class="bi bi-grip-vertical"></i></span>
+                                        <input type="text" class="form-control border-start-0 py-2 bg-light"
+                                            name="choices[]" value="NG" placeholder="Jawaban Terburuk" required>
+                                    </div>
+
+                                    {{-- Opsi 3 (Hidden by default) --}}
+                                    <div class="input-group option-item d-none" id="option-3-container">
+                                        <span class="input-group-text bg-white border-end-0 cursor-grab ps-3"><i
+                                                class="bi bi-grip-vertical"></i></span>
+                                        <input type="text" class="form-control border-start-0 py-2 bg-light"
+                                            id="input-3" name="choices[]" value="Repair" placeholder="Opsi Tambahan"
+                                            disabled>
+                                    </div>
+                                </div>
+
                             </div>
-                            <div class="input-group mb-1">
-                                <span class="input-group-text cursor-grab">☰</span>
-                                <div class="input-group-text">
-                                    <input type="radio" disabled>
+
+                            {{-- EXTRA FIELDS BLOCK --}}
+                            <div id="extra-fields-block" class="builder-card bg-white p-3 rounded-3 mb-3 animate-fade-in"
+                                style="display: none;">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="fw-bold text-dark small text-uppercase"><i
+                                            class="bi bi-exclamation-triangle me-2"></i>Issue Tracking</label>
+                                    <button type="button" class="btn-close btn-sm" id="btnRemoveExtra"></button>
                                 </div>
-                                <input type="text"
-                                    class="form-control border border-1 border-primary bg-warning-subtle radio-input"
-                                    name="choices[]" value="Option 2" required>
-                                <button type="button" class="btn btn-outline-danger btn-sm remove-radio"
-                                    onclick="removeRadio(this)">✕</button>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" name="problem_label"
+                                                class="form-control form-control-sm" placeholder="Label">
+                                            <label>Label Problem</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" name="countermeasure_label"
+                                                class="form-control form-control-sm" placeholder="Label">
+                                            <label>Label Countermeasure</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                {{-- RIGHT: TOOLS --}}
+                <div class="col-12 col-md-4 h-100">
+                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                        <div class="card-body p-3 d-flex flex-column">
+                            <h6 class="fw-bold text-secondary mb-3 small text-uppercase">Config</h6>
+
+                            <div class="d-grid gap-2 mb-auto">
+                                <div class="alert alert-light border small text-muted mb-3">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Pilih mode <strong>2 Opsi</strong> atau <strong>3 Opsi</strong> di panel kiri.
+                                </div>
+
+                                <button type="button" class="btn btn-outline-secondary text-start py-3 border"
+                                    id="btnToggleExtra">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <span><i class="bi bi-input-cursor-text me-2"></i> Problem & Countermeasure</span>
+                                        <i class="bi bi-toggle-off fs-5" id="toggleIcon"></i>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <hr class="text-muted opacity-25">
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary fw-bold shadow-sm">
+                                    <i class="bi bi-save me-2"></i> Save Question
+                                </button>
+                                <a href="{{ route('admin.question.index') }}" class="btn btn-outline-secondary">Cancel</a>
                             </div>
                         </div>
-                        <p class="text-warning-subtle">*Urutkan yang terbaik ke terburuk</p>
-                    </div>
-
-                    <!-- Problem dan Countermeasure -->
-                    <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
-                        <label for="problem_label" class="form-label my-2">Label Problem</label>
-                        <input type="text" id="problem_label" name="problem_label"
-                            class="form-control border border-1 border-primary bg-warning-subtle" required>
-                    </div>
-                    <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
-                        <label for="countermeasure_label" class="form-label my-2">Label Countermeasure</label>
-                        <input type="text" id="countermeasure_label" name="countermeasure_label"
-                            class="form-control border border-1 border-primary bg-warning-subtle" required>
                     </div>
                 </div>
             </div>
-
-            <!-- Kolom Kanan -->
-            <div class="col-md-4">
-                <div class="d-grid gap-2 border border-primary p-3 rounded h-100">
-                    <button type="button" class="btn btn-outline-primary add-field" data-type="radio">Tambah
-                        Pilihan</button>
-                    <button type="button" class="btn btn-outline-primary active add-field" data-type="toggle">Problem dan
-                        Countermeasure</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="py-1 d-flex justify-content-between">
-            <div>
-                <button id="clear-button" type="button" class="btn btn-danger text-white py-2 px-4">Clear</button>
-            </div>
-            <div>
-                <a href="{{ route('admin.question.index') }}" class="btn btn-primary text-white py-2 px-4">Back</a>
-                <button type="submit" class="btn btn-primary text-white py-2 px-4">Save</button>
-            </div>
-        </div>
-    </form>
+        </form>
+    </div>
     <x-toast />
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/Sortable.min.js') }}"></script>
-    <script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script type="module">
         document.addEventListener("DOMContentLoaded", () => {
-            const builder = document.getElementById("builder");
-            const radioContainer = builder.querySelector(".radio-options");
-            const toggleButton = document.querySelector('[data-type="toggle"]');
-            const addRadioButton = document.querySelector('[data-type="radio"]');
-            const resetButton = document.querySelector('#clear-button');
+            const radioList = document.getElementById("radio-options-list");
+            const extraBlock = document.getElementById("extra-fields-block");
+            const btnToggleExtra = document.getElementById("btnToggleExtra");
+            const toggleIcon = document.getElementById("toggleIcon");
 
-            // Drag Radio
-            Sortable.create(radioContainer, {
+            // --- 1. LOGIC 2 vs 3 OPSI (SWITCHER) ---
+            const modeRadios = document.querySelectorAll('input[name="option_mode"]');
+            const container3 = document.getElementById('option-3-container');
+            const input3 = document.getElementById('input-3');
+
+            // Function buat update tampilan berdasarkan mode
+            function updateOptionMode() {
+                // Cari mana yang diceklis
+                const selectedMode = document.querySelector('input[name="option_mode"]:checked').value;
+                const optionItems = radioList.querySelectorAll('.option-item');
+
+                if (selectedMode === "3") {
+                    // Show item ke-3 (tapi harus tau item ke-3 itu elemen yang mana kalau udah disortir)
+                    // Simplenya: Kita toggle class d-none di container ke-3 yang kita hardcode ID-nya
+                    container3.classList.remove('d-none');
+                    container3.classList.add('d-flex');
+                    input3.disabled = false; // Aktifin biar dikirim ke server
+                    input3.required = true;
+                } else {
+                    // Hide item ke-3
+                    container3.classList.add('d-none');
+                    container3.classList.remove('d-flex');
+                    input3.disabled = true; // Disable biar GAK dikirim ke server
+                    input3.required = false;
+                }
+            }
+
+            // Listen perubahan switch
+            modeRadios.forEach(radio => {
+                radio.addEventListener('change', updateOptionMode);
+            });
+
+
+            // --- 2. SORTABLE (Tetap ada buat nuker posisi OK/NG) ---
+            Sortable.create(radioList, {
                 animation: 150,
                 handle: ".cursor-grab",
-                ghostClass: "sortable-ghost"
-            });
-
-            // Clear Button
-            resetButton.addEventListener("click", () => {
-                if (!confirm("Apakah Anda yakin? Semua field akan dihapus.")) return;
-
-                builder.innerHTML = `
-        <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
-          <label>Pilihan:</label>
-          <div class="radio-options sortable-radio">
-            <div class="input-group mb-1">
-              <span class="input-group-text cursor-grab">☰</span>
-              <div class="input-group-text">
-                <input type="radio" disabled>
-              </div>
-              <input
-                type="text"
-                class="form-control border border-1 border-primary bg-warning-subtle radio-input"
-                name="choices[]"
-                value="Option 1" required>
-              <button type="button" class="btn btn-outline-danger btn-sm remove-radio" onclick="removeRadio(this)">✕</button>
-            </div>
-            <div class="input-group mb-1">
-              <span class="input-group-text cursor-grab">☰</span>
-              <div class="input-group-text">
-                <input type="radio" disabled>
-              </div>
-              <input
-                type="text"
-                class="form-control border border-1 border-primary bg-warning-subtle radio-input"
-                name="choices[]"
-                value="Option 2"
-                required>
-              <button type="button" class="btn btn-outline-danger btn-sm remove-radio" onclick="removeRadio(this)">✕</button>
-            </div>
-          </div>
-          <p class="text-warning-subtle">*Urutkan yang terbaik ke terburuk</p>
-        </div>
-      `;
-            });
-
-            // Tambah Radio
-            addRadioButton.addEventListener("click", () => {
-                const index = radioContainer.querySelectorAll(".radio-input").length + 1;
-                const allRadios = builder.querySelectorAll(".radio-options .input-group");
-
-                if (allRadios.length >= 3) {
-                    alert("Maksimal opsi radio hanya 3!");
-                    return;
-                }
-
-                const newOption = `
-      <div class="input-group mb-1">
-        <span class="input-group-text cursor-grab">☰</span>
-        <div class="input-group-text"><input type="radio" disabled></div>
-        <input
-          type="text"
-          class="form-control border border-1 border-primary bg-warning-subtle radio-input"
-          name="choices[]"
-          value="Option ${index}"
-          required
-        >
-        <button type="button" class="btn btn-outline-danger btn-sm remove-radio">✕</button>
-      </div>
-    `;
-
-                radioContainer.insertAdjacentHTML("beforeend", newOption);
-            });
-
-            // Delete Radio
-            builder.addEventListener("click", (e) => {
-                if (e.target.classList.contains("remove-radio")) {
-                    const allRadios = builder.querySelectorAll(".radio-options .input-group");
-
-                    if (allRadios.length <= 2) {
-                        alert("Minimal harus ada 2 opsi radio!");
-                        return;
-                    }
-
-                    e.target.closest(".input-group").remove();
+                ghostClass: "sortable-ghost",
+                onStart: () => document.body.classList.add('cursor-grabbing'),
+                onEnd: () => {
+                    document.body.classList.remove('cursor-grabbing');
+                    // Kalau mau re-numbering (1. 2. 3.) secara visual bisa disini
                 }
             });
 
-            // Toggle Problem and Countermeasure
-            toggleButton.addEventListener("click", () => {
-                const problemField = builder.querySelector('input[name="problem_label"]');
-                const counterField = builder.querySelector('input[name="countermeasure_label"]');
 
-                // Show: Problem and Countermeasure
-                if (!problemField && !counterField) {
-                    builder.insertAdjacentHTML("beforeend", `
-        <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
-          <label for="problem_label" class="form-label my-2">Label Problem</label>
-          <input type="text" id="problem_label" name="problem_label" class="form-control border border-1 border-primary bg-warning-subtle" required>
-        </div>
-        <div class="mb-3 border border-1 border-primary p-3 rounded field-block">
-          <label for="countermeasure_label" class="form-label my-2">Label Countermeasure</label>
-          <input type="text" id="countermeasure_label" name="countermeasure_label" class="form-control border border-1 border-primary bg-warning-subtle" required>
-        </div>
-      `);
-                    toggleButton.classList.add('active');
-                    return;
+            // --- 3. TOGGLE EXTRA FIELDS (Sama kayak sebelumnya) ---
+            function setExtraState(isActive) {
+                const inputs = extraBlock.querySelectorAll('input');
+                if (isActive) {
+                    extraBlock.style.display = 'block';
+                    btnToggleExtra.classList.add('border-primary', 'bg-primary-subtle');
+                    btnToggleExtra.classList.remove('btn-outline-secondary');
+                    toggleIcon.classList.replace('bi-toggle-off', 'bi-toggle-on');
+                    toggleIcon.classList.add('text-primary');
+                    inputs.forEach(el => el.required = true);
+                } else {
+                    extraBlock.style.display = 'none';
+                    btnToggleExtra.classList.remove('border-primary', 'bg-primary-subtle');
+                    btnToggleExtra.classList.add('btn-outline-secondary');
+                    toggleIcon.classList.replace('bi-toggle-on', 'bi-toggle-off');
+                    toggleIcon.classList.remove('text-primary');
+                    inputs.forEach(el => {
+                        el.required = false;
+                        el.value = '';
+                    });
                 }
+            }
 
-                // Toggle Hide/Show
-                const fields = builder.querySelectorAll(
-                    'input[name="problem_label"], input[name="countermeasure_label"]');
-                fields.forEach(input => input.closest(".field-block").remove());
-                toggleButton.classList.remove('active');
+            btnToggleExtra.addEventListener("click", () => {
+                const isHidden = extraBlock.style.display === 'none';
+                setExtraState(isHidden);
+            });
+
+            document.getElementById("btnRemoveExtra").addEventListener("click", () => {
+                setExtraState(false);
+            });
+
+            // Loading State
+            document.getElementById('questionForm').addEventListener('submit', function() {
+                if (this.checkValidity()) {
+                    const btn = this.querySelector('button[type="submit"]');
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+                }
             });
         });
     </script>

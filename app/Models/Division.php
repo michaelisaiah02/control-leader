@@ -10,7 +10,7 @@ class Division extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['division_name', 'department_id'];
+    protected $fillable = ['name', 'department_id'];
 
     // Satu divisi dimiliki oleh satu departemen
     public function department(): BelongsTo

@@ -3,7 +3,7 @@
         <td>{{ $loop->iteration }}</td>
         <td>{{ $operator->employeeID }}</td>
         <td class="text-start">{{ $operator->name }}</td>
-        <td>{{ $operator->division->division_name }}</td>
+        <td>{{ $operator->division->name }}</td>
         <td>
             <button class="btn btn-sm btn-outline-primary btn-edit-operator" data-id="{{ $operator->id }}"
                 data-name="{{ $operator->name }}" data-employeeid="{{ $operator->employeeID }}"

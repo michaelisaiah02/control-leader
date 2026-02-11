@@ -31,13 +31,13 @@
         </td>
         <td>{{ $user->superior?->employeeID ?? '-' }}</td>
         <td>{{ $user->superior?->name ?? '-' }}</td>
-        <td>{{ $user->department?->department_name ?? '-' }}</td>
+        <td>{{ $user->department?->name ?? '-' }}</td>
         <td>
-            @if (auth()->user()->role === 'admin')
+            @if (in_array(auth()->user()->role, ['admin', 'management', 'ypq']))
                 <button class="btn btn-sm btn-outline-primary btn-edit-user" data-id="{{ $user->id }}"
                     data-name="{{ $user->name }}" data-employeeid="{{ $user->employeeID }}"
-                    data-role="{{ $user->role }}" data-approved="{{ $user->approved }}"
-                    data-checked="{{ $user->checked }}">
+                    data-role="{{ $user->role }}" data-department="{{ $user->department_id }}"
+                    data-superior="{{ $user->superior_id }}">
                     <i class="bi bi-pencil"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger btn-delete-user" data-id="{{ $user->id }}"

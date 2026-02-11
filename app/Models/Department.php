@@ -10,7 +10,7 @@ class Department extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['department_name'];
+    protected $fillable = ['name'];
 
     // Satu departemen punya banyak divisi
     public function divisions(): HasMany

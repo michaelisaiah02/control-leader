@@ -98,7 +98,7 @@ class ScheduleController extends Controller
             ];
         });
 
-        $divisionOptions = Division::orderBy('division_name')->get();
+        $divisionOptions = Division::orderBy('name')->get();
 
         return view('schedule.schedule_supervisor', compact(
             'plan',

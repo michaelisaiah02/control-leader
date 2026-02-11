@@ -26,27 +26,11 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'employeeID' => ['required', 'size:5', 'unique:users,employeeID'],
-            'role' => ['required', 'in:admin,leader,supervisor,guest'],
-            'password' => ['required', 'string', 'min:6'],
-            'approved' => ['boolean'],
-            'checked' => ['boolean'],
+            'department_id' => ['nullable', 'integer', Rule::exists('departments', 'id')],
+            'role' => ['required', 'in:admin,management,ypq,leader,supervisor,guest'],
+            'password' => ['required', 'string', 'min:8'],
+            'superior_id' => ['nullable', 'string', Rule::exists('users', 'employeeID')],
         ]);
-
-        // if ($validated['role'] !== 'admin' && $validated['approved']) {
-        //     return back()->withErrors(['approved' => 'Approved can only be true if the role is admin.']);
-        // }
-
-        // if ($validated['role'] === 'guest' && $validated['checked']) {
-        //     return back()->withErrors(['checked' => 'Checked can only be true if the role is not guest.']);
-        // }
-
-        // approved dan checked dari semua user hanya satu yang boleh true, jadi jika ada yang true, maka yang lain otomatis di ubah jadi false
-        // if ($validated['approved']) {
-        //     User::where('approved', true)->update(['approved' => false]);
-        // }
-        // if ($validated['checked']) {
-        //     User::where('checked', true)->update(['checked' => false]);
-        // }
 
         // Hash password
         $validated['password'] = Hash::make($validated['password']);
@@ -63,45 +47,14 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'employeeID' => ['required', 'size:5', Rule::unique('users', 'employeeID')->ignore($user->id)],
-            'role' => 'required|in:admin,leader,supervisor,guest',
+            'role' => 'required|in:admin,management,ypq,leader,supervisor,guest',
             'password' => 'nullable|string|min:6',
-            // no need to validate approved/checked here
+            'department_id' => ['nullable', 'integer', Rule::exists('departments', 'id')],
+            'superior_id' => ['nullable', 'string', Rule::exists('users', 'employeeID')]
         ]);
-
-        // read them as booleans
-        // $approved = $request->boolean('approved');
-        // $checked = $request->boolean('checked');
-
-        // role-based rules
-        // if ($validated['role'] !== 'admin' && $approved) {
-        //     return back()->withErrors(['approved' => 'Only admin can be approved']);
-        // }
-        // if ($validated['role'] === 'guest' && $checked) {
-        //     return back()->withErrors(['checked' => 'Guest cannot be checked']);
-        // }
-
-        // enforce uniqueness: only one approved & one checked
-        // if ($approved) {
-        //     User::where('approved', true)->update(['approved' => false]);
-        // }
-        // if ($checked) {
-        //     User::where('checked', true)->update(['checked' => false]);
-        // }
-
-        // Jika tidak ada user lain yang approved dan user ini tidak ingin di-approve, tolak
-        // if (!User::where('approved', true)->where('id', '!=', $user->id)->exists() && $approved === false) {
-        //     return back()->withErrors(['approved' => 'At least one user must be approved.']);
-        // }
-
-        // Jika tidak ada user lain yang checked dan user ini tidak ingin di-check, tolak
-        // if (!User::where('checked', true)->where('id', '!=', $user->id)->exists() && $checked === false) {
-        //     return back()->withErrors(['checked' => 'At least one user must be checked.']);
-        // }
 
         // put everything into $data for update
         $data = $validated;
-        // $data['approved'] = $approved;
-        // $data['checked'] = $checked;
 
         // hash password if provided
         if ($request->filled('password')) {
@@ -152,25 +105,54 @@ class UserController extends Controller
 
     public function getSuperiors(Request $request)
     {
+        // 1. Ambil input
         $role = $request->query('role');
         $departmentId = $request->query('department_id');
 
+        // 2. Normalisasi input (Jaga-jaga huruf besar)
+        $role = strtolower($role);
+
+        $superiors = []; // Inisialisasi array kosong
+
         switch ($role) {
             case 'leader':
+                // Logic: Leader butuh Supervisor di departemen yang sama
                 $rolesToFetch = ['supervisor'];
+
+                // Query
+                $query = User::whereIn('role', $rolesToFetch);
+
+                // Hanya filter departemen jika departmentId tidak kosong
+                if (!empty($departmentId)) {
+                    $query->where('department_id', $departmentId);
+                }
+
+                $superiors = $query->get();
                 break;
+
             case 'supervisor':
-                $rolesToFetch = ['ypq'];
+                // Logic: Supervisor butuh YPQ atau Management (Bebas departemen?)
+                $rolesToFetch = ['ypq', 'management'];
+                $superiors = User::whereIn('role', $rolesToFetch)->get();
                 break;
-            case 'ypq':
-                $rolesToFetch = ['management'];
-                break;
+
             default:
+                // Jika role tidak dikenali
                 return response()->json([]);
         }
 
-        $superiors = User::whereIn('role', $rolesToFetch)->where('department_id', '=', $departmentId)->get();
+        // 3. Transformasi Data (Opsional tapi disarankan)
+        // Supaya frontend nerima struktur yang pasti
+        $formattedSuperiors = $superiors->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'employeeID' => $user->employee_id ?? $user->employeeID, // Sesuaikan kolom DB
+                'role' => $user->role,
+                'department_id' => $user->department_id
+            ];
+        });
 
-        return response()->json($superiors);
+        return response()->json($formattedSuperiors);
     }
 }
