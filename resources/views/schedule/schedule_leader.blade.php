@@ -87,9 +87,9 @@
                                 <td class="division-col">
                                     <select class="form-select form-select-sm division-select" {{ $disabled }}>
                                         @foreach ($divisionOptions as $option)
-                                            <option value="{{ $option->division_name }}"
-                                                {{ $target['division'] === $option->division_name ? 'selected' : '' }}>
-                                                {{ $option->division_name }}</option>
+                                            <option value="{{ $option->name }}"
+                                                {{ $target['division'] === $option->name ? 'selected' : '' }}>
+                                                {{ $option->name }}</option>
                                         @endforeach
                                     </select>
                                 </td>
@@ -132,7 +132,7 @@
                                     <select class="form-select form-select-sm division-select" disabled>
                                         <option value="">-- pilih user dulu --</option>
                                         @foreach ($divisionOptions as $option)
-                                            <option value="{{ $option->division_name }}">{{ $option->division_name }}</option>
+                                            <option value="{{ $option->name }}">{{ $option->name }}</option>
                                         @endforeach
                                     </select>
                                 </td>
@@ -171,7 +171,7 @@
                                     <select class="form-select form-select-sm division-select" disabled>
                                         <option value="">-- pilih divisi --</option>
                                         @foreach ($divisionOptions as $d)
-                                            <option value="{{ $d->division_name }}">{{ $d->division_name }}</option>
+                                            <option value="{{ $d->name }}">{{ $d->name }}</option>
                                         @endforeach
                                     </select>
                                 </td>

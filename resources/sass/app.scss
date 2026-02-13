@@ -95,7 +95,6 @@ $table-bg-scale: 0.5; // 50% deprecated di dart-sass string number, use decimal
             position: sticky;
             top: 0;
             z-index: 10;
-            background-color: $light; // Wajib ada background biar gak tembus
             white-space: nowrap;
             box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
         }
@@ -339,7 +338,6 @@ img.icon,
         position: sticky;
         top: 0;
         z-index: 1020; // Di atas konten tabel
-        background-color: #f8f9fa; // Wajib dikasih warna biar gak transparan (numpuk)
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); // Garis bayangan biar tegas batasnya
 
         // Fix border ilang pas sticky

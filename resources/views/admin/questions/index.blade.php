@@ -1,7 +1,5 @@
 @extends('layouts.app')
 
-@section('title', 'Question Management')
-
 @section('styles')
     <style>
         /* Visual Drag & Drop Modern */
@@ -42,7 +40,7 @@
 
 @push('subtitle')
     <div
-        class="d-inline-flex align-items-center justify-content-center px-3 py-1 mt-2 rounded-3 bg-white bg-opacity-10 border border-light text-white animate-fade-in">
+        class="d-inline-flex align-items-center justify-content-center px-3 py-1 mt-1 mb-0 rounded-3 bg-white bg-opacity-10 border border-light text-white subtitle">
         <i class="bi bi-list-check me-2 fs-6"></i>
         <span class="fs-6 fw-bold text-uppercase">Question List</span>
     </div>

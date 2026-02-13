@@ -39,7 +39,15 @@ class QuestionController extends Controller
     {
         $question->delete();
 
-        return redirect()->route('question.index')->with('success', 'Question deleted.');
+        // Urut ulang display_order setelah penghapusan
+        $questions = Question::where('package', $question->package)
+            ->orderBy('display_order')
+            ->get();
+        foreach ($questions as $index => $q) {
+            $q->update(['display_order' => $index + 1]);
+        }
+
+        return redirect()->route('admin.question.index')->with('success', 'Question deleted.');
     }
 
     public function store(Request $request)

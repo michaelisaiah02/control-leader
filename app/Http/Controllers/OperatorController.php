@@ -14,7 +14,7 @@ class OperatorController extends Controller
     public function index()
     {
         $users = User::where('role', 'operator')->with('division')->get();
-        $leaders = User::where('role', 'leader')->where('superior_id', auth()->user()->employeeID)->get();
+        $leaders = User::where('role', 'leader')->with('department')->get();
         $divisions = Division::all();
 
         return view('schedule.operator', compact('users', 'divisions', 'leaders'), [
@@ -28,6 +28,7 @@ class OperatorController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'employeeID' => ['required', 'size:5', Rule::unique('users', 'employeeID')],
             'division_id' => ['required', 'integer', Rule::exists('divisions', 'id')],
+            'superior_id' => ['nullable', 'integer', Rule::exists('users', 'employeeID')],
         ]);
 
         $validated['name'] = Str::ucfirst($validated['name']);

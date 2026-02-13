@@ -130,7 +130,7 @@
                 </div>
             </div>
             {{-- ROLE: ADMIN --}}
-        @elseif(auth()->user()->role === 'admin')
+        @elseif(in_array(auth()->user()->role, ['admin', 'management', 'ypq']))
             <div class="row g-4 justify-content-center animate-fade-in">
                 <div class="col-12 col-md-6">
                     <a href="{{ route('admin.question.index') }}" class="btn-dashboard">

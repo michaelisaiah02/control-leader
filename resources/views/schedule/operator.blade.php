@@ -26,7 +26,7 @@
                                 <option value="" selected>All Leaders</option>
                                 @foreach ($leaders as $leader)
                                     <option value="{{ $leader->employeeID }}"
-                                        data-department="{{ $leader->department->department_name ?? '-' }}">
+                                        data-department="{{ $leader->department->name ?? '-' }}">
                                         {{ $leader->name }}
                                     </option>
                                 @endforeach
@@ -66,17 +66,16 @@
                 class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-none z-3 d-flex justify-content-center align-items-center">
                 <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
             </div>
-
             {{-- Wrapper Scroll --}}
             <div class="table-responsive-wrapper table-responsive">
                 {{-- TABEL MENYATU (Header & Body) + Class .table-sticky-header --}}
                 <table class="table table-sm table-hover table-striped mb-0 table-sticky-header" id="operator-table">
-                    <thead class="text-secondary small text-uppercase fw-bold">
+                    <thead class="table-primary small text-uppercase fw-bold text-center">
                         <tr>
                             {{-- Lebar kolom otomatis sinkron karena satu tabel --}}
                             <th>#</th>
                             <th>ID</th>
-                            <th>Name</th>
+                            <th class="text-start">Name</th>
                             <th>Division</th>
                             <th>Action</th>
                         </tr>
@@ -109,7 +108,7 @@
     {{-- MODAL: Create/Edit Operator (Compact & Standard Labels) --}}
     <div class="modal fade" id="operatorModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
-            <form class="modal-content rounded-3 border-0 shadow" id="operatorForm" novalidate>
+            <form class="modal-content rounded-3 border-0 shadow" method="POST" id="operatorForm" novalidate>
                 @csrf
                 <div class="modal-header border-bottom-0 pb-0 pt-3 px-3">
                     <h6 class="modal-title fw-bold text-uppercase" id="operatorModalLabel">Add Operator</h6>
@@ -142,13 +141,12 @@
                             <select class="form-select form-select-sm" id="division" name="division_id" required>
                                 <option value="" disabled selected>Select Division</option>
                                 @foreach ($divisions as $division)
-                                    <option value="{{ $division->id }}">{{ $division->division_name }}</option>
+                                    <option value="{{ $division->id }}">{{ $division->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label for="leaderModal" class="form-label small fw-bold text-secondary mb-1">Direct
-                                Supervisor</label>
+                            <label for="leaderModal" class="form-label small fw-bold text-secondary mb-1">Leader</label>
                             <select class="form-select form-select-sm" id="leaderModal" name="superior_id" required>
                                 <option value="" disabled selected>Select Leader</option>
                                 @foreach ($leaders as $leader)
@@ -224,10 +222,6 @@
                         // Update Department field
                         const selectedDept = $('#leader option:selected').data('department');
                         $('#department').val(selectedDept || '-');
-
-                        // Logic Penting: Sinkronisasi lebar kolom Header & Body
-                        // Karena headernya terpisah, kita harus pastiin lebarnya sama
-                        syncColumnWidths();
                     },
                     error: function() {
                         alert('Error loading data.');
@@ -236,12 +230,6 @@
                         $('#table-loader').addClass('d-none');
                     }
                 });
-            }
-
-            // Helper untuk menyamakan lebar kolom header dan body (Karena table headernya dipisah)
-            function syncColumnWidths() {
-                // Kita set width manual di HTML (width="5%") jadi harusnya aman.
-                // Tapi kalau mau perfect, script ini bisa dipake nanti.
             }
 
             // --- Event Listeners ---
@@ -281,14 +269,15 @@
                 if ($('#operatorForm').find('input[name="_method"]').length === 0) {
                     $('#operatorForm').prepend('<input type="hidden" name="_method" value="PUT">');
                 }
-                $('#operatorModal').modal('show');
+                const myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById(
+                    'operatorModal'));
+                myModal.show();
             });
 
             $(document).on('click', '.btn-delete-operator', function() {
                 const id = $(this).data('id');
                 $('#deleteOperatorForm').attr('action', `${ROUTES.DELETE}/${id}`);
                 $('#deleteOperatorName').text($(this).data('name'));
-                $('#deleteOperatorModal').modal('show');
             });
 
             $('#operatorForm').on('submit', function(e) {

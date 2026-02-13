@@ -80,13 +80,12 @@
                 <i class="bi bi-plus-lg me-2"></i> Add User
             </button>
         </div>
-
     </div>
 
     {{-- MODAL: Create/Edit User (Versi Compact) --}}
     <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <form class="modal-content rounded-3 border-0 shadow" id="userForm" novalidate>
+            <form class="modal-content rounded-3 border-0 shadow" id="userForm" method="POST" novalidate>
                 @csrf
                 <div class="modal-header border-bottom-0 pb-0 pt-3 px-3">
                     <h6 class="modal-title fw-bold text-uppercase" id="userModalLabel">Add User</h6>
@@ -96,10 +95,8 @@
                 <div class="modal-body pt-2 px-3 pb-3">
                     <input type="hidden" name="user_id" id="user-id">
 
-                    {{-- Gunakan Grid Gap Kecil (g-2) --}}
                     <div class="row g-2 mb-2">
                         <div class="col-12 col-md-6">
-                            {{-- Ganti Floating Label jadi label biasa biar lebih hemat tempat vertikal --}}
                             <label for="employeeID" class="form-label small fw-bold text-secondary mb-1">User ID (5
                                 Digits)</label>
                             <input type="text" class="form-control form-control-sm" id="employeeID" name="employeeID"
@@ -126,12 +123,12 @@
                             <input type="text" class="form-control form-control-sm" id="name" name="name"
                                 placeholder="John Doe" required>
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-6" id="departmentForm">
                             <label for="department" class="form-label small fw-bold text-secondary mb-1">Department</label>
-                            <select class="form-select form-select-sm" id="department" name="department_id" required>
+                            <select class="form-select form-select-sm" id="department" name="department_id">
                                 <option value="" disabled selected>Select Dept</option>
                                 @foreach ($departments as $department)
-                                    <option value="{{ $department->id }}">{{ $department->department_name }}</option>
+                                    <option value="{{ $department->id }}">{{ $department->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -140,14 +137,23 @@
                     <div class="row g-2">
                         <div class="col-12 col-md-6">
                             <label for="password" class="form-label small fw-bold text-secondary mb-1">Password</label>
-                            <input type="password" class="form-control form-control-sm" id="password" name="password"
-                                placeholder="Min. 6 chars" minlength="6">
+                            <div class="input-group input-group-sm has-validation">
+                                <input type="password" class="form-control" id="password" name="password"
+                                    minlength="8" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$"
+                                    autocomplete="new-password">
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                             <small class="text-muted d-block" style="font-size: 0.7rem;">Leave empty if unchanged (Edit
                                 Mode)</small>
+                            <div class="invalid-feedback">
+                                Min 8 chars, Uppercase, Lowercase, Number, Symbol.
+                            </div>
                         </div>
                         <div class="col-12 col-md-6" id="superiorForm" style="display: none;">
                             <label for="superior" class="form-label small fw-bold text-secondary mb-1">Superior</label>
-                            <select class="form-select form-select-sm" id="superior" name="superior_id" required>
+                            <select class="form-select form-select-sm" id="superior" name="superior_id">
                                 <option value="" disabled selected>Select Superior</option>
                             </select>
                         </div>
@@ -186,6 +192,7 @@
     </div>
 
     <x-toast />
+    {{-- @dd($users[3]->superior_id) --}}
 @endsection
 
 @section('scripts')
@@ -228,7 +235,7 @@
             }
 
             // 2. Fetch Superiors Logic (Dependency Dropdown)
-            function fetchSuperiors() {
+            function fetchSuperiors(selectedValue = null) {
                 const role = $('#role').val();
                 const deptId = $('#department').val();
                 const $supSelect = $('#superior');
@@ -249,9 +256,14 @@
                         $supSelect.empty().append(
                             '<option value="" disabled selected>Select Superior</option>');
 
-                        // Handle response structure (check array/object)
-                        const data = response[0] || response; // Adaptasi logic lama lo
-                        const superiors = data.superiors || [];
+                        // --- PERBAIKAN DI SINI ---
+                        // Cek apakah response langsung array atau object dengan key superiors
+                        let superiors = [];
+                        if (Array.isArray(response)) {
+                            superiors = response; // Jika response langsung [ {id:..}, {id:..} ]
+                        } else if (response.superiors) {
+                            superiors = response.superiors; // Jika response { superiors: [...] }
+                        }
 
                         if (superiors.length === 0) {
                             $supSelect.append(
@@ -259,9 +271,14 @@
                         } else {
                             superiors.forEach(sup => {
                                 $supSelect.append(
-                                    `<option value="${sup.id}">${sup.name} (${sup.employeeID})</option>`
+                                    `<option value="${sup.employeeID}">${sup.name} (${sup.employeeID})</option>`
                                 );
                             });
+                        }
+
+                        // Set Selected Value jika ada (Mode Edit)
+                        if (selectedValue) {
+                            $supSelect.val(selectedValue);
                         }
                     },
                     error: function() {
@@ -270,13 +287,26 @@
                 });
             }
 
+            function toggleDepartmentVisibility() {
+                if ($('#role').val() === 'leader' || $('#role').val() === 'supervisor') {
+                    $('#departmentForm').fadeIn();
+                    $('#departmentForm').find('select').attr('required', true);
+                } else {
+                    $('#departmentForm').hide();
+                    $('#departmentForm').find('select').attr('required', false);
+                    $('#department').val('');
+                }
+            }
+
             // Toggle Superior Field Visibility
             function toggleSuperiorVisibility() {
                 if ($('#role').val() && $('#department').val()) {
                     $('#superiorForm').fadeIn();
+                    $('#superiorForm').find('select').attr('required', true);
                     fetchSuperiors(); // Panggil fetch cuma kalau dua-duanya keisi
                 } else {
                     $('#superiorForm').hide();
+                    $('#superiorForm').find('select').attr('required', false);
                     $('#superior').val('');
                 }
             }
@@ -295,6 +325,7 @@
             });
 
             // Dependency Change Events
+            $('#role').on('change', toggleDepartmentVisibility);
             $('#role, #department').on('change', toggleSuperiorVisibility);
 
             // Modal Actions
@@ -313,39 +344,36 @@
             $(document).on('click', '.btn-edit-user', function() {
                 const btn = $(this);
                 const id = btn.data('id');
-
                 $('#user-id').val(id);
                 $('#name').val(btn.data('name'));
                 $('#employeeID').val(btn.data('employeeid'));
                 $('#role').val(btn.data('role'));
                 $('#department').val(btn.data(
-                    'department_id')); // Pastikan data attribute ada di button edit
+                    'department')); // Pastikan data attribute ada di button edit
                 $('#password').val('');
                 $('#password').removeAttr('required'); // Password optional kalau edit
+                $('#superior').val(btn.data('superior'));
 
                 $('#userModalLabel').text('Edit User');
                 $('#userForm').attr('action', `${ROUTES.UPDATE}/${id}`);
 
                 if ($('#userForm').find('input[name="_method"]').length === 0) {
-                    $('#userForm').prepend('<input type="hidden" name="_method" value="PUT">');
+                    $('#userForm').prepend('<input type="hidden" name="_method" value="POST">');
                 }
 
-                // Trigger logic superior
+                // Trigger logic superior & department visibility
                 toggleSuperiorVisibility();
+                toggleDepartmentVisibility();
 
-                // Set value superior setelah fetch (ini agak tricky karena async,
-                // idealnya fetch dulu baru set val, tapi quick fix pake timeout atau logic di success fetch)
-                setTimeout(() => {
-                    $('#superior').val(btn.data('superior_id'));
-                }, 500);
+                fetchSuperiors(btn.data('superior'));
 
-                $('#userModal').modal('show');
+                const myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('userModal'));
+                myModal.show();
             });
 
             $(document).on('click', '.btn-delete-user', function() {
                 $('#deleteUserForm').attr('action', `${ROUTES.DELETE}/${$(this).data('id')}`);
                 $('#deleteUserName').text($(this).data('name'));
-                $('#deleteUserModal').modal('show');
             });
 
             $('#userForm').on('submit', function(e) {
@@ -356,6 +384,15 @@
                     $('#btn-save').prop('disabled', true).text('Saving...');
                 }
                 $(this).addClass('was-validated');
+            });
+
+            // Toggle Password
+            $('#togglePassword').on('click', function() {
+                const $input = $('#password');
+                const $icon = $(this).find('i');
+                const type = $input.attr('type') === 'password' ? 'text' : 'password';
+                $input.attr('type', type);
+                $icon.toggleClass('bi-eye bi-eye-slash');
             });
 
             // Initial Load

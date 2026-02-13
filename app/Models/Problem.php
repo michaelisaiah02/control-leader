@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\ControlLeader\ChecksheetAnswer;
+use App\Models\ChecksheetAnswer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Problem extends Model
