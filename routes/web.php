@@ -31,14 +31,14 @@ Route::middleware('auth')->group(function () {
     Route::middleware(SingleLogin::class)->middleware(ResumeDraft::class)->group(function () {
         // Rencana & Detail (biar lengkap, bisa kamu tambah belakangan)
         Route::prefix('schedule')->as('schedule.')->controller(ScheduleController::class)->group(function () {
+            // Main page (Supervisor Checks Leader)
             Route::get('/', 'index')->name('index');
-            Route::post('/', 'store')->name('store');
-            Route::get('/{id}/edit', 'edit')->name('edit');
-            Route::put('/{id}', 'update')->name('update');
-            Route::post('/{id}/update-cell-leader', 'updateCellLeader')->name('updateCellLeader');
-            Route::post('/{id}/update-division', 'updateDivision')->name('updateDivision');
-            Route::post('/{id}/add-user', 'addUser')->name('addUser');
-            Route::delete('/{id}/remove-user/{userId}', 'removeUser')->name('removeUser');
+            Route::post('/{plan}/update-cell', 'updateCell')->name('updateCell');
+
+            // PAGE: Leader Checks Operator
+            Route::get('/leader', 'leaderIndex')->name('leader');
+            Route::post('/{plan}/update-cell-operator', 'updateCellOperator')->name('updateCellOperator');
+            Route::post('/{plan}/update-division-operator', 'updateDivisionOperator')->name('updateDivisionOperator');
         });
 
         // Operator data view

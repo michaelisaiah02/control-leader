@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class ScheduleDetail extends Model
 {
     use HasFactory;
+    protected $guarded = ['id'];
 
     protected $table = 'schedule_details';
 
@@ -18,6 +19,10 @@ class ScheduleDetail extends Model
         'division',
         'scheduled_date',
         'shift',
+    ];
+
+    protected $casts = [
+        'scheduled_date' => 'date',
     ];
 
     public function plan(): BelongsTo
