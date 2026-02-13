@@ -111,10 +111,10 @@ Route::controller(App\Http\Controllers\ReportController::class)->group(function 
     Route::get("api/reports/leader-consistency", 'apiLeaderConsistency');
 });
 
-Route::controller(App\Http\Controllers\ControlLeader\ProblemListController::class)->group(function () {
-    Route::get('/list-problem', 'index')->name("control.listProblem.index");
-    Route::get('/list-problem/{type}', 'list')->name("control.listProblem.list");
-    Route::get('/list-problem/{type}/{id}', 'edit')->name("control.listProblem.edit");
-    Route::put('/list-problem/{type}/{id}/update', 'update')->name("control.listProblem.update");
+Route::controller(App\Http\Controllers\ProblemListController::class)->group(function () {
+    Route::get('/list-problem', 'index')->name("listProblem.index");
+    Route::get('/list-problem/{type}', 'list')->name("listProblem.list");
+    Route::get('/list-problem/{type}/{id}', 'edit')->name("listProblem.edit");
+    Route::put('/list-problem/{type}/{id}/update', 'update')->name("listProblem.update");
     Route::get('/list-problem/{type}/edit', 'editTemplate');
 });

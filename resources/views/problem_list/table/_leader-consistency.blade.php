@@ -10,7 +10,7 @@
                 <th scope="col">Remark</th>
                 <th scope="col">Due Date</th>
                 <th scope="col">Status</th>
-                @if(auth()->guard('web_control_leader')->user()->role === 'leader' || auth()->guard('web_control_leader')->user()->role === 'supervisor')
+                @if(auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor')
                 <th scope="col">Action</th>
                 @endif
             </tr>
@@ -26,10 +26,10 @@
                 <th scope="col">Remark</th>
                 <th scope="col">{{ $problem->due_date }}</th>
                 <th scope="col" class="capitalize">{{ $problem->status }}</th>
-                @if(auth()->guard('web_control_leader')->user()->role === 'leader' || auth()->guard('web_control_leader')->user()->role === 'supervisor')
+                @if(auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor')
                 <th scope="col">
                     @if ($problem->status != 'close')
-                    <a href="{{ route('control.listProblem.edit', ['type' => 'leader-performance', 'id' => $problem->id]) }}">Edit</a>
+                    <a href="{{ route('listProblem.edit', ['type' => 'leader-performance', 'id' => $problem->id]) }}">Edit</a>
                     @else
                     -
                     @endif

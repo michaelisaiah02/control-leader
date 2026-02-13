@@ -20,23 +20,23 @@ $role = explode('-', $type)[0];
 @endpush
 
 @section('content')
-<form method="POST" action="{{ route('control.listProblem.update', ['type' => $type, 'id' => $problem->id]) }}" class="px-5">
+<form method="POST" action="{{ route('listProblem.update', ['type' => $type, 'id' => $problem->id]) }}" class="px-5">
     @csrf
     @method('PUT')
     <div class="d-flex flex-column gap-1">
         <!-- Read-Only -->
         @switch($type)
         @case('leader-performance')
-        @include('control.problem_list.form._performance')
+        @include('problem_list.form._performance')
         @break
         @case('leader-consistency')
-        @include('control.problem_list.form._consistency')
+        @include('problem_list.form._consistency')
         @break
         @case('supervisor-performance')
-        @include('control.problem_list.form._performance')
+        @include('problem_list.form._performance')
         @break
         @case('supervisor-consistency')
-        @include('control.problem_list.form._consistency')
+        @include('problem_list.form._consistency')
         @break
         @default
         <div></div>
@@ -71,7 +71,7 @@ $role = explode('-', $type)[0];
     <!-- Footer -->
     <div class="py-1 d-flex justify-content-between">
         <div>
-            <a href="{{ route('control.listProblem.list', $type) }}" class="btn btn-primary text-white py-2 px-4">Back</a>
+            <a href="{{ route('listProblem.list', $type) }}" class="btn btn-primary text-white py-2 px-4">Back</a>
         </div>
         <div>
             <button type="submit" class="btn btn-primary text-white py-2 px-4">Save</button>
