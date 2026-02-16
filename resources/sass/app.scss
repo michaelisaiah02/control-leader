@@ -56,6 +56,12 @@ $table-bg-scale: 0.5; // 50% deprecated di dart-sass string number, use decimal
 // 4. CUSTOM COMPONENT SYSTEM (The Rules)
 // ==========================================
 
+.max-w-800 {
+    max-width: calc(var(--spacing) * 800)
+        /* 200rem = 3200px */
+    ;
+}
+
 // Rule #2: Label Box
 .label-box {
     min-width: 100px;

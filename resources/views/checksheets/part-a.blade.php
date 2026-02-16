@@ -2,7 +2,7 @@
 
 @push('subtitle')
     <div
-        class="d-inline-flex align-items-center justify-content-center px-4 py-2 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 border border-light text-white animate-fade-in subtitle">
+        class="d-inline-flex align-items-center justify-content-center px-3 py-1 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 border border-light text-white animate-fade-in subtitle">
         <i class="bi bi-ui-checks-grid me-2 fs-5"></i>
         <span class="fs-5 fw-bold text-uppercase">
             @switch($phase)
@@ -30,10 +30,10 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid pb-5 mb-5 max-w-800 mx-auto"> {{-- max-w-800 (custom class) biar form ga terlalu melar di layar gede --}}
+    <div class="container-fluid max-w-800 mx-auto">
 
         {{-- HEADER INFO --}}
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
             <div class="badge bg-primary fs-6 px-3 py-2 shadow-sm rounded-pill">
                 <i class="bi bi-file-earmark-text me-1"></i> Bagian A
             </div>
@@ -45,7 +45,7 @@
         </div>
 
         {{-- PROGRESS WIZARD --}}
-        <div class="progress mb-4" style="height: 4px;">
+        <div class="progress mb-2" style="height: 4px;">
             <div class="progress-bar bg-primary transition-all" id="wizard-progress" role="progressbar" style="width: 50%;">
             </div>
         </div>
@@ -59,14 +59,14 @@
              PAGE 1: IDENTITAS
              ===================================== --}}
             <div id="page1" class="animate-fade-in">
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card border-0 shadow-sm rounded-4 mb-2">
                     <div class="card-header bg-light border-bottom-0 pt-3 pb-2 rounded-top-4">
                         <h6 class="fw-bold text-primary mb-0"><i class="bi bi-1-circle me-2"></i>Informasi Target</h6>
                     </div>
-                    <div class="card-body p-4">
+                    <div class="card-body p-3">
 
                         {{-- 1. Shift --}}
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label class="form-label fw-bold text-secondary small text-uppercase">1. Shift Kerja</label>
                             <div class="d-flex gap-2">
                                 @foreach ([1, 2, 3] as $s)
@@ -84,7 +84,7 @@
                         </div>
 
                         {{-- 2. Target Pick --}}
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label class="form-label fw-bold text-secondary small text-uppercase">2.
                                 {{ $targetLabel }}</label>
                             <select id="target_pick" name="target_pick" placeholder="Pilih {{ $targetLabel }}..." required>
@@ -96,11 +96,10 @@
                         </div>
 
                         {{-- 3. Bagian --}}
-                        <div class="mb-2">
+                        <div class="mb-3">
                             <label class="form-label fw-bold text-secondary small text-uppercase">3. Bagian
                                 (Auto-fill)</label>
-                            <input type="text" name="bagian" class="form-control form-control-lg bg-light"
-                                placeholder="-" readonly>
+                            <input type="text" name="bagian" class="form-control bg-light" placeholder="-" readonly>
                         </div>
 
                     </div>
@@ -112,19 +111,19 @@
              PAGE 2: KEHADIRAN
              ===================================== --}}
             <div id="page2" class="d-none animate-fade-in">
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card border-0 shadow-sm rounded-4 mb-3">
                     <div class="card-header bg-light border-bottom-0 pt-3 pb-2 rounded-top-4">
                         <h6 class="fw-bold text-primary mb-0"><i class="bi bi-2-circle me-2"></i>Status Kehadiran</h6>
                     </div>
 
-                    <div class="card-body p-4">
+                    <div class="card-body p-3">
 
                         {{-- 4. Check Kehadiran --}}
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label class="form-label fw-bold text-dark fs-5 mb-3">Apakah operator hadir?</label>
 
                             {{-- Hint Box --}}
-                            <div class="alert alert-warning border-warning-subtle small mb-3">
+                            <div class="alert alert-warning border-warning-subtle small py-2 mb-3">
                                 <strong><i class="bi bi-exclamation-triangle-fill me-1"></i>Jika Absen:</strong>
                                 <ul class="mb-0 ps-3 mt-1 text-muted">
                                     <li>Isi perubahan Man Power di Henkaten Board</li>
@@ -137,13 +136,13 @@
                             <div class="row g-2">
                                 <div class="col-6">
                                     <input type="radio" class="btn-check" name="attendance" id="att_hadir" value="1">
-                                    <label class="btn btn-outline-success w-100 py-3 fw-bold rounded-3" for="att_hadir">
+                                    <label class="btn btn-outline-success w-100 py-2 fw-bold rounded-3" for="att_hadir">
                                         <i class="bi bi-person-check fs-4 d-block mb-1"></i> Hadir
                                     </label>
                                 </div>
                                 <div class="col-6">
                                     <input type="radio" class="btn-check" name="attendance" id="att_absen" value="0">
-                                    <label class="btn btn-outline-danger w-100 py-3 fw-bold rounded-3" for="att_absen">
+                                    <label class="btn btn-outline-danger w-100 py-2 fw-bold rounded-3" for="att_absen">
                                         <i class="bi bi-person-x fs-4 d-block mb-1"></i> Absen
                                     </label>
                                 </div>
@@ -225,7 +224,6 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -256,9 +254,35 @@
             const PLAN = {{ $plan->id }};
             const DASHBOARD_URL = @json(route('dashboard'));
             const PARTB_URL = @json(route('checksheets.partB'));
-            const START_URL = @json(route('drafts.start'));
-            const HEART_URL = @json(route('heartbeat'));
+            const START_URL = @json(route('checksheets.drafts.start'));
+            const HEART_URL = @json(route('checksheets.heartbeat'));
             const key = (k) => `cl:plan:${PLAN}:phase:${PHASE}:${k}`;
+
+            // Toast Helper Function
+            function showToast(message, type = 'info') {
+                const toastHTML = `
+                    <div class="toast position-fixed top-0 start-50 translate-middle-x mt-3 align-items-center text-white bg-${type === 'error' ? 'danger' : type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+                const toastContainer = document.getElementById('toastContainer') || (() => {
+                    const container = document.createElement('div');
+                    container.id = 'toastContainer';
+                    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                    document.body.appendChild(container);
+                    return container;
+                })();
+                const toastEl = document.createElement('div');
+                toastEl.innerHTML = toastHTML;
+                toastContainer.appendChild(toastEl.firstElementChild);
+                const toast = new bootstrap.Toast(toastContainer.lastElementChild);
+                toast.show();
+            }
 
             // --- 1. TIMER & HEARTBEAT ---
             $.post(START_URL, {
@@ -288,12 +312,12 @@
             // --- 2. SELECTIZE INIT ---
             let targetSelectize = $('[name="target_pick"]').selectize({
                 theme: 'bootstrap5',
-                dropdownParent: 'body' // <--- INI OBAT ANTI NGEDIP NYA
+                dropdownParent: 'body'
             })[0].selectize;
 
             let penggantiSelectize = $('[name="nama_pengganti"]').selectize({
                 theme: 'bootstrap5',
-                dropdownParent: 'body' // <--- INI OBAT ANTI NGEDIP NYA
+                dropdownParent: 'body'
             })[0].selectize;
             let originalPenggantiOptions = Object.values(penggantiSelectize.options);
 
@@ -356,7 +380,7 @@
                     $('#page2').addClass('d-none');
                     $('#page1').removeClass('d-none');
                     $('#prevBtn').addClass('d-none');
-                    $('#prevSpacer').removeClass('d-none'); // Jaga layout tetap rapi
+                    $('#prevSpacer').removeClass('d-none');
                     $('#wizard-progress').css('width', '50%');
                     $('#nextBtn').html('Lanjut <i class="bi bi-arrow-right ms-2" id="nextIcon"></i>').removeClass(
                         'btn-success').addClass('btn-primary');
@@ -384,7 +408,10 @@
 
                 // Validation Page 1
                 if (page === 1) {
-                    if (!target || !bagian) return alert('Silakan lengkapi pilihan target.');
+                    if (!target || !bagian) {
+                        showToast('Silakan lengkapi pilihan target.', 'warning');
+                        return;
+                    }
                     page = 2;
                     updateWizardUI();
                     return;
@@ -392,7 +419,10 @@
 
                 // Validation & Submit Page 2
                 const attend = $('input[name="attendance"]:checked').val();
-                if (!attend) return alert('Silakan isi status kehadiran.');
+                if (!attend) {
+                    showToast('Silakan isi status kehadiran.', 'warning');
+                    return;
+                }
 
                 const adaPengganti = $('input[name="ada_pengganti"]:checked').val();
                 const kondisi = $('input[name="kondisi"]:checked').val();
@@ -416,9 +446,6 @@
 
                 // Logic Submit Final
                 if (attend === '0' && adaPengganti === '0') {
-                    // Submit Direct to Server (Absen, no pengganti)
-
-                    // Loading UI Button
                     const btn = $(this);
                     btn.prop('disabled', true).html(
                         '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...');
@@ -432,7 +459,7 @@
                             target: target,
                             division: bagian,
                             attendance: parseInt(attend),
-                            ada_pengganti: '0',
+                            has_replacement: '0',
                             kondisi: null,
                             nama_pengganti: null,
                             bagian_pengganti: null,
@@ -440,25 +467,41 @@
                         }
                     };
 
-                    $.post(@json(route('checksheets.store')) + `?type=${PHASE}`, finalPayload)
-                        .done(() => {
+                    $.ajax({
+                        url: @json(route('checksheets.store')) + `?type=${PHASE}`,
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(finalPayload),
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json' // <--- Paksa Laravel return error JSON, bukan redirect
+                        },
+                        success: function() {
                             sessionStorage.removeItem(key('partA'));
+                            console.log('ok');
                             window.location.href = DASHBOARD_URL;
-                        }).fail((xhr) => {
-                            console.error(xhr.responseJSON);
-                            alert('Gagal menyimpan data. Silakan coba lagi.');
+                        },
+                        error: function(xhr) {
+                            console.error('Validation Error:', xhr.responseJSON);
+                            alert('Gagal menyimpan: Cek kembali isian Anda.');
                             btn.prop('disabled', false).html(
-                                '<i class="bi bi-check-lg me-2"></i> Submit'); // Restore btn
-                        });
+                                '<i class="bi bi-check-lg me-2"></i> Submit');
+                        }
+                    });
 
                 } else {
                     // Harus isi part B
                     if (attend === '0' && adaPengganti === '1') {
-                        if (!namaPengganti || !bagianPengganti || !kondisiPengganti) return alert(
-                            'Lengkapi data operator pengganti.');
+                        if (!namaPengganti || !bagianPengganti || !kondisiPengganti) {
+                            showToast('Lengkapi data operator pengganti.', 'warning');
+                            return;
+                        }
                         payload.has_replacement = true;
                     } else if (attend === '1') {
-                        if (!kondisi) return alert('Pilih kondisi operator.');
+                        if (!kondisi) {
+                            showToast('Pilih kondisi operator.', 'warning');
+                            return;
+                        }
                         payload.has_replacement = false;
                     }
 

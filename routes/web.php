@@ -81,17 +81,19 @@ Route::middleware('auth')->group(function () {
         // CHECKSHEET (2 step: Part A -> Part B)
         // =========================
 
-        Route::get('/checksheets/create', [ChecksheetController::class, 'createPartA'])->name('checksheets.create'); // ?type=awal_shift
+        Route::prefix('checksheets')->as('checksheets.')->controller(ChecksheetController::class)->group(function () {
+            Route::get('/create', 'createPartA')->name('create'); // ?type=awal_shift
 
-        // draft/timer
-        Route::post('/checksheets/drafts/start', [ChecksheetController::class, 'startDraft'])->name('drafts.start');
-        Route::post('/heartbeat', [ChecksheetController::class, 'heartbeat'])->name('heartbeat');
+            // draft/timer
+            Route::post('/drafts/start', 'startDraft')->name('drafts.start');
+            Route::post('/heartbeat', 'heartbeat')->name('heartbeat');
 
-        // ke Part B
-        Route::get('/checksheets/part-b', [ChecksheetController::class, 'showPartB'])->name('checksheets.partB');
+            // ke Part B
+            Route::get('/part-b', 'showPartB')->name('partB');
 
-        // submit final
-        Route::post('/checksheets', [ChecksheetController::class, 'store'])->name('checksheets.store');
+            // submit final
+            Route::post('/', 'store')->name('store');
+        });
     });
 });
 

@@ -1,57 +1,94 @@
 @extends('layouts.app')
 
 @push('subtitle')
-    <p class="fs-2 w-75 p-0 my-auto sub-judul border border-1 border-white rounded-2 text-uppercase">
-        @switch($phase)
-            @case('awal_shift')
-                AWAL SHIFT SEBELUM BEKERJA
-            @break
+    <div
+        class="d-inline-flex align-items-center justify-content-center px-4 py-2 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 border border-light text-white animate-fade-in subtitle">
+        <i class="bi bi-ui-checks me-2 fs-5"></i>
+        <span class="fs-5 fw-bold text-uppercase">
+            @switch($phase)
+                @case('awal_shift')
+                    AWAL SHIFT SEBELUM BEKERJA
+                @break
 
-            @case('saat_bekerja')
-                SAAT BEKERJA
-            @break
+                @case('saat_bekerja')
+                    SAAT BEKERJA
+                @break
 
-            @case('setelah_istirahat')
-                SETELAH ISTIRAHAT
-            @break
+                @case('setelah_istirahat')
+                    SETELAH ISTIRAHAT
+                @break
 
-            @case('akhir_shift')
-                AKHIR SHIFT SEBELUM PULANG
-            @break
+                @case('akhir_shift')
+                    AKHIR SHIFT SEBELUM PULANG
+                @break
 
-            @default
-                JUDUL CHECKSHEET
-        @endswitch
-    </p>
+                @default
+                    JUDUL CHECKSHEET
+            @endswitch
+        </span>
+    </div>
 @endpush
 
 @section('content')
-    <div class="px-5">
-        <div class="d-flex w-100 mt-2 justify-content-between align-items-center">
-            <p class="border border-2 border-white bg-primary rounded-2 text-white py-1 mb-1 px-4 shadow">Bagian B</p>
-            <p class="border border-2 border-primary rounded-2 px-2 py-1 mb-1 shadow">Stopwatch:
-                <span id="stopwatch" class="mb-1 px-2 text-danger bg-danger-subtle"
-                    data-start="{{ $startedAtMs }}">00:00</span>
-            </p>
+    <div class="container-fluid max-w-800 mx-auto">
+
+        {{-- HEADER INFO --}}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="badge bg-primary fs-6 px-3 py-2 shadow-sm rounded-pill">
+                <i class="bi bi-file-earmark-check me-1"></i> Bagian B
+            </div>
+
+            <div class="badge bg-white text-dark border shadow-sm px-3 py-2 rounded-pill fs-6">
+                <i class="bi bi-stopwatch text-danger me-1"></i> Timer:
+                <span id="stopwatch" class="text-danger fw-bold ms-1" data-start="{{ $startedAtMs }}"
+                    style="display: inline-block; min-width: 55px; text-align: center; font-variant-numeric: tabular-nums;">00:00</span>
+            </div>
         </div>
 
-        <form id="formB" method="POST" action="{{ route('checksheets.store', ['type' => $phase]) }}">
+        {{-- PROGRESS WIZARD --}}
+        <div class="progress mb-2" style="height: 6px;">
+            <div class="progress-bar bg-success transition-all" id="wizard-progress" role="progressbar" style="width: 0%;">
+            </div>
+        </div>
+
+        {{-- FORM START --}}
+        <form id="formB" method="POST" action="{{ route('checksheets.store', ['type' => $phase]) }}"
+            class="position-relative">
             @csrf
+
+            {{-- HIDDEN DATA DARI PART A --}}
             <input type="hidden" name="schedule_plan_id" value="{{ $plan->id }}">
             <input type="hidden" name="part_a[shift]">
             <input type="hidden" name="part_a[target]">
             <input type="hidden" name="part_a[division]">
             <input type="hidden" name="part_a[attendance]">
             <input type="hidden" name="part_a[kondisi]">
+            <input type="hidden" name="part_a[has_replacement]">
             <input type="hidden" name="part_a[nama_pengganti]">
             <input type="hidden" name="part_a[bagian_pengganti]">
             <input type="hidden" name="part_a[kondisi_pengganti]">
 
+            {{-- LOOPING PERTANYAAN --}}
             @foreach ($questions as $i => $q)
-                @php $idx = $i+1; @endphp
-                <div id="q_{{ $idx }}" class="card mb-3 question-card {{ $idx > 1 ? 'd-none' : '' }}">
-                    <div class="card-body">
-                        <div class="fw-semibold mb-2">{{ $idx }}. {{ $q->question_text }}</div>
+                @php $idx = $i + 1; @endphp
+                <div id="q_{{ $idx }}"
+                    class="card border-0 shadow-sm rounded-4 mb-3 question-card animate-fade-in {{ $idx > 1 ? 'd-none' : '' }}">
+
+                    <div
+                        class="card-header bg-light border-bottom-0 py-2 rounded-top-4 d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold text-primary mb-0">Pertanyaan {{ $idx }} dari {{ count($questions) }}
+                        </h6>
+                        @if ($q->extra_fields)
+                            <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>Issue
+                                Tracking</span>
+                        @endif
+                    </div>
+
+                    <div class="card-body p-4">
+                        {{-- Judul Pertanyaan --}}
+                        <h5 class="fw-bold text-dark mb-3 lh-base">{{ $q->question_text }}</h5>
+
+                        {{-- Opsi Jawaban --}}
                         @php
                             $choices =
                                 $q->choices ?:
@@ -59,48 +96,79 @@
                                     ? ['0' => 'Tidak', '1' => 'Ya']
                                     : ['0' => 'Pilihan 0', '1' => 'Pilihan 1', '2' => 'Pilihan 2']);
                         @endphp
-                        <div class="ms-3">
+
+                        <div class="d-flex flex-column gap-2 mb-2">
                             @foreach ($choices as $val => $label)
                                 @php
                                     $v = (string) $val;
                                     $lbl = is_array($label) ? $label['label'] ?? json_encode($label) : $label;
+
+                                    // Kasih warna beda buat opsi terakhir (biasanya "Terburuk" / NG)
+                                    $isLastOption = $loop->last;
+                                    $outlineColor = $isLastOption ? 'outline-success' : 'outline-primary';
                                 @endphp
-                                <div class="form-check">
-                                    <input class="form-check-input answer-radio" type="radio"
-                                        name="answers[{{ $q->id }}]" id="q{{ $q->id }}_{{ $v }}"
-                                        value="{{ $v }}" data-extra="{{ $q->extra_fields }}"
-                                        data-qid="{{ $q->id }}">
-                                    <label class="form-check-label"
-                                        for="q{{ $q->id }}_{{ $v }}">{{ $lbl }}</label>
+
+                                <div>
+                                    <input class="btn-check answer-radio" type="radio" name="answers[{{ $q->id }}]"
+                                        id="q{{ $q->id }}_{{ $v }}" value="{{ $v }}"
+                                        data-extra="{{ $q->extra_fields }}" data-qid="{{ $q->id }}">
+                                    <label class="btn btn-{{ $outlineColor }} w-100 py-3 fw-bold text-start ps-4 rounded-3"
+                                        for="q{{ $q->id }}_{{ $v }}">
+                                        <span class="me-2 d-inline-block text-center" style="width: 24px;">
+                                            {{ chr(65 + $loop->index) }}. </span>
+                                        {{ $lbl }}
+                                    </label>
                                 </div>
                             @endforeach
                         </div>
 
-                        {{-- Problem/Countermeasure slot (muncul tergantung jawaban) --}}
-                        <div class="mt-3 problem-wrap d-none">
-                            <label class="form-label">{{ $q->problem_label ?? 'Problem' }}</label>
-                            <input type="text" name="problems[{{ $q->id }}]"
-                                class="form-control bg-warning-subtle" placeholder="Reason">
+                        {{-- Extra Fields (Muncul jika extra_fields = 1 & opsi yg dipilih bukan yg terakhir) --}}
+                        <div
+                            class="extra-fields-wrap mt-3 p-3 bg-danger-subtle border border-danger-subtle rounded-3 d-none animate-fade-in">
+                            <div class="mb-3 problem-wrap">
+                                <label class="form-label fw-bold text-danger small text-uppercase"><i
+                                        class="bi bi-x-circle me-1"></i>{{ $q->problem_label ?? 'Deskripsi Problem' }}</label>
+                                <input type="text" name="problems[{{ $q->id }}]"
+                                    class="form-control border-danger" placeholder="Ketik alasan / temuan...">
+                            </div>
+                            <div class="counter-wrap">
+                                <label class="form-label fw-bold text-primary small text-uppercase"><i
+                                        class="bi bi-wrench me-1"></i>{{ $q->countermeasure_label ?? 'Tindakan (Countermeasure)' }}</label>
+                                <input type="text" name="countermeasures[{{ $q->id }}]"
+                                    class="form-control border-primary" placeholder="Ketik perbaikan...">
+                            </div>
                         </div>
-                        <div class="mt-2 counter-wrap d-none">
-                            <label class="form-label">{{ $q->countermeasure_label ?? 'Countermeasure' }}</label>
-                            <input type="text" name="countermeasures[{{ $q->id }}]"
-                                class="form-control bg-warning-subtle" placeholder="Reason dan Countermeasure">
-                        </div>
+
                     </div>
                 </div>
             @endforeach
 
-            <div class="d-flex justify-content-between">
-                <span id="pageInfo" class="me-3">{{ count($questions) ? '1 / ' . count($questions) : '' }}</span>
-                <div>
-                    <button type="button" id="prevQ" class="btn btn-outline-primary">Back</button>
-                    <button type="button" id="nextQ" class="btn btn-primary">Next</button>
-                    <button type="submit" id="submitBtn" class="btn btn-primary d-none">Submit</button>
-                </div>
-            </div>
         </form>
     </div>
+
+    {{-- STICKY ACTION BAR --}}
+    <div class="action-bar d-flex justify-content-between align-items-center px-3 px-md-5 bg-white border-top shadow-lg"
+        style="z-index: 1030;">
+        <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-bold" id="prevQ"
+            style="visibility: hidden;">
+            <i class="bi bi-arrow-left me-2"></i> Back
+        </button>
+
+        <div class="fw-bold text-muted small px-3 py-1 bg-light rounded-pill border" id="pageInfo">
+            {{ count($questions) ? '1 / ' . count($questions) : '0 / 0' }}
+        </div>
+
+        <div>
+            <button type="button" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm" id="nextQ">
+                Next <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+            <button type="button" class="btn btn-success rounded-pill px-5 py-2 fw-bold shadow-sm d-none" id="submitBtn">
+                <i class="bi bi-send-check me-2"></i> Submit Data
+            </button>
+        </div>
+    </div>
+
+    <x-toast />
 @endsection
 
 @section('scripts')
@@ -108,12 +176,12 @@
         $(function() {
             const PHASE = @json($phase);
             const PLAN = {{ $plan->id }};
+            const DASHBOARD_URL = @json(route('dashboard'));
             const key = (k) => `cl:plan:${PLAN}:phase:${PHASE}:${k}`;
-            // Stopwatch: pakai started_at_ms yang disimpan di Part A (server draft)
-            let started = parseInt($('#stopwatch').data('start'), 0);
-            if (!started) {
-                started = Date.now();
-            } // fallback
+            const totalQuestions = {{ count($questions) }};
+
+            // --- 1. TIMER ---
+            let started = parseInt($('#stopwatch').data('start'), 10) || Date.now();
             setInterval(() => {
                 const sec = Math.floor((Date.now() - started) / 1000);
                 const mm = String(Math.floor(sec / 60)).padStart(2, '0');
@@ -121,7 +189,7 @@
                 $('#stopwatch').text(`${mm}:${ss}`);
             }, 1000);
 
-            // inject Part A hidden dari sessionStorage
+            // --- 2. INJECT PART A DATA ---
             try {
                 const a = JSON.parse(sessionStorage.getItem(key('partA')) || 'null');
                 if (a) {
@@ -129,120 +197,127 @@
                     $('[name="part_a[target]"]').val(a.target);
                     $('[name="part_a[division]"]').val(a.bagian);
                     $('[name="part_a[attendance]"]').val(a.attendance);
+                    $('[name="part_a[has_replacement]"]').val(a.has_replacement === true || a.has_replacement ===
+                        '1' ? '1' : '0'); // INI PENTING!
                     $('[name="part_a[kondisi]"]').val(a.kondisi);
                     $('[name="part_a[nama_pengganti]"]').val(a.nama_pengganti);
                     $('[name="part_a[bagian_pengganti]"]').val(a.bagian_pengganti);
                     $('[name="part_a[kondisi_pengganti]"]').val(a.kondisi_pengganti);
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error('Gagal mengambil data Part A', e);
+            }
 
-            // simple pager
-            const TOTAL = $('.question-card').length;
+            // --- 3. WIZARD LOGIC ---
             let cur = 1;
+
+            const updateUI = () => {
+                $('#pageInfo').text(`${cur} / ${totalQuestions}`);
+                const percent = ((cur - 1) / totalQuestions) * 100;
+                $('#wizard-progress').css('width', cur === totalQuestions ? '100%' : `${percent}%`);
+                $('#prevQ').css('visibility', cur === 1 ? 'hidden' : 'visible');
+
+                if (cur === totalQuestions) {
+                    $('#nextQ').addClass('d-none');
+                    $('#submitBtn').removeClass('d-none');
+                } else {
+                    $('#nextQ').removeClass('d-none');
+                    $('#submitBtn').addClass('d-none');
+                }
+            };
+
             const go = (n) => {
-                if (n < 1 || n > TOTAL) return;
+                if (n < 1 || n > totalQuestions) return;
                 $(`#q_${cur}`).addClass('d-none');
                 cur = n;
                 $(`#q_${cur}`).removeClass('d-none');
-                $('#prevQ').prop('hidden', cur === 1);
-                $('#nextQ').toggleClass('d-none', cur === TOTAL);
-                $('#submitBtn').toggleClass('d-none', cur !== TOTAL);
-                $('#pageInfo').text(`${cur} / ${TOTAL}`);
+                updateUI();
             };
+            updateUI();
 
-            const showToast = (message, type = 'warning') => {
-                // Buat toast secara programatik dengan jQuery
-                const toastEl = $('<div>').addClass('toast align-items-center border-0')
-                    .addClass(`text-bg-${type}`)
-                    .attr('role', 'alert')
-                    .attr('aria-live', 'assertive')
-                    .attr('aria-atomic', 'true');
-
-                const flexDiv = $('<div>').addClass('d-flex');
-                const bodyDiv = $('<div>').addClass('toast-body').text(message);
-                const closeBtn = $('<button>').attr('type', 'button')
-                    .addClass('btn-close btn-close-white me-2 m-auto')
-                    .attr('data-bs-dismiss', 'toast')
-                    .attr('aria-label', 'Close');
-
-                flexDiv.append(bodyDiv).append(closeBtn);
-                toastEl.append(flexDiv);
-
-                let toastContainer = $('.toast-container');
-                if (toastContainer.length === 0) {
-                    toastContainer = $('<div>').addClass(
-                        'toast-container position-fixed top-50 end-0 translate-middle-y p-3');
-                    $('body').append(toastContainer);
-                }
-
-                toastContainer.append(toastEl);
-
-                const toast = new bootstrap.Toast(toastEl[0]);
-                toast.show();
-
-                toastEl.on('hidden.bs.toast', function() {
-                    $(this).remove();
-                });
-            };
-
+            // --- 4. VALIDATION ---
             const validateCurrentQuestion = () => {
-                const currentCard = $(`#q_${cur}`);
-                const radios = currentCard.find('.answer-radio');
-                const isAnswered = radios.is(':checked');
-                const problemInput = currentCard.find('.problem-wrap input');
-                const counterInput = currentCard.find('.counter-wrap input');
-                const isProblemVisible = currentCard.find('.problem-wrap').is(':visible');
-                const isCounterVisible = currentCard.find('.counter-wrap').is(':visible');
+                const $card = $(`#q_${cur}`);
+                const isAnswered = $card.find('.answer-radio').is(':checked');
+                const $extraWrap = $card.find('.extra-fields-wrap');
 
                 if (!isAnswered) {
-                    showToast('Silakan pilih jawaban untuk pertanyaan ini sebelum melanjutkan.');
+                    alert('Pilih salah satu jawaban dulu bos!');
                     return false;
                 }
-                if (isProblemVisible && problemInput.val().trim() === '') {
-                    showToast('Silakan isi kolom Problem sebelum melanjutkan.');
-                    return false;
-                }
-                if (isCounterVisible && counterInput.val().trim() === '') {
-                    showToast('Silakan isi kolom Countermeasure sebelum melanjutkan.');
-                    return false;
+
+                if (!$extraWrap.hasClass('d-none')) {
+                    if ($extraWrap.find('input[name^="problems"]').val().trim() === '') {
+                        alert('Kolom Problem harus diisi!');
+                        return false;
+                    }
+                    if ($extraWrap.find('input[name^="countermeasures"]').val().trim() === '') {
+                        alert('Kolom Countermeasure harus diisi!');
+                        return false;
+                    }
                 }
                 return true;
             };
 
             $('#prevQ').on('click', () => go(cur - 1));
             $('#nextQ').on('click', () => {
-                if (validateCurrentQuestion()) {
-                    go(cur + 1);
-                }
+                if (validateCurrentQuestion()) go(cur + 1);
             });
-            go(1);
 
-            // tampilkan problem/countermeasure sesuai rule
+            // Tampilkan problem & countermeasure jika opsi yang dipilih bukan yang terakhir
             $('.answer-radio').on('change', function() {
-                const extra = $(this).data('extra'); // 1 atau 0
-                const qid = $(this).data('qid');
-                const val = parseInt($(this).val());
-                const card = $(this).closest('.card-body');
-                const totalOptions = card.find('.answer-radio[data-qid="' + qid + '"]').length;
-                // Tampilkan problem/countermeasure jika:
-                // - extra-fields = 1 (true) DAN
-                // - bukan pilihan terakhir (val !== totalOptions - 1)
-                const show = extra === 1 && val !== (totalOptions - 1);
-                console.log('extra:', extra, 'val:', val, 'totalOptions-1:', totalOptions - 1, 'show:',
-                    show);
+                const extra = parseInt($(this).data('extra'), 10);
+                const val = parseInt($(this).val(), 10);
+                const $card = $(this).closest('.card-body');
+                const totalOptions = $card.find('.answer-radio').length;
+                const $wrap = $card.find('.extra-fields-wrap');
 
-                card.find('.problem-wrap').toggleClass('d-none', !show);
-                card.find('.counter-wrap').toggleClass('d-none', !show);
+                // Logic asli lo: Jika extra_fields = 1 dan yg dipilih BUKAN opsi terakhir
+                if (extra === 1 && val !== (totalOptions - 1)) {
+                    $wrap.removeClass('d-none');
+                } else {
+                    $wrap.addClass('d-none');
+                    $wrap.find('input').val(''); // Reset input kalau disembunyikan
+                }
             });
 
-            // submit: validate before submitting
-            $('#formB').on('submit', function(e) {
-                if (!validateCurrentQuestion()) {
-                    e.preventDefault();
-                    return false;
+            // --- 5. AJAX SUBMIT FINAL ---
+            $('#submitBtn').on('click', async function(e) {
+                e.preventDefault();
+                if (!validateCurrentQuestion()) return;
+
+                const $btn = $(this);
+                $btn.prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...');
+
+                const form = document.getElementById('formB');
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest', // Paksa Laravel ngerespon JSON kalau error
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        sessionStorage.removeItem(key('partA'));
+                        window.location.href = DASHBOARD_URL;
+                    } else {
+                        const err = await response.json();
+                        console.error('Validation Errors:', err);
+                        alert('Gagal menyimpan: Error validasi data dari server.');
+                        $btn.prop('disabled', false).html(
+                            '<i class="bi bi-send-check me-2"></i> Submit Data');
+                    }
+                } catch (err) {
+                    alert('Terjadi kesalahan koneksi.');
+                    $btn.prop('disabled', false).html(
+                        '<i class="bi bi-send-check me-2"></i> Submit Data');
                 }
-                // hapus session draft
-                sessionStorage.removeItem(key('partA'));
             });
         });
     </script>
