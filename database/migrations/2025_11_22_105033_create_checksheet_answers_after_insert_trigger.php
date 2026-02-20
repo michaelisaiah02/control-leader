@@ -13,7 +13,6 @@ return new class extends Migration
         /**
          * Trigger AFTER INSERT
          */
-
         DB::unprepared("
             CREATE TRIGGER tr_checksheet_answers_after_insert
             AFTER INSERT ON checksheet_answers
@@ -70,6 +69,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::connection()->unprepared("DROP TRIGGER IF EXISTS tr_checksheet_answers_after_insert");
+        DB::connection()->unprepared('DROP TRIGGER IF EXISTS tr_checksheet_answers_after_insert');
     }
 };

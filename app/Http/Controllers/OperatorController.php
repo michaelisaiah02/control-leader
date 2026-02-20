@@ -79,8 +79,8 @@ class OperatorController extends Controller
         $leaderInput = $request->query('leader');
 
         $leaderIds = collect($leaderInput === null ? [] : (array) $leaderInput)
-            ->flatMap(fn($value) => is_array($value) ? $value : explode(',', (string) $value))
-            ->map(fn($value) => trim((string) $value))
+            ->flatMap(fn ($value) => is_array($value) ? $value : explode(',', (string) $value))
+            ->map(fn ($value) => trim((string) $value))
             ->filter()
             ->values();
 

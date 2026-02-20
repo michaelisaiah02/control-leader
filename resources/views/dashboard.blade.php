@@ -118,12 +118,12 @@
                         </a>
                     </div>
                     <div class="col">
-                        <a href="{{ route('schedule.index') }}" class="btn-dashboard">
+                        <a href="{{ route('schedule.leader') }}" class="btn-dashboard">
                             <i class="bi bi-calendar-check"></i><span>Schedule Ops</span>
                         </a>
                     </div>
                     <div class="col">
-                        <a href="{{ route('schedule.index', ['supervisor' => true]) }}" class="btn-dashboard">
+                        <a href="{{ route('schedule.index') }}" class="btn-dashboard">
                             <i class="bi bi-calendar-range"></i><span>Schedule Leader</span>
                         </a>
                     </div>

@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Illuminate\Http\Request;
-use App\Models\ChecksheetDraft;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -69,31 +67,6 @@ class LoginController extends Controller
                 'cl_in_progress' => false,     // reset flag nyangkut
                 'cl_last_ping' => now(),
             ])->save();
-
-            $draft = ChecksheetDraft::where('user_id', $user->id)
-                ->where('is_active', true)    // ← tanpa TTL
-                ->latest('updated_at')
-                ->first();
-
-            if ($draft) {
-                // hapus draft yg masih aktif (karena sudah logout > 3 menit)
-                $draft->delete();
-
-                return redirect()->route('checksheets.create', [
-                    'detail' => $draft->schedule_detail_id,
-                    'type' => $draft->phase,
-                ]);
-
-                // kalau tidak sedang mengisi (atau lock kadaluarsa) → boleh takeover sesi lama
-                $oldSid = $user->control_session_id;
-
-                // (opsional) jika SESSION_DRIVER=database, hapus baris sesi lama
-                if (config('session.driver') === 'database' && $oldSid && $oldSid !== $sid) {
-                    DB::connection(config('session.connection'))
-                        ->table(config('session.table', 'sessions'))
-                        ->where('id', $oldSid)->delete();
-                }
-            }
 
             return redirect()->intended('/dashboard');
         }
