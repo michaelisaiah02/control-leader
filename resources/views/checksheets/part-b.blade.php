@@ -30,7 +30,7 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid max-w-800 mx-auto">
+    <div class="container-fluid max-w-800 mx-auto mb-5 pb-5">
 
         {{-- HEADER INFO --}}
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -176,12 +176,12 @@
         $(function() {
             const PHASE = @json($phase);
             const PLAN = {{ $plan->id }};
-            const DASHBOARD_URL = @json(route('dashboard'));
             const key = (k) => `cl:plan:${PLAN}:phase:${PHASE}:${k}`;
             const totalQuestions = {{ count($questions) }};
+            const DASHBOARD_URL = @json(route('dashboard'));
 
-            // --- 1. TIMER ---
-            let started = parseInt($('#stopwatch').data('start'), 10) || Date.now();
+            // --- 1. TIMER MURNI DARI BLADE ---
+            const started = parseInt($('#stopwatch').data('start'), 10);
             setInterval(() => {
                 const sec = Math.floor((Date.now() - started) / 1000);
                 const mm = String(Math.floor(sec / 60)).padStart(2, '0');
@@ -197,9 +197,8 @@
                     $('[name="part_a[target]"]').val(a.target);
                     $('[name="part_a[division]"]').val(a.bagian);
                     $('[name="part_a[attendance]"]').val(a.attendance);
-                    $('[name="part_a[has_replacement]"]').val(a.has_replacement === true || a.has_replacement ===
-                        '1' ? '1' : '0'); // INI PENTING!
                     $('[name="part_a[kondisi]"]').val(a.kondisi);
+                    $('[name="part_a[has_replacement]"]').val(a.has_replacement || 0);
                     $('[name="part_a[nama_pengganti]"]').val(a.nama_pengganti);
                     $('[name="part_a[bagian_pengganti]"]').val(a.bagian_pengganti);
                     $('[name="part_a[kondisi_pengganti]"]').val(a.kondisi_pengganti);
@@ -208,9 +207,8 @@
                 console.error('Gagal mengambil data Part A', e);
             }
 
-            // --- 3. WIZARD LOGIC ---
+            // --- Sisa script Wizard dan Validasi tetep sama ---
             let cur = 1;
-
             const updateUI = () => {
                 $('#pageInfo').text(`${cur} / ${totalQuestions}`);
                 const percent = ((cur - 1) / totalQuestions) * 100;
@@ -235,24 +233,53 @@
             };
             updateUI();
 
-            // --- 4. VALIDATION ---
+            const showToast = (message) => {
+                const toastHtml = `
+                <div class="toast align-items-center text-bg-warning border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body fw-bold">${message}</div>
+                        <button type="button" class="btn-close btn-close-black me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>`;
+
+                let $container = $('.toast-container');
+                if ($container.length === 0) {
+                    $container = $(
+                        '<div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1060;"></div>'
+                    );
+                    $('body').append($container);
+                }
+
+                const $toast = $(toastHtml).appendTo($container);
+                const toastInstance = new bootstrap.Toast($toast[0], {
+                    delay: 3000
+                });
+                toastInstance.show();
+                $toast.on('hidden.bs.toast', () => $toast.remove());
+            };
+
             const validateCurrentQuestion = () => {
                 const $card = $(`#q_${cur}`);
                 const isAnswered = $card.find('.answer-radio').is(':checked');
                 const $extraWrap = $card.find('.extra-fields-wrap');
 
                 if (!isAnswered) {
-                    alert('Pilih salah satu jawaban dulu bos!');
+                    showToast('Pilih salah satu jawaban dulu bos!');
                     return false;
                 }
 
-                if (!$extraWrap.hasClass('d-none')) {
-                    if ($extraWrap.find('input[name^="problems"]').val().trim() === '') {
-                        alert('Kolom Problem harus diisi!');
+                if ($extraWrap.hasClass('d-none') === false) {
+                    const probVal = $extraWrap.find('input[name^="problems"]').val().trim();
+                    const countVal = $extraWrap.find('input[name^="countermeasures"]').val().trim();
+
+                    if (probVal === '') {
+                        showToast('Kolom Problem harus diisi!');
+                        $extraWrap.find('input[name^="problems"]').focus();
                         return false;
                     }
-                    if ($extraWrap.find('input[name^="countermeasures"]').val().trim() === '') {
-                        alert('Kolom Countermeasure harus diisi!');
+                    if (countVal === '') {
+                        showToast('Kolom Tindakan (Countermeasure) harus diisi!');
+                        $extraWrap.find('input[name^="countermeasures"]').focus();
                         return false;
                     }
                 }
@@ -264,24 +291,24 @@
                 if (validateCurrentQuestion()) go(cur + 1);
             });
 
-            // Tampilkan problem & countermeasure jika opsi yang dipilih bukan yang terakhir
             $('.answer-radio').on('change', function() {
                 const extra = parseInt($(this).data('extra'), 10);
-                const val = parseInt($(this).val(), 10);
+                const val = $(this).val();
                 const $card = $(this).closest('.card-body');
-                const totalOptions = $card.find('.answer-radio').length;
                 const $wrap = $card.find('.extra-fields-wrap');
 
-                // Logic asli lo: Jika extra_fields = 1 dan yg dipilih BUKAN opsi terakhir
-                if (extra === 1 && val !== (totalOptions - 1)) {
+                const radios = $card.find('.answer-radio').toArray();
+                const lastRadioVal = radios[radios.length - 1].value;
+                const isNotLastChoice = (val !== lastRadioVal);
+
+                if (extra === 1 && isNotLastChoice) {
                     $wrap.removeClass('d-none');
                 } else {
                     $wrap.addClass('d-none');
-                    $wrap.find('input').val(''); // Reset input kalau disembunyikan
+                    $wrap.find('input').val('');
                 }
             });
 
-            // --- 5. AJAX SUBMIT FINAL ---
             $('#submitBtn').on('click', async function(e) {
                 e.preventDefault();
                 if (!validateCurrentQuestion()) return;
@@ -297,7 +324,7 @@
                     const response = await fetch(form.action, {
                         method: 'POST',
                         headers: {
-                            'X-Requested-With': 'XMLHttpRequest', // Paksa Laravel ngerespon JSON kalau error
+                            'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'application/json'
                         },
                         body: formData

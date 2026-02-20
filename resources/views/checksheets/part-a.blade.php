@@ -30,7 +30,7 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid max-w-800 mx-auto">
+    <div class="container-fluid max-w-800 mx-auto mb-4 pb-5">
 
         {{-- HEADER INFO --}}
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -231,8 +231,8 @@
     </div>
 
     {{-- STICKY ACTION BAR (Nempel di bawah) --}}
-    <div class="action-bar d-flex justify-content-between align-items-center px-3 px-md-5 bg-white border-top shadow-lg"
-        style="z-index: 1030;">
+    <div
+        class="action-bar d-flex justify-content-between align-items-center px-3 px-md-5 bg-white border-top shadow-lg fixed-bottom">
         <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-bold d-none" id="prevBtn">
             <i class="bi bi-arrow-left me-2"></i> Kembali
         </button>
@@ -254,60 +254,45 @@
             const PLAN = {{ $plan->id }};
             const DASHBOARD_URL = @json(route('dashboard'));
             const PARTB_URL = @json(route('checksheets.partB'));
-            const START_URL = @json(route('checksheets.drafts.start'));
-            const HEART_URL = @json(route('checksheets.heartbeat'));
             const key = (k) => `cl:plan:${PLAN}:phase:${PHASE}:${k}`;
 
-            // Toast Helper Function
+            // Toast Helper
             function showToast(message, type = 'info') {
                 const toastHTML = `
-                    <div class="toast position-fixed top-0 start-50 translate-middle-x mt-3 align-items-center text-white bg-${type === 'error' ? 'danger' : type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                        <div class="d-flex">
-                            <div class="toast-body">
-                                ${message}
-                            </div>
-                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                        </div>
+                <div class="toast position-fixed top-0 start-50 translate-middle-x mt-3 align-items-center text-white bg-${type === 'error' ? 'danger' : type} border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 9999;">
+                    <div class="d-flex">
+                        <div class="toast-body fw-bold">${message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
                     </div>
-                `;
-                const toastContainer = document.getElementById('toastContainer') || (() => {
-                    const container = document.createElement('div');
-                    container.id = 'toastContainer';
-                    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-                    document.body.appendChild(container);
-                    return container;
-                })();
-                const toastEl = document.createElement('div');
-                toastEl.innerHTML = toastHTML;
-                toastContainer.appendChild(toastEl.firstElementChild);
-                const toast = new bootstrap.Toast(toastContainer.lastElementChild);
+                </div>
+            `;
+                let toastContainer = document.getElementById('toastContainer');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toastContainer';
+                    document.body.appendChild(toastContainer);
+                }
+                const toastEl = $(toastHTML).appendTo(toastContainer);
+                const toast = new bootstrap.Toast(toastEl[0], {
+                    delay: 3000
+                });
                 toast.show();
+                toastEl.on('hidden.bs.toast', function() {
+                    $(this).remove();
+                });
             }
 
-            // --- 1. TIMER & HEARTBEAT ---
-            $.post(START_URL, {
-                _token: '{{ csrf_token() }}',
-                schedule_plan_id: PLAN,
-                phase: PHASE
-            }).done(r => {
-                if (r.started_at_ms) {
-                    $('#stopwatch').data('start', r.started_at_ms);
-                }
-                tick();
-                setInterval(tick, 1000);
-            });
+            // --- 1. TIMER MURNI DARI DATA BLADE ---
+            const started = parseInt($('#stopwatch').data('start'), 10);
 
             function tick() {
-                const started = parseInt($('#stopwatch').data('start'), 10);
                 const sec = Math.floor((Date.now() - started) / 1000);
                 const m = String(Math.floor(sec / 60)).padStart(2, '0');
                 const s = String(sec % 60).padStart(2, '0');
                 $('#stopwatch').text(`${m}:${s}`);
             }
-
-            setInterval(() => $.post(HEART_URL, {
-                _token: '{{ csrf_token() }}'
-            }), 45000);
+            tick();
+            setInterval(tick, 1000);
 
             // --- 2. SELECTIZE INIT ---
             let targetSelectize = $('[name="target_pick"]').selectize({
@@ -321,38 +306,45 @@
             })[0].selectize;
             let originalPenggantiOptions = Object.values(penggantiSelectize.options);
 
-            // --- 3. LOGIC FIELD DEPENDENCY ---
             $('[name="target_pick"]').on('change', function() {
                 const selectedValue = $(this).val();
                 if (selectedValue) {
                     const parts = selectedValue.split('::');
-                    const bagian = parts[parts.length - 1];
-                    $('[name="bagian"]').val(bagian);
+                    if (parts.length >= 3) {
+                        $('[name="bagian"]').val(parts[2]);
+                    } else {
+                        $('[name="bagian"]').val('');
+                    }
                 } else {
                     $('[name="bagian"]').val('');
                 }
 
-                penggantiSelectize.clearOptions();
-                penggantiSelectize.clear();
-                Object.values(originalPenggantiOptions).forEach(option => {
-                    if (option.value !== selectedValue) {
-                        penggantiSelectize.addOption(option);
+                const $pengganti = $('#nama_pengganti');
+                const currentPenggantiVal = $pengganti.val();
+                $pengganti.empty();
+                originalPenggantiOptions.forEach(opt => {
+                    if (opt.value === "" || opt.value !== selectedValue) {
+                        const isSelected = (opt.value === currentPenggantiVal) ? 'selected' : '';
+                        $pengganti.append(
+                            `<option value="${opt.value}" ${isSelected}>${opt.text}</option>`);
                     }
                 });
-                penggantiSelectize.refreshOptions();
             });
 
             $('[name="nama_pengganti"]').on('change', function() {
                 const val = $(this).val();
-                $('[name="bagian_pengganti"]').val(val ? val.split('::').pop() : '');
+                if (val) {
+                    const parts = val.split('::');
+                    $('[name="bagian_pengganti"]').val(parts.length >= 3 ? parts[2] : '');
+                } else {
+                    $('[name="bagian_pengganti"]').val('');
+                }
             });
 
-            // --- 4. RADIO LOGIC (UX Form) ---
             $('[name="attendance"]').on('change', function() {
                 const v = $(this).val();
                 $('#penggantiWrap').toggleClass('d-none', v !== '0');
                 $('#hadirWrap').toggleClass('d-none', v !== '1');
-
                 if (v === '1') {
                     $('input[name="ada_pengganti"]').prop('checked', false).trigger('change');
                 } else {
@@ -363,15 +355,13 @@
             $('[name="ada_pengganti"]').on('change', function() {
                 const v = $(this).val();
                 $('#absenWrap').toggleClass('d-none', v !== '1');
-
                 if (v !== '1') {
-                    penggantiSelectize.clear();
+                    $('#nama_pengganti').val('').trigger('change');
                     $('input[name="bagian_pengganti"]').val('');
                     $('input[name="kondisi_pengganti"]').prop('checked', false);
                 }
             });
 
-            // --- 5. NAVIGATION WIZARD ---
             let page = 1;
             const shift = $('input[name="shift"]').val();
 
@@ -406,23 +396,15 @@
                 const target = $('[name="target_pick"]').val();
                 const bagian = $('[name="bagian"]').val();
 
-                // Validation Page 1
                 if (page === 1) {
-                    if (!target || !bagian) {
-                        showToast('Silakan lengkapi pilihan target.', 'warning');
-                        return;
-                    }
+                    if (!target) return showToast('Silakan pilih target terlebih dahulu.', 'warning');
                     page = 2;
                     updateWizardUI();
                     return;
                 }
 
-                // Validation & Submit Page 2
                 const attend = $('input[name="attendance"]:checked').val();
-                if (!attend) {
-                    showToast('Silakan isi status kehadiran.', 'warning');
-                    return;
-                }
+                if (!attend) return showToast('Silakan pilih status kehadiran.', 'warning');
 
                 const adaPengganti = $('input[name="ada_pengganti"]:checked').val();
                 const kondisi = $('input[name="kondisi"]:checked').val();
@@ -430,7 +412,6 @@
                 const bagianPengganti = $('input[name="bagian_pengganti"]').val();
                 const kondisiPengganti = $('input[name="kondisi_pengganti"]:checked').val();
 
-                // Prepare Payload Storage
                 const payload = {
                     shift,
                     target,
@@ -444,7 +425,6 @@
                 };
                 sessionStorage.setItem(key('partA'), JSON.stringify(payload));
 
-                // Logic Submit Final
                 if (attend === '0' && adaPengganti === '0') {
                     const btn = $(this);
                     btn.prop('disabled', true).html(
@@ -467,79 +447,56 @@
                         }
                     };
 
-                    $.ajax({
-                        url: @json(route('checksheets.store')) + `?type=${PHASE}`,
-                        type: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify(finalPayload),
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json' // <--- Paksa Laravel return error JSON, bukan redirect
-                        },
-                        success: function() {
+                    $.post(@json(route('checksheets.store')) + `?type=${PHASE}`, finalPayload)
+                        .done((res) => {
                             sessionStorage.removeItem(key('partA'));
-                            console.log('ok');
-                            window.location.href = DASHBOARD_URL;
-                        },
-                        error: function(xhr) {
+                            window.location.href = res.redirect || DASHBOARD_URL;
+                        }).fail((xhr) => {
                             console.error('Validation Error:', xhr.responseJSON);
-                            alert('Gagal menyimpan: Cek kembali isian Anda.');
+                            showToast('Gagal menyimpan. Terjadi kesalahan koneksi.', 'error');
                             btn.prop('disabled', false).html(
                                 '<i class="bi bi-check-lg me-2"></i> Submit');
-                        }
-                    });
+                        });
 
                 } else {
-                    // Harus isi part B
                     if (attend === '0' && adaPengganti === '1') {
-                        if (!namaPengganti || !bagianPengganti || !kondisiPengganti) {
-                            showToast('Lengkapi data operator pengganti.', 'warning');
-                            return;
-                        }
+                        if (!namaPengganti || !kondisiPengganti) return showToast(
+                            'Lengkapi data operator pengganti.', 'warning');
                         payload.has_replacement = true;
                     } else if (attend === '1') {
-                        if (!kondisi) {
-                            showToast('Pilih kondisi operator.', 'warning');
-                            return;
-                        }
+                        if (!kondisi) return showToast('Pilih kondisi saat ini.', 'warning');
                         payload.has_replacement = false;
                     }
-
-                    // Pindah halaman
                     window.location.href = `${PARTB_URL}?type=${encodeURIComponent(PHASE)}&plan=${PLAN}`;
                 }
             });
 
-            // --- 6. RESTORE SESSION DATA (Balik dari Part B) ---
+            // --- 5. RESTORE SESSION DATA ---
             try {
                 const earlier = JSON.parse(sessionStorage.getItem(key('partA')) || 'null');
                 if (earlier) {
-                    // Set page to 2 immediately because data is filled
                     page = 2;
                     updateWizardUI();
 
-                    // Wait for selectize to be ready before setting value
-                    setTimeout(() => {
-                        targetSelectize.setValue(earlier.target);
-                        $('[name="bagian"]').val(earlier.bagian);
+                    $('[name="target_pick"]').val(earlier.target).trigger('change');
+                    $('[name="bagian"]').val(earlier.bagian);
 
-                        $(`input[name="attendance"][value="${earlier.attendance}"]`).prop('checked', true)
-                            .trigger('change');
+                    $(`input[name="attendance"][value="${earlier.attendance}"]`).prop('checked', true).trigger(
+                        'change');
 
-                        if (earlier.attendance === '0') {
-                            $(`input[name="ada_pengganti"][value="${earlier.has_replacement === true || earlier.has_replacement === '1' ? '1' : '0'}"]`)
-                                .prop('checked', true).trigger('change');
-                        }
+                    if (earlier.attendance === '0') {
+                        $(`input[name="ada_pengganti"][value="${earlier.has_replacement === true || earlier.has_replacement === '1' ? '1' : '0'}"]`)
+                            .prop('checked', true).trigger('change');
+                    }
 
-                        if (earlier.nama_pengganti) penggantiSelectize.setValue(earlier.nama_pengganti);
-                        if (earlier.bagian_pengganti) $('input[name="bagian_pengganti"]').val(earlier
-                            .bagian_pengganti);
-                        if (earlier.kondisi_pengganti) $(
-                                `input[name="kondisi_pengganti"][value="${earlier.kondisi_pengganti}"]`)
-                            .prop('checked', true);
-                        if (earlier.kondisi) $(`input[name="kondisi"][value="${earlier.kondisi}"]`).prop(
-                            'checked', true);
-                    }, 100);
+                    if (earlier.nama_pengganti) $('[name="nama_pengganti"]').val(earlier.nama_pengganti).trigger(
+                        'change');
+                    if (earlier.bagian_pengganti) $('input[name="bagian_pengganti"]').val(earlier.bagian_pengganti);
+                    if (earlier.kondisi_pengganti) $(
+                        `input[name="kondisi_pengganti"][value="${earlier.kondisi_pengganti}"]`).prop('checked',
+                        true);
+                    if (earlier.kondisi) $(`input[name="kondisi"][value="${earlier.kondisi}"]`).prop('checked',
+                        true);
                 }
             } catch (e) {
                 console.error('Restore session failed:', e)

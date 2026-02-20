@@ -1,14 +1,14 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ChecksheetController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\ScheduleController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Middleware\CheckActiveChecksheet;
 use App\Http\Middleware\CheckRoleIsAdmin;
-use App\Http\Middleware\ResumeDraft;
 use App\Http\Middleware\SingleLogin;
 use Illuminate\Support\Facades\Route;
 
@@ -24,11 +24,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth')->middleware(CheckActiveChecksheet::class)->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::middleware(SingleLogin::class)->middleware(ResumeDraft::class)->group(function () {
+    Route::middleware(SingleLogin::class)->group(function () {
         // Rencana & Detail (biar lengkap, bisa kamu tambah belakangan)
         Route::prefix('schedule')->as('schedule.')->controller(ScheduleController::class)->group(function () {
             // Main page (Supervisor Checks Leader)
@@ -84,10 +84,6 @@ Route::middleware('auth')->group(function () {
         Route::prefix('checksheets')->as('checksheets.')->controller(ChecksheetController::class)->group(function () {
             Route::get('/create', 'createPartA')->name('create'); // ?type=awal_shift
 
-            // draft/timer
-            Route::post('/drafts/start', 'startDraft')->name('drafts.start');
-            Route::post('/heartbeat', 'heartbeat')->name('heartbeat');
-
             // ke Part B
             Route::get('/part-b', 'showPartB')->name('partB');
 
@@ -99,24 +95,24 @@ Route::middleware('auth')->group(function () {
 
 // Reports (Sementara)
 Route::controller(App\Http\Controllers\ReportController::class)->group(function () {
-    Route::get("/reports", 'index')->name('reports.index');
-    Route::get("/report/{type}", 'form')->name('reports.form');
-    Route::get("/reports/daily", 'daily')->name('reports.daily');
-    Route::get("/reports/{type}/monthly", 'monthly')->name('reports.monthly');
-    Route::get("/reports/{type}/score", 'leaderScore')->name('reports.score');
-    Route::get("/reports/leader-score", 'leaderScore')->name('reports.leaderScore');
-    Route::get("/reports/leader-consistency", 'leaderConsistency')->name('reports.leaderConsistency');
+    Route::get('/reports', 'index')->name('reports.index');
+    Route::get('/report/{type}', 'form')->name('reports.form');
+    Route::get('/reports/daily', 'daily')->name('reports.daily');
+    Route::get('/reports/{type}/monthly', 'monthly')->name('reports.monthly');
+    Route::get('/reports/{type}/score', 'leaderScore')->name('reports.score');
+    Route::get('/reports/leader-score', 'leaderScore')->name('reports.leaderScore');
+    Route::get('/reports/leader-consistency', 'leaderConsistency')->name('reports.leaderConsistency');
     // API
-    Route::get("api/reports/daily", 'apiDaily');
-    Route::get("api/reports/monthly", 'apiMonthly');
-    Route::get("api/reports/leader-score", 'apiLeaderScore');
-    Route::get("api/reports/leader-consistency", 'apiLeaderConsistency');
+    Route::get('api/reports/daily', 'apiDaily');
+    Route::get('api/reports/monthly', 'apiMonthly');
+    Route::get('api/reports/leader-score', 'apiLeaderScore');
+    Route::get('api/reports/leader-consistency', 'apiLeaderConsistency');
 });
 
 Route::controller(App\Http\Controllers\ProblemListController::class)->group(function () {
-    Route::get('/list-problem', 'index')->name("listProblem.index");
-    Route::get('/list-problem/{type}', 'list')->name("listProblem.list");
+    Route::get('/list-problem', 'index')->name('listProblem.index');
+    Route::get('/list-problem/{type}', 'list')->name('listProblem.list');
     // Route::get('/list-problem/{type}/{id}', 'edit')->name("listProblem.edit");
-    Route::put('/list-problem/{type}/{id}', 'update')->name("listProblem.update");
+    Route::put('/list-problem/{type}/{id}', 'update')->name('listProblem.update');
     Route::get('/list-problem/{type}/edit', 'editTemplate');
 });

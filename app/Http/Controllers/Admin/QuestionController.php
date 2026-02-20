@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Question;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 
 class QuestionController extends Controller
 {
@@ -23,7 +23,7 @@ class QuestionController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'html' => view('admin.questions._table', compact(['questions']))->render()
+                'html' => view('admin.questions._table', compact(['questions']))->render(),
             ]);
         }
 

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ChecksheetDraft;
-
 class DashboardController extends Controller
 {
     public function index()
@@ -12,15 +10,6 @@ class DashboardController extends Controller
         $user = auth()->user(); // Contoh mengambil data user
         $leaderName = $user->name;
         $leaderRole = $user->role; // Ganti dengan data bagian/role yang sebenarnya
-
-        // Kalau ada draft checksheet yang belum selesai, redirect ke sana
-        $draft = ChecksheetDraft::where('user_id', $user->id)
-            ->where('is_active', true)
-            ->first();
-        if ($draft) {
-            return redirect()->route('checksheets.create', ['type' => $draft->phase])
-                ->with('info', 'Anda belum menyelesaikan pengisian checksheet sebelumnya.');
-        }
 
         return view('dashboard', [
             'leaderName' => $leaderName,

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Division;
 use App\Models\ScheduleDetail;
 use App\Models\SchedulePlan;
@@ -11,8 +10,6 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
 
 class ScheduleController extends Controller
 {
@@ -93,7 +90,7 @@ class ScheduleController extends Controller
             $targets[] = [
                 'id' => $leader->employeeID,
                 'name' => $leader->name,
-                'dates' => $dates
+                'dates' => $dates,
             ];
         }
 
@@ -141,9 +138,11 @@ class ScheduleController extends Controller
             }
 
             DB::commit();
+
             return response()->json(['success' => true]);
         } catch (Exception $e) {
             DB::rollBack();
+
             return response()->json(['success' => false, 'message' => 'DB Error'], 500);
         }
     }
@@ -240,11 +239,11 @@ class ScheduleController extends Controller
                     'id' => $sub->employeeID,
                     'name' => $sub->name,
                     'division' => $savedDivision ?: $masterDivision,
-                    'dates' => $dates
+                    'dates' => $dates,
                 ];
             }
         } else {
-            $plan = (object)['year' => $year, 'month' => $month, 'id' => 0];
+            $plan = (object) ['year' => $year, 'month' => $month, 'id' => 0];
         }
 
         $divisionOptions = Division::all();
@@ -295,9 +294,11 @@ class ScheduleController extends Controller
             }
 
             DB::commit();
+
             return response()->json(['success' => true]);
         } catch (Exception $e) {
             DB::rollBack();
+
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
