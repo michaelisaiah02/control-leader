@@ -11,6 +11,12 @@ class ProblemListController extends Controller
         return view('problem_list.index');
     }
 
+    public function edit($type, $id)
+    {
+        $problem = Problem::find($id);
+        return view('problem_list.edit', compact(['type', 'problem']));
+    }
+
     public function list($type)
     {
         $Problems = Problem::all();

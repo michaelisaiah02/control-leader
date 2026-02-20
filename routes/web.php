@@ -110,9 +110,9 @@ Route::controller(App\Http\Controllers\ReportController::class)->group(function 
 });
 
 Route::controller(App\Http\Controllers\ProblemListController::class)->group(function () {
-    Route::get('/list-problem', 'index')->name('listProblem.index');
-    Route::get('/list-problem/{type}', 'list')->name('listProblem.list');
-    // Route::get('/list-problem/{type}/{id}', 'edit')->name("listProblem.edit");
-    Route::put('/list-problem/{type}/{id}', 'update')->name('listProblem.update');
+    Route::get('/list-problem', 'index')->name("listProblem.index");
+    Route::get('/list-problem/{type}', 'list')->name("listProblem.list");
+    Route::get('/list-problem/{type}/{id}', 'edit')->name("listProblem.edit");
+    Route::put('/list-problem/{type}/{id}/update', 'update')->name("listProblem.update");
     Route::get('/list-problem/{type}/edit', 'editTemplate');
 });
