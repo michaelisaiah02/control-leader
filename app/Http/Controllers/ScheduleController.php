@@ -42,9 +42,9 @@ class ScheduleController extends Controller
         );
 
         // 3. AMBIL SEMUA LEADER (Logic Baru)
-        // Kita ambil user role 'leader' yang aktif & punya atasan si Supervisor yg login (opsional, tergantung rules)
-        // Disini gue ambil semua leader aja sesuai request.
+        // Kita ambil user role 'leader' yang aktif & punya atasan si Supervisor yg login
         $leaders = User::where('role', 'leader')
+            ->where('superior_id', auth()->user()->employeeID)
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
@@ -63,18 +63,19 @@ class ScheduleController extends Controller
             // Kita bikin array dates manual loop dari tgl 1 s/d akhir bulan
             $dates = [];
 
-            // Tips: Kita format dulu data DB biar gampang dicek (key = tanggal, value = shift)
+            // Tips: Kita format dulu data DB biar gampang dicek
             $dbMap = $userSchedule->mapWithKeys(function ($item) {
-                return [$item->scheduled_date->format('Y-m-d') => $item->shift];
+                // Kasih value 'Y' karena shift supervisor itu null
+                return [$item->scheduled_date->format('Y-m-d') => 'Y'];
             });
 
             for ($d = 1; $d <= $daysInMonth; $d++) {
                 $dateObj = Carbon::createFromDate($year, $month, $d);
                 $dateStr = $dateObj->format('Y-m-d');
 
-                // 1. Cek DB dulu (Prioritas Utama)
-                if (isset($dbMap[$dateStr])) {
-                    $dates[$dateStr] = $dbMap[$dateStr];
+                // 1. Cek DB pake ->has(), bukan isset() biar aman dari null
+                if ($dbMap->has($dateStr)) {
+                    $dates[$dateStr] = 'Y';
                 }
                 // 2. Kalau DB kosong, Cek Weekend (Auto L)
                 elseif ($dateObj->isWeekend()) {
@@ -319,6 +320,48 @@ class ScheduleController extends Controller
             return response()->json(['success' => true]);
         } catch (Exception $e) {
             return response()->json(['success' => false], 500);
+        }
+    }
+
+    public function updateRange(Request $request, SchedulePlan $plan)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,employeeID',
+            'dates'   => 'required|array',
+            'dates.*' => 'date_format:Y-m-d',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // 1. (Opsional) Hapus semua jadwal lama si leader di bulan ini biar bersih
+            ScheduleDetail::where('schedule_plan_id', $plan->id)
+                ->where('target_user_id', $validated['user_id'])
+                ->delete();
+
+            // 2. Insert range tanggal yang baru kepilih
+            $inserts = [];
+            foreach ($validated['dates'] as $date) {
+                $inserts[] = [
+                    'schedule_plan_id' => $plan->id,
+                    'target_user_id'   => $validated['user_id'],
+                    'scheduled_date'   => $date,
+                    'shift'            => null, // Supervisor nggak pakai shift
+                    'division'         => null,
+                    'created_at'       => now(),
+                    'updated_at'       => now(),
+                ];
+            }
+
+            if (!empty($inserts)) {
+                ScheduleDetail::insert($inserts); // Bulk insert biar makin wuzz 🚀
+            }
+
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'DB Error'], 500);
         }
     }
 }

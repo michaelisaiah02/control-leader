@@ -3,8 +3,8 @@
 @section('styles')
     <style>
         /* =========================================
-               1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
-               ========================================= */
+                                                                       1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
+                                                                       ========================================= */
         .schedule-table {
             border-collapse: separate !important;
             /* Wajib separate biar border gak nempel */
@@ -32,8 +32,8 @@
         }
 
         /* =========================================
-               2. Z-INDEX & STICKY LOGIC
-               ========================================= */
+                                                                       2. Z-INDEX & STICKY LOGIC
+                                                                       ========================================= */
 
         /* Header Bulan (Atas) */
         .schedule-table thead th {
@@ -79,8 +79,8 @@
         }
 
         /* =========================================
-               3. UI CELL (EXCEL MODE)
-               ========================================= */
+                                                                       3. UI CELL (EXCEL MODE)
+                                                                       ========================================= */
         .shift-select {
             min-width: 45px !important;
             padding: 4px 0 !important;
@@ -191,34 +191,22 @@
                                     @php
                                         $dateObj = \Carbon\Carbon::createFromDate($plan->year, $plan->month, $d);
                                         $dateStr = $dateObj->format('Y-m-d');
-                                        $weekNum = $dateObj->weekOfYear;
+                                        $weekNum = $dateObj->weekOfYear; // MANTAP, INI KUNCINYA!
                                         $isWeekend = $dateObj->isWeekend();
 
-                                        $shift = $target['dates'][$dateStr] ?? '';
+                                        $isSelected = $target['dates'][$dateStr] === 'Y';
 
-                                        // Disable logic
-                                        $isOldDate = $isCurrentMonth && $dateStr < $today->format('Y-m-d');
-                                        $disabled = $isPastMonth || $isOldDate ? 'disabled' : '';
-
-                                        // Color logic
-                                        $colorClass = $shift === 'L' ? 'bg-danger text-white' : '';
-                                        $bgClass = $isWeekend && $shift !== 'L' ? 'bg-weekend' : '';
+                                        $bgClass = $isWeekend ? 'bg-weekend' : '';
+                                        $activeClass = $isSelected ? 'bg-primary text-white' : '';
                                     @endphp
 
-                                    <td class="p-0 {{ $bgClass }} position-relative">
-                                        <select
-                                            class="form-select form-select-sm shift-select border-0 shadow-none {{ $colorClass }}"
-                                            data-date="{{ $dateStr }}" data-week="{{ $weekNum }}"
-                                            {{ $disabled }}>
-
-                                            <option value=""></option>
-                                            @foreach (['1', '2', '3', 'L'] as $opt)
-                                                <option value="{{ $opt }}"
-                                                    {{ (string) $shift === (string) $opt ? 'selected' : '' }}>
-                                                    {{ $opt }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                    <td class="p-0 {{ $bgClass }} position-relative border-right border-bottom">
+                                        <div class="schedule-cell w-100 h-100 d-flex align-items-center justify-content-center {{ $activeClass }}"
+                                            data-user="{{ $target['id'] }}" data-date="{{ $dateStr }}"
+                                            data-day="{{ $d }}" data-week="{{ $weekNum }}"
+                                            {{-- KITA TEMPEL DI SINI --}} style="min-height: 35px; cursor: pointer;">
+                                            {!! $isSelected ? '<i class="bi bi-check-lg"></i>' : '' !!}
+                                        </div>
                                     </td>
                                 @endfor
                             </tr>
@@ -260,14 +248,60 @@
 
     </div>
     <x-toast />
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1060;">
+        <div id="jsToast" class="toast align-items-center border-0" role="alert" aria-live="assertive"
+            aria-atomic="true">
+            <div class="toast-header">
+                <i id="jsToastIcon" class="bi me-2"></i>
+                <strong class="me-auto" id="jsToastTitle">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="jsToastBody">
+                {{-- Pesan bakal diinject via JS --}}
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
-    {{-- JS 100% SAMA, cuma dibungkus rapi --}}
     <script type="module">
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
         // ---------------- UTILS ----------------
+        function showToast(type, message) {
+            const toastEl = document.getElementById('jsToast');
+            const titleEl = document.getElementById('jsToastTitle');
+            const bodyEl = document.getElementById('jsToastBody');
+            const iconEl = document.getElementById('jsToastIcon');
+
+            // Reset class warnanya biar ga numpuk
+            toastEl.className = 'toast align-items-center border-0 text-bg-' + type;
+            iconEl.className = 'bi me-2 text-' + type;
+
+            // Setting UI berdasarkan tipe
+            if (type === 'danger') {
+                titleEl.textContent = 'Validasi Gagal';
+                iconEl.classList.add('bi-x-square-fill');
+                toastEl.classList.remove('text-bg-danger');
+                toastEl.classList.add('bg-danger', 'text-white'); // Fix contrast Bootstrap
+            } else if (type === 'warning') {
+                titleEl.textContent = 'Peringatan';
+                iconEl.classList.add('bi-exclamation-triangle-fill');
+            } else if (type === 'success') {
+                titleEl.textContent = 'Berhasil';
+                iconEl.classList.add('bi-check-square-fill');
+            }
+
+            // Inject pesan
+            bodyEl.innerHTML = message;
+
+            // Panggil Bootstrap Toast API lalu tampilkan
+            const bsToast = new bootstrap.Toast(toastEl, {
+                delay: 3000
+            }); // Auto hilang dlm 3 detik
+            bsToast.show();
+        }
+
         function debounce(func, timeout = 300) {
             let timer;
             return (...args) => {
@@ -346,7 +380,7 @@
             });
 
             if (alreadyCheckedInWeek) {
-                alert("Satu Leader cuma boleh dicek 1x per minggu!");
+                showToast('warning', "Satu Leader cuma boleh dicek 1x per minggu!");
                 sel.value = "";
                 return;
             }
@@ -365,7 +399,7 @@
             });
 
             if (!leadersCheckedThisWeek.has(userId) && leadersCheckedThisWeek.size >= 3) {
-                alert("Maximal pengecekan 3 Leader per minggu tercapai!");
+                showToast('warning', "Maximal pengecekan 3 Leader per minggu tercapai!");
                 sel.value = "";
                 return;
             }
@@ -375,44 +409,142 @@
 
         function calculateTotals() {
             const totals = {};
-            const holidayCount = {};
-            const dateMap = {};
 
-            document.querySelectorAll('.shift-select').forEach(sel => {
-                const dateStr = sel.dataset.date;
-                const day = parseInt(dateStr.split('-')[2]);
-
-                if (!dateMap[day]) dateMap[day] = dateStr;
-
-                if (['1', '2', '3'].includes(sel.value)) {
+            // Hitung jumlah cell biru per tanggal
+            document.querySelectorAll('.schedule-cell').forEach(cell => {
+                const day = parseInt(cell.dataset.day);
+                if (cell.classList.contains('bg-primary')) {
                     totals[day] = (totals[day] || 0) + 1;
-                } else if (sel.value === 'L') {
-                    holidayCount[day] = (holidayCount[day] || 0) + 1;
                 }
             });
 
+            // Update angka di footer
             document.querySelectorAll('.total-day').forEach(td => {
                 const day = parseInt(td.dataset.day);
                 const val = totals[day] || 0;
-                const holidays = holidayCount[day] || 0;
-                const dateStr = dateMap[day];
-
-                td.classList.remove('bg-secondary', 'text-white');
                 td.textContent = val;
-
-                if (dateStr) {
-                    const dateObj = new Date(dateStr);
-                    const dayOfWeek = dateObj.getUTCDay();
-
-                    const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
-                    const isManualHoliday = (val === 0 && holidays > 0);
-
-                    if (isWeekend || isManualHoliday) {
-                        td.textContent = "L";
-                        td.classList.add('bg-secondary', 'text-white');
-                    }
-                }
             });
+        }
+
+        let startSelection = null;
+
+        document.querySelectorAll('.schedule-cell').forEach(cell => {
+            cell.addEventListener('click', function() {
+                const userId = this.dataset.user;
+                const currentDay = parseInt(this.dataset.day);
+                const currentWeek = this.dataset.week;
+                const row = this.closest('tr');
+
+                // FITUR BARU: Hapus Jadwal per Minggu
+                // Kalau user klik cell yang udah aktif (warna biru)
+                if (this.classList.contains('bg-primary')) {
+                    if (confirm('Mau hapus jadwal pengecekan di minggu ini?')) {
+                        // Hapus warna biru cuma di minggu yang di-klik
+                        row.querySelectorAll(`.schedule-cell[data-week="${currentWeek}"]`).forEach(c => {
+                            c.classList.remove('bg-primary', 'text-white');
+                            c.innerHTML = '';
+                        });
+                        kirimKeDatabase(userId, row); // Save kondisi terbaru
+                    }
+                    startSelection = null; // Reset state
+                    return;
+                }
+
+                // KONDISI 1: Klik Pertama (Start Range)
+                if (!startSelection || startSelection.userId !== userId) {
+                    // Bersihin highlight 'temporary' (warna info)
+                    document.querySelectorAll(`.schedule-cell.bg-info`).forEach(c => c.classList.remove(
+                        'bg-info', 'text-white'));
+
+                    startSelection = {
+                        userId: userId,
+                        day: currentDay,
+                        week: currentWeek, // Simpen data minggunya
+                        cell: this
+                    };
+
+                    this.classList.add('bg-info', 'text-white'); // Kasih warna biru muda sbg penanda
+                    return;
+                }
+
+                // KONDISI 2: Klik Kedua (End Range)
+                const endDay = currentDay;
+                const endWeek = currentWeek;
+
+                // VALIDASI SAKTI: Cek apakah masih di minggu yang sama!
+                if (startSelection.week !== endWeek) {
+                    showToast('warning',
+                    'Rentang waktu pengecekan harus berada di dalam minggu yang sama!');
+                    startSelection.cell.classList.remove('bg-info', 'text-white'); // Reset klik pertama
+                    startSelection = null;
+                    return;
+                }
+
+                const minDay = Math.min(startSelection.day, endDay);
+                const maxDay = Math.max(startSelection.day, endDay);
+
+                // --- [ START FIX ANTI BOLONG ] ---
+                // 1. SAPU BERSIH: Hapus semua warna biru & info khusus di MINGGU INI aja
+                // Biar sisa-sisa klik sebelumnya (kayak tgl 2,3,4) musnah dulu
+                row.querySelectorAll(`.schedule-cell[data-week="${startSelection.week}"]`).forEach(c => {
+                    c.classList.remove('bg-info', 'bg-primary', 'text-white');
+                    c.innerHTML = '';
+                });
+
+                // 2. GAMBAR ULANG: Baru kita kasih warna biru solid berurutan dari minDay ke maxDay
+                row.querySelectorAll(`.schedule-cell[data-week="${startSelection.week}"]`).forEach(c => {
+                    const cellDay = parseInt(c.dataset.day);
+                    if (cellDay >= minDay && cellDay <= maxDay) {
+                        c.classList.add('bg-primary', 'text-white');
+                        c.innerHTML = '<i class="bi bi-check-lg"></i>';
+                    }
+                });
+                // --- [ END FIX ANTI BOLONG ] ---
+
+                startSelection = null; // Reset state buat next klik
+
+                // Execute save!
+                kirimKeDatabase(userId, row);
+            });
+        });
+
+        // Fungsi buat ngumpulin semua tanggal di 1 baris lalu kirim ke server
+        function kirimKeDatabase(userId, row) {
+            const datesToSave = [];
+
+            // Kita ambil SEMUA cell yang nyala (warna biru) di baris leader ini
+            row.querySelectorAll('.schedule-cell.bg-primary').forEach(c => {
+                datesToSave.push(c.dataset.date);
+            });
+
+            // Panggil fungsi AJAX lo yang kemaren
+            saveRangeToDatabase(userId, datesToSave);
+            calculateTotals();
+        }
+
+        async function saveRangeToDatabase(userId, dates) {
+            try {
+                document.body.style.cursor = 'wait';
+                const res = await fetch("{{ route('schedule.updateRange', $plan->id ?? 0) }}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": csrfToken,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        dates: dates
+                    })
+                });
+
+                const data = await res.json();
+                if (!data.success) showToast('warning', 'Gagal save ke database bro!');
+
+            } catch (err) {
+                console.error(err);
+            } finally {
+                document.body.style.cursor = 'default';
+            }
         }
 
         // ---------------- INIT ----------------
