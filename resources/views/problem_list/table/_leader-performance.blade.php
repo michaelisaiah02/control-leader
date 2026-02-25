@@ -23,7 +23,7 @@
                 <th scope="col">{{ $problem->problem }}</th>
                 <th scope="col">{{ $problem->countermeasure}}</th>
                 <th scope="col">{{ $problem->due_date }}</th>
-                <th scope="col" class="capitalize">{{ $problem->status }}</th>
+                <th scope="col" class="text-capitalize">{{ $problem->status }}</th>
                 @if(auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor')
                 <th scope="col">
                     @if ($problem->status != 'close')

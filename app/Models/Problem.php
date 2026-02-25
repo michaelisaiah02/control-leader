@@ -11,6 +11,7 @@ class Problem extends Model
     use HasFactory;
     protected $table = 'problems';
     protected $fillable = ['checksheet_answer_id', 'leader_name', 'operator_name', 'operator_id', 'problem', 'countermeasure', 'status', 'due_date'];
+    protected $casts = ['due_date' => 'date'];
 
     public function answers()
     {
