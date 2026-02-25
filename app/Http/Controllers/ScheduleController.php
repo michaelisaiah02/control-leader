@@ -2,252 +2,366 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Division;
-use App\Models\SchedulePlan;
-use Illuminate\Http\Request;
 use App\Models\ScheduleDetail;
-use Illuminate\Support\Facades\Validator;
+use App\Models\SchedulePlan;
+use App\Models\User;
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ScheduleController extends Controller
 {
     public function index(Request $request)
     {
-        $authUser = auth()->user();
-
-        // Kalo user pilih month → gunakan itu
-        if ($request->has('month')) {
-
-            $year = intval(substr($request->month, 0, 4));
-            $month = intval(substr($request->month, 5, 2));
-
-            // Cari plan sesuai bulan
-            $plan = SchedulePlan::where('scheduler_id', $authUser->employeeID)
-                ->where('year', $year)
-                ->where('month', $month)
-                ->first();
-
-            // Kalau belum ada → buat baru
-            if (! $plan) {
-                $plan = SchedulePlan::create([
-                    'scheduler_id' => $authUser->employeeID,
-                    'year' => $year,
-                    'month' => $month,
-                ]);
-            }
-
-            return redirect()->route('schedule.edit', $plan->id);
+        // 1. Setup Date
+        $monthInput = $request->input('month', now()->format('Y-m'));
+        try {
+            $date = Carbon::createFromFormat('Y-m', $monthInput);
+        } catch (Exception $e) {
+            $date = now();
         }
 
-        // Default: bulan sekarang
-        $year = now()->year;
-        $month = now()->month;
+        $year = $date->year;
+        $month = $date->month;
+        $daysInMonth = $date->daysInMonth;
 
-        $plan = SchedulePlan::where('scheduler_id', $authUser->id)
-            ->where('year', $year)
-            ->where('month', $month)
-            ->first();
+        $today = Carbon::now()->startOfDay();
+        $isCurrentMonth = ($date->month == $today->month && $date->year == $today->year);
+        $isPastMonth = $date->endOfMonth()->isPast();
 
-        if (! $plan) {
-            $plan = SchedulePlan::create([
-                'scheduler_id' => $authUser->employeeID,
-                'year' => $year,
+        // 2. Get/Create Plan
+        $plan = SchedulePlan::firstOrCreate(
+            [
+                'scheduler_id' => auth()->user()->employeeID,
                 'month' => $month,
-            ]);
-        }
+                'year' => $year,
+                'type' => 'supervisor_checks_leader',
+            ]
+        );
 
-        return redirect()->route('schedule.edit', $plan->id);
-    }
-
-    public function edit($id)
-    {
-        $plan = SchedulePlan::with(['details'])->findOrFail($id);
-        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $plan->month, $plan->year);
-
-        $today = now()->startOfDay();
-        $monthStart = \Carbon\Carbon::create($plan->year, $plan->month, 1)->startOfDay();
-        $monthEnd = $monthStart->copy()->endOfMonth();
-
-        $isPastMonth = $today->greaterThan($monthEnd);
-        $isCurrentMonth = $today->between($monthStart, $monthEnd);
-
-        // Cek role user login
-        $authUser = auth()->user();
-        $targetRole = $authUser->role === 'leader' ? 'operator' : 'leader';
-
-        $availableUsers = User::where('role', $targetRole)
+        // 3. AMBIL SEMUA LEADER (Logic Baru)
+        // Kita ambil user role 'leader' yang aktif & punya atasan si Supervisor yg login
+        $leaders = User::where('role', 'leader')
+            ->where('superior_id', auth()->user()->employeeID)
+            ->where('is_active', true)
             ->orderBy('name')
             ->get();
 
-        // group schedule by user
-        $detailGroups = $plan->details
-            ->groupBy('target_user_id');
+        // 4. Ambil Jadwal yang udah ada
+        $details = ScheduleDetail::where('schedule_plan_id', $plan->id)->get();
 
-        // convert ke targets final
-        $targets = $availableUsers->map(function ($user) use ($detailGroups) {
+        // 5. Mapping Data (Fix Bug Tanggal '-' disini)
+        $targets = [];
+        foreach ($leaders as $leader) {
 
-            $details = $detailGroups[$user->employeeID] ?? collect([]);
+            // Ambil jadwal khusus leader ini dari collection diatas
+            $userSchedule = $details->where('target_user_id', $leader->employeeID);
 
-            return [
-                'id' => $user->employeeID,
-                'name' => $user->name,
-                'division' => optional($details->first())->division ?? null,
-                'dates' => $details->mapWithKeys(function ($d) {
-                    return [$d->scheduled_date => $d->shift];
-                })->toArray(),
+            // --- [START LOGIC BARU] ---
+            // Kita bikin array dates manual loop dari tgl 1 s/d akhir bulan
+            $dates = [];
+
+            // Tips: Kita format dulu data DB biar gampang dicek
+            $dbMap = $userSchedule->mapWithKeys(function ($item) {
+                // Kasih value 'Y' karena shift supervisor itu null
+                return [$item->scheduled_date->format('Y-m-d') => 'Y'];
+            });
+
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $dateObj = Carbon::createFromDate($year, $month, $d);
+                $dateStr = $dateObj->format('Y-m-d');
+
+                // 1. Cek DB pake ->has(), bukan isset() biar aman dari null
+                if ($dbMap->has($dateStr)) {
+                    $dates[$dateStr] = 'Y';
+                }
+                // 2. Kalau DB kosong, Cek Weekend (Auto L)
+                elseif ($dateObj->isWeekend()) {
+                    $dates[$dateStr] = 'L';
+                }
+                // 3. Sisanya kosong
+                else {
+                    $dates[$dateStr] = '';
+                }
+            }
+            // --- [END LOGIC BARU] ---
+
+            $targets[] = [
+                'id' => $leader->employeeID,
+                'name' => $leader->name,
+                'dates' => $dates,
             ];
-        });
+        }
 
-        $divisionOptions = Division::orderBy('name')->get();
-
-        return view('schedule.schedule_supervisor', compact(
+        return view('schedule.schedule-supervisor', compact(
             'plan',
-            'targets',
             'daysInMonth',
-            'availableUsers',
+            'targets', // Variable $targets isinya sudah fix semua leader
             'isPastMonth',
-            'isCurrentMonth',
             'today',
-            'divisionOptions'
+            'isCurrentMonth'
         ));
     }
 
-    public function updateCellLeader(Request $request, $id)
+    public function updateCell(Request $request, SchedulePlan $plan)
     {
-        $plan = SchedulePlan::findOrFail($id);
-
-        $validator = \Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,employeeID',
-            'date' => 'required|date_format:Y-m-d',
-            'shift' => 'nullable|in:1,2,3,L',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $data = $validator->validated();
-
-        $employeeID = $data['user_id'];   // ini employeeID
-        $date = $data['date'];
-        $shift = $data['shift'];
-
-        $existSchedule = ScheduleDetail::where('schedule_plan_id', $plan->id)
-            ->where('target_user_id', $employeeID)   // pakai employeeID
-            ->where('scheduled_date', $date)
-            ->first();
-
-        if ($shift === null || $shift === '') {
-            if ($existSchedule) {
-                $existSchedule->delete();
-            }
-        } else {
-            if ($existSchedule) {
-                $existSchedule->update([
-                    'shift' => $shift,
-                ]);
-            } else {
-                ScheduleDetail::create([
-                    'schedule_plan_id' => $plan->id,
-                    'target_user_id' => $employeeID, // FK ke employeeID
-                    'scheduled_date' => $date,
-                    'shift' => $shift,
-                ]);
-            }
-        }
-
-        return response()->json(['success' => true]);
-    }
-
-    public function updateCellOperator(Request $request, $id)
-    {
-        $plan = SchedulePlan::findOrFail($id);
-
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,employeeID',
-            'date' => 'required|date_format:Y-m-d',
-            'shift' => 'nullable|in:1,2,3,L',
-            'division' => 'nullable|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $data = $validator->validated();
-
-        $employeeID = $data['user_id'];   // ini employeeID
-        $date = $data['date'];
-        $shift = $data['shift'];
-        $division = $data['division'] ?? null;
-
-        $existSchedule = ScheduleDetail::where('schedule_plan_id', $plan->id)
-            ->where('target_user_id', $employeeID)   // pakai employeeID
-            ->where('scheduled_date', $date)
-            ->first();
-
-        if ($shift === null || $shift === '') {
-            if ($existSchedule) {
-                $existSchedule->delete();
-            }
-        } else {
-            if ($existSchedule) {
-                $existSchedule->update([
-                    'shift' => $shift,
-                    'division' => $division,
-                ]);
-            } else {
-                ScheduleDetail::create([
-                    'schedule_plan_id' => $plan->id,
-                    'target_user_id' => $employeeID, // FK ke employeeID
-                    'scheduled_date' => $date,
-                    'shift' => $shift,
-                    'division' => $division,
-                ]);
-            }
-        }
-
-        return response()->json(['success' => true]);
-    }
-
-    public function updateDivision(Request $request, $id)
-    {
-        $plan = SchedulePlan::findOrFail($id);
-
-        $data = $request->validate([
-            'user_id' => 'required|exists:users,employeeID',
-            'division' => 'required|string|max:100',
-        ]);
-
-        $employeeID = $data['user_id'];
-
-        ScheduleDetail::where('schedule_plan_id', $plan->id)
-            ->where('target_user_id', $employeeID)
-            ->update(['division' => $data['division']]);
-
-        return response()->json(['success' => true]);
-    }
-
-    public function addUser(Request $request, $id)
-    {
-        $plan = SchedulePlan::findOrFail($id);
-
+        // Validasi Simple
         $validated = $request->validate([
             'user_id' => 'required|exists:users,employeeID',
-            'division' => 'nullable|string',
+            'date' => 'required|date_format:Y-m-d',
+            'shift' => 'nullable|in:1,2,3,L',
         ]);
 
-        // Tidak menambah schedule_detail dulu
-        // Cukup return nilai user_id agar row bisa aktif
-        return response()->json([
-            'success' => true,
-            'user_id' => $validated['user_id'],
+        try {
+            DB::beginTransaction();
+
+            if (empty($validated['shift'])) {
+                // Hapus kalau kosong
+                ScheduleDetail::where('schedule_plan_id', $plan->id)
+                    ->where('target_user_id', $validated['user_id'])
+                    ->where('scheduled_date', $validated['date'])
+                    ->delete();
+            } else {
+                // Update or Create
+                ScheduleDetail::updateOrCreate(
+                    [
+                        'schedule_plan_id' => $plan->id,
+                        'target_user_id' => $validated['user_id'],
+                        'scheduled_date' => $validated['date'],
+                    ],
+                    [
+                        'shift' => $validated['shift'],
+                        'division' => null, // FORCE NULL sesuai request
+                    ]
+                );
+            }
+
+            DB::commit();
+
+            return response()->json(['success' => true]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['success' => false, 'message' => 'DB Error'], 500);
+        }
+    }
+
+    public function leaderIndex(Request $request)
+    {
+        // 1. Setup Tanggal
+        $monthInput = $request->input('month', now()->format('Y-m'));
+        try {
+            $date = Carbon::createFromFormat('Y-m', $monthInput);
+        } catch (Exception $e) {
+            $date = now();
+        }
+
+        $year = $date->year;
+        $month = $date->month;
+        $daysInMonth = $date->daysInMonth;
+
+        $today = Carbon::now()->startOfDay();
+        $isCurrentMonth = ($date->month == $today->month && $date->year == $today->year);
+        $isPastMonth = $date->endOfMonth()->isPast();
+
+        // 2. Ambil List Leader (Buat Dropdown Filter)
+        $availableLeaders = User::where('role', 'leader')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        // 3. Tentukan Leader Terpilih
+        $selectedLeaderId = $request->input('leader', $availableLeaders->first()->employeeID ?? null);
+
+        $targets = [];
+        $plan = null;
+
+        if ($selectedLeaderId) {
+            // A. Get/Create Plan
+            $plan = SchedulePlan::firstOrCreate(
+                [
+                    'scheduler_id' => $selectedLeaderId,
+                    'month' => $month,
+                    'year' => $year,
+                    'type' => 'leader_checks_operator',
+                ]
+            );
+
+            // B. Ambil SUBORDINATES (Logic Baru: Based on superior_id)
+            $subordinates = User::where('superior_id', $selectedLeaderId)
+                ->where('role', 'operator')
+                ->where('is_active', true)
+                ->with('division') // Eager load relasi division master
+                ->orderBy('name')
+                ->get();
+
+            // C. Ambil Jadwal Existing
+            $details = ScheduleDetail::where('schedule_plan_id', $plan->id)->get();
+
+            // D. Mapping Data
+            foreach ($subordinates as $sub) {
+                // Filter jadwal khusus user ini
+                $userShifts = $details->where('target_user_id', $sub->employeeID);
+
+                // Logic Divisi (Tetap sama)
+                $savedDivision = $userShifts->first()->division ?? null;
+                $masterDivision = $sub->division->name ?? '';
+
+                // --- [START LOGIC BARU] ---
+                $dates = [];
+
+                // Format data DB ke array biar gampang dicari
+                $dbMap = $userShifts->mapWithKeys(function ($item) {
+                    return [$item->scheduled_date->format('Y-m-d') => $item->shift];
+                });
+
+                for ($d = 1; $d <= $daysInMonth; $d++) {
+                    $dateObj = Carbon::createFromDate($year, $month, $d);
+                    $dateStr = $dateObj->format('Y-m-d');
+
+                    // 1. Cek DB
+                    if (isset($dbMap[$dateStr])) {
+                        $dates[$dateStr] = $dbMap[$dateStr];
+                    }
+                    // 2. Cek Weekend -> Auto L
+                    elseif ($dateObj->isWeekend()) {
+                        $dates[$dateStr] = 'L';
+                    }
+                    // 3. Kosong
+                    else {
+                        $dates[$dateStr] = '';
+                    }
+                }
+                // --- [END LOGIC BARU] ---
+
+                $targets[] = [
+                    'id' => $sub->employeeID,
+                    'name' => $sub->name,
+                    'division' => $savedDivision ?: $masterDivision,
+                    'dates' => $dates,
+                ];
+            }
+        } else {
+            $plan = (object) ['year' => $year, 'month' => $month, 'id' => 0];
+        }
+
+        $divisionOptions = Division::all();
+
+        return view('schedule.schedule-leader', compact(
+            'plan',
+            'daysInMonth',
+            'availableLeaders',
+            'divisionOptions',
+            'targets',
+            'isPastMonth',
+            'isCurrentMonth',
+            'today'
+        ));
+    }
+
+    public function updateCellOperator(Request $request, SchedulePlan $plan)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,employeeID',
+            'date' => 'required|date_format:Y-m-d',
+            'shift' => 'nullable|in:1,2,3,L',
+            'division' => 'required|string', // Division wajib dikirim dari JS
         ]);
+
+        try {
+            DB::beginTransaction();
+
+            if (empty($validated['shift'])) {
+                // Delete
+                ScheduleDetail::where('schedule_plan_id', $plan->id)
+                    ->where('target_user_id', $validated['user_id'])
+                    ->where('scheduled_date', $validated['date'])
+                    ->delete();
+            } else {
+                // Update or Create
+                ScheduleDetail::updateOrCreate(
+                    [
+                        'schedule_plan_id' => $plan->id,
+                        'target_user_id' => $validated['user_id'],
+                        'scheduled_date' => $validated['date'],
+                    ],
+                    [
+                        'shift' => $validated['shift'],
+                        'division' => $validated['division'], // Save division
+                    ]
+                );
+            }
+
+            DB::commit();
+
+            return response()->json(['success' => true]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function updateDivisionOperator(Request $request, SchedulePlan $plan)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,employeeID',
+            'division' => 'required|string',
+        ]);
+
+        try {
+            // Update SEMUA record user ini di plan ini dengan divisi baru
+            ScheduleDetail::where('schedule_plan_id', $plan->id)
+                ->where('target_user_id', $validated['user_id'])
+                ->update(['division' => $validated['division']]);
+
+            return response()->json(['success' => true]);
+        } catch (Exception $e) {
+            return response()->json(['success' => false], 500);
+        }
+    }
+
+    public function updateRange(Request $request, SchedulePlan $plan)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,employeeID',
+            'dates'   => 'required|array',
+            'dates.*' => 'date_format:Y-m-d',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // 1. (Opsional) Hapus semua jadwal lama si leader di bulan ini biar bersih
+            ScheduleDetail::where('schedule_plan_id', $plan->id)
+                ->where('target_user_id', $validated['user_id'])
+                ->delete();
+
+            // 2. Insert range tanggal yang baru kepilih
+            $inserts = [];
+            foreach ($validated['dates'] as $date) {
+                $inserts[] = [
+                    'schedule_plan_id' => $plan->id,
+                    'target_user_id'   => $validated['user_id'],
+                    'scheduled_date'   => $date,
+                    'shift'            => null, // Supervisor nggak pakai shift
+                    'division'         => null,
+                    'created_at'       => now(),
+                    'updated_at'       => now(),
+                ];
+            }
+
+            if (!empty($inserts)) {
+                ScheduleDetail::insert($inserts); // Bulk insert biar makin wuzz 🚀
+            }
+
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'DB Error'], 500);
+        }
     }
 }

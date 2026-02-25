@@ -19,12 +19,9 @@ return new class extends Migration
             $table->enum('type', ['leader_checks_operator', 'supervisor_checks_leader']);
             $table->timestamps();
 
-            $table->foreign('scheduler_id')
-                ->references('employeeID')
-                ->on('users')
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
-            $table->unique(['scheduler_id', 'month', 'year']);
+            $table->foreign('scheduler_id')->references('employeeID')
+                ->on('users')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->unique(['scheduler_id', 'month', 'year', 'type']);
         });
     }
 

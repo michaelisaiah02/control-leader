@@ -12,8 +12,8 @@
         }
 
         /* FIX LAYOUT: Override Navbar Layout Utama khusus page ini.
-                   Kita bikin navbar melayang di atas background, jadi gak nambah tinggi halaman.
-                */
+                       Kita bikin navbar melayang di atas background, jadi gak nambah tinggi halaman.
+                    */
         nav.navbar {
             position: absolute;
             top: 0;
@@ -127,8 +127,7 @@
 
                         <div class="mt-4 text-center">
                             <small class="text-white-50 fst-italic">
-                                Forgot password? Contact <a href="#" class="text-white text-decoration-underline">IT
-                                    Dept</a>
+                                Jika gagal login, hubungi IT
                             </small>
                         </div>
                     </form>

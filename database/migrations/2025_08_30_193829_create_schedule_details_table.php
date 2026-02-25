@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('schedule_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('schedule_plan_id')->constrained('schedule_plans')->onDelete('cascade');
+            $table->foreignId('schedule_plan_id')->constrained('schedule_plans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->char('target_user_id', 5);
             $table->string('division')->nullable();
             $table->string('shift')->nullable();
@@ -22,9 +22,7 @@ return new class extends Migration
 
             $table->foreign('target_user_id')
                 ->references('employeeID')
-                ->on('users')
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
+                ->on('users')->cascadeOnDelete()->cascadeOnUpdate();
             $table->unique(['target_user_id', 'scheduled_date'], 'sd_user_date_unique');
             $table->index(['schedule_plan_id', 'scheduled_date'], 'sd_plan_date_idx');
         });

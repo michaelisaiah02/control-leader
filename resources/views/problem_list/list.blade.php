@@ -49,7 +49,7 @@
                             <span class="input-group-text bg-light border-end-0 fw-bold text-muted" id="filter-icon">
                                 <i class="bi bi-funnel-fill"></i>
                             </span>
-                            <div class="form-floating flex-grow-1">
+                            <div class="form-floating grow">
                                 <select id="filterPackage" class="form-select border-start-0 ps-2"
                                     aria-label="Filter Status">
                                     <option value="all" selected>Show All Status</option>

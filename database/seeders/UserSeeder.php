@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
         $password = '00000';
 
         // Helper buat bikin ID 5 digit
-        $makeID = fn($n) => str_pad($n, 5, '0', STR_PAD_LEFT);
+        $makeID = fn ($n) => str_pad($n, 5, '0', STR_PAD_LEFT);
 
         // Ambil daftar department_id dan division_id yang ada
         $departmentIds = DB::table('departments')->pluck('id')->toArray();

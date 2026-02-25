@@ -50,7 +50,7 @@ class UserController extends Controller
             'role' => 'required|in:admin,management,ypq,leader,supervisor,guest',
             'password' => 'nullable|string|min:6',
             'department_id' => ['nullable', 'integer', Rule::exists('departments', 'id')],
-            'superior_id' => ['nullable', 'string', Rule::exists('users', 'employeeID')]
+            'superior_id' => ['nullable', 'string', Rule::exists('users', 'employeeID')],
         ]);
 
         // put everything into $data for update
@@ -123,7 +123,7 @@ class UserController extends Controller
                 $query = User::whereIn('role', $rolesToFetch);
 
                 // Hanya filter departemen jika departmentId tidak kosong
-                if (!empty($departmentId)) {
+                if (! empty($departmentId)) {
                     $query->where('department_id', $departmentId);
                 }
 
@@ -149,7 +149,7 @@ class UserController extends Controller
                 'name' => $user->name,
                 'employeeID' => $user->employee_id ?? $user->employeeID, // Sesuaikan kolom DB
                 'role' => $user->role,
-                'department_id' => $user->department_id
+                'department_id' => $user->department_id,
             ];
         });
 

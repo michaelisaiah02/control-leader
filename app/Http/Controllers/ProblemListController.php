@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Problem;
 
-use Illuminate\Http\Request;
-
 class ProblemListController extends Controller
 {
     public function index()
@@ -45,6 +43,7 @@ class ProblemListController extends Controller
     public function list($type)
     {
         $Problems = Problem::all();
+
         return view('problem_list.list', compact(['type', 'Problems']));
     }
 }

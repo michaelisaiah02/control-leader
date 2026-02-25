@@ -72,7 +72,7 @@
     </nav>
 
     {{-- Content Wrapper --}}
-    <main class="py-4">
+    <main class="pt-3">
         @yield('content')
     </main>
 
