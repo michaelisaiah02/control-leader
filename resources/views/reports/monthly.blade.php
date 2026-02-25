@@ -6,6 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite(['resources/css/app.css', 'resources/sass/app.scss', 'resources/js/app.js'])
     <title>Monthly Score Control Member Report</title>
+    @php
+    // 1. Tentukan tanggal awal dan akhir bulan
+    $start = Carbon::createFromDate(2026, 2, 1)->startOfMonth();
+    $end = Carbon::createFromDate(2026, 2, 1)->endOfMonth();
+
+    // 2. Buat periode harian
+    $period = CarbonPeriod::create($start, $end);
+
+    $data = [];
+
+    // 3. Loop setiap hari
+    foreach ($period as $date) {
+    // Format key tanggal: "15-02-2026"
+    $key = $date->format('d-m-Y');
+
+    // Cek apakah Sabtu/Minggu
+    if ($date->isWeekend()) {
+    $data[$key] = "l"; // Set "l" untuk libur
+    } else {
+    // Untuk hari biasa, set default frequency (misal: 0 atau null)
+    // Nanti nilai ini bisa di-update/merge dengan data dari database
+    $data[$key] = 0;
+    }
+    }
+    dd($data);
+    @endphp
 </head>
 
 <body>
@@ -16,7 +42,8 @@
             </a>
             <div class="border border-black w-100 d-flex justify-content-center align-items-center">
                 <p class="text-center" style="text-transform: capitalize; font-size: 2rem">Monthly Consistency
-                    {{ $type }} Report</p>
+                    {{ $type }} Report
+                </p>
             </div>
             <a class="border border-black" href="/">
                 <img src="{{ asset('image/logo-rice.png') }}" alt="Logo" class="mt-0 logo">
@@ -101,23 +128,23 @@
                 </thead>
                 <tbody>
                     @forelse ($problems as $problem)
-                        <tr>
-                            <td class="text-center">{{ $loop->iteration }}</td>
-                            <td class="text-center">{{ $problem->created_at }}</td>
-                            <td class="text-center">{{ $problem->problem }}</td>
-                            <td class="text-center">{{ $problem->countermeasure }}</td>
-                            <td class="text-center">{{ $problem->due_date }}</td>
-                            <td class="text-center">{{ $problem->status }}</td>
-                        </tr>
+                    <tr>
+                        <td class="text-center">{{ $loop->iteration }}</td>
+                        <td class="text-center">{{ $problem->created_at->format('d M Y') }}</td>
+                        <td class="text-center">{{ $problem->problem }}</td>
+                        <td class="text-center">{{ $problem->countermeasure }}</td>
+                        <td class="text-center">{{ $problem->due_date->format('d M Y') }}</td>
+                        <td class="text-center text-capitalize">{{ $problem->status }}</td>
+                    </tr>
                     @empty
-                        <tr>
-                            <td class="text-center">1</td>
-                            <td class="text-center">25 Juli 2025</td>
-                            <td class="text-center">Operator tidak mengikuti 5 Minutes</td>
-                            <td class="text-center">Operator diberi sanksi SP 1</td>
-                            <td class="text-center">29 Juli 2025</td>
-                            <td class="text-center">Close</td>
-                        </tr>
+                    <tr>
+                        <td class="text-center">1</td>
+                        <td class="text-center">25 Juli 2025</td>
+                        <td class="text-center">Operator tidak mengikuti 5 Minutes</td>
+                        <td class="text-center">Operator diberi sanksi SP 1</td>
+                        <td class="text-center">29 Juli 2025</td>
+                        <td class="text-center">Close</td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>

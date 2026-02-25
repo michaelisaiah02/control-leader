@@ -25,17 +25,17 @@
                 <th scope="col">{{ $problem->countermeasure}}</th>
                 <th scope="col">
                     @if (is_null($problem->created_at) && $now->gt($problem->due_date))
-                        Miss
+                    Miss
                     @endif
                     @if (!is_null($problem->created_at) && $problem->created_at > $problem->due_date)
-                        Late
+                    Late
                     @endif
                     @if (!is_null($problem->created_at) && $problem->created_at <= $problem->due_date)
                         Advanced
-                    @endif
+                        @endif
                 </th>
                 <th scope="col">{{ $problem->due_date }}</th>
-                <th scope="col" class="capitalize">{{ $problem->status }}</th>
+                <th scope="col" class="text-capitalize">{{ $problem->status }}</th>
                 @if(auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor')
                 <th scope="col">
                     @if ($problem->status != 'close')
