@@ -6,32 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite(['resources/css/app.css', 'resources/sass/app.scss', 'resources/js/app.js'])
     <title>Monthly Score Control Member Report</title>
-    @php
-    // 1. Tentukan tanggal awal dan akhir bulan
-    $start = Carbon::createFromDate(2026, 2, 1)->startOfMonth();
-    $end = Carbon::createFromDate(2026, 2, 1)->endOfMonth();
-
-    // 2. Buat periode harian
-    $period = CarbonPeriod::create($start, $end);
-
-    $data = [];
-
-    // 3. Loop setiap hari
-    foreach ($period as $date) {
-    // Format key tanggal: "15-02-2026"
-    $key = $date->format('d-m-Y');
-
-    // Cek apakah Sabtu/Minggu
-    if ($date->isWeekend()) {
-    $data[$key] = "l"; // Set "l" untuk libur
-    } else {
-    // Untuk hari biasa, set default frequency (misal: 0 atau null)
-    // Nanti nilai ini bisa di-update/merge dengan data dari database
-    $data[$key] = 0;
-    }
-    }
-    dd($data);
-    @endphp
 </head>
 
 <body>
@@ -133,7 +107,11 @@
                         <td class="text-center">{{ $problem->created_at->format('d M Y') }}</td>
                         <td class="text-center">{{ $problem->problem }}</td>
                         <td class="text-center">{{ $problem->countermeasure }}</td>
+                        @if ($problem->due_date !== null)
                         <td class="text-center">{{ $problem->due_date->format('d M Y') }}</td>
+                        @else
+                        <td class="text-center">-</td>
+                        @endif
                         <td class="text-center text-capitalize">{{ $problem->status }}</td>
                     </tr>
                     @empty
@@ -159,21 +137,46 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        const rawData = @json($data);
+        const labels = Object.keys(rawData);
+        const values = Object.values(rawData).map(val => {
+            return val === 'l' ? 0 : val;
+        });
+
+        // Warna label (Sabtu-Minggu merah)
+        const labelColors = Object.values(rawData).map(val => {
+            return val === 'l' ? 'red' : 'black';
+        });
+        const barColors = Object.values(rawData).map(val => {
+            return val === 'l' ? '#cccccc' : '#f77f00';
+        });
+
         const ctx = document.getElementById('chart');
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Awal Shift', 'Saat Kerja', 'Setelah Istirahat', 'Akhir Shift'],
+                // labels: ['Awal Shift', 'Saat Kerja', 'Setelah Istirahat', 'Akhir Shift'],
+                labels,
                 datasets: [{
-                    label: 'T.Score',
-                    backgroundColor: '#f77f00'
+                    label: 'Score',
+                    data: values,
+                    backgroundColor: barColors
                 }]
             },
             options: {
                 responsive: true,
                 scales: {
+                    x: {
+                        stacked: true,
+                        ticks: {
+                            color: function(context) {
+                                return labelColors[context.index];
+                            }
+                        }
+                    },
                     y: {
                         beginAtZero: true,
+                        stacked: true,
                         max: 100
                     }
                 }

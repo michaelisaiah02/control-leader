@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Checksheet;
+use App\Models\Department;
 use App\Models\Problem;
+use App\Models\User;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
+use DateTime;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
@@ -16,14 +20,49 @@ class ReportController extends Controller
 
     public function form($type)
     {
-        return view('reports.form', compact(['type']));
+        // 'name', 'employeeID', 'department_id', 'division_id', 'password', 'role'
+        $departments = Department::orderBy('department_name')->get();
+
+        $supervisors = User::where('role', 'supervisor')->orderBy('name')->get();
+        $leaders = User::where('role', 'leader')->orderBy('name')->get();
+        $operators = User::where('role', 'operator')->orderBy('name')->get();
+
+        return view('reports.form', compact([
+            'type',
+            'departments',
+            'supervisors',
+            'leaders',
+            'operators'
+        ]));
     }
 
-    public function monthly($type)
+    public function monthly($type, Request $request)
     {
+        $date = Carbon::createFromFormat('Y-m', $request->month);
+
+        $start = $date->copy()->startOfMonth();
+        $end = $date->copy()->endOfMonth();
+
+        $period = CarbonPeriod::create($start, $end);
+
+        $data = [];
+
+        foreach ($period as $date) {
+            $key = $date->format('d-m-Y');
+
+            // Cek apakah Sabtu/Minggu
+            if ($date->isWeekend()) {
+                $data[$key] = "l"; // Set "l" untuk libur
+            } else {
+                // Untuk hari biasa, set default frequency (misal: 0 atau null)
+                // Nanti nilai ini bisa di-update/merge dengan data dari database
+                $data[$key] = 0;
+            }
+        }
+
         $problems = Problem::all();
 
-        return view('reports.monthly', compact(['type', 'problems']));
+        return view('reports.monthly', compact(['type', 'problems', 'data']));
     }
 
     public function daily()
@@ -121,7 +160,7 @@ class ReportController extends Controller
                     ->whereYear('created_at', $year)
                     ->where('phase', $package)
                     ->get()
-                    ->map(fn ($c) => $c->answers->avg('answer_value'))
+                    ->map(fn($c) => $c->answers->avg('answer_value'))
                     ->avg();
                 $result[$package][] = $avg ? round($avg * 10, 2) : 0;
             }
