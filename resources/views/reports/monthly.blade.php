@@ -16,7 +16,8 @@
             </a>
             <div class="border border-black w-100 d-flex justify-content-center align-items-center">
                 <p class="text-center" style="text-transform: capitalize; font-size: 2rem">Monthly Consistency
-                    {{ $type }} Report</p>
+                    {{ $type }} Report
+                </p>
             </div>
             <a class="border border-black" href="/">
                 <img src="{{ asset('image/logo-rice.png') }}" alt="Logo" class="mt-0 logo">
@@ -101,23 +102,27 @@
                 </thead>
                 <tbody>
                     @forelse ($problems as $problem)
-                        <tr>
-                            <td class="text-center">{{ $loop->iteration }}</td>
-                            <td class="text-center">{{ $problem->created_at }}</td>
-                            <td class="text-center">{{ $problem->problem }}</td>
-                            <td class="text-center">{{ $problem->countermeasure }}</td>
-                            <td class="text-center">{{ $problem->due_date }}</td>
-                            <td class="text-center">{{ $problem->status }}</td>
-                        </tr>
+                    <tr>
+                        <td class="text-center">{{ $loop->iteration }}</td>
+                        <td class="text-center">{{ $problem->created_at->format('d M Y') }}</td>
+                        <td class="text-center">{{ $problem->problem }}</td>
+                        <td class="text-center">{{ $problem->countermeasure }}</td>
+                        @if ($problem->due_date !== null)
+                        <td class="text-center">{{ $problem->due_date->format('d M Y') }}</td>
+                        @else
+                        <td class="text-center">-</td>
+                        @endif
+                        <td class="text-center text-capitalize">{{ $problem->status }}</td>
+                    </tr>
                     @empty
-                        <tr>
-                            <td class="text-center">1</td>
-                            <td class="text-center">25 Juli 2025</td>
-                            <td class="text-center">Operator tidak mengikuti 5 Minutes</td>
-                            <td class="text-center">Operator diberi sanksi SP 1</td>
-                            <td class="text-center">29 Juli 2025</td>
-                            <td class="text-center">Close</td>
-                        </tr>
+                    <tr>
+                        <td class="text-center">1</td>
+                        <td class="text-center">25 Juli 2025</td>
+                        <td class="text-center">Operator tidak mengikuti 5 Minutes</td>
+                        <td class="text-center">Operator diberi sanksi SP 1</td>
+                        <td class="text-center">29 Juli 2025</td>
+                        <td class="text-center">Close</td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
@@ -132,21 +137,46 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        const rawData = @json($data);
+        const labels = Object.keys(rawData);
+        const values = Object.values(rawData).map(val => {
+            return val === 'l' ? 0 : val;
+        });
+
+        // Warna label (Sabtu-Minggu merah)
+        const labelColors = Object.values(rawData).map(val => {
+            return val === 'l' ? 'red' : 'black';
+        });
+        const barColors = Object.values(rawData).map(val => {
+            return val === 'l' ? '#cccccc' : '#f77f00';
+        });
+
         const ctx = document.getElementById('chart');
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Awal Shift', 'Saat Kerja', 'Setelah Istirahat', 'Akhir Shift'],
+                // labels: ['Awal Shift', 'Saat Kerja', 'Setelah Istirahat', 'Akhir Shift'],
+                labels,
                 datasets: [{
-                    label: 'T.Score',
-                    backgroundColor: '#f77f00'
+                    label: 'Score',
+                    data: values,
+                    backgroundColor: barColors
                 }]
             },
             options: {
                 responsive: true,
                 scales: {
+                    x: {
+                        stacked: true,
+                        ticks: {
+                            color: function(context) {
+                                return labelColors[context.index];
+                            }
+                        }
+                    },
                     y: {
                         beginAtZero: true,
+                        stacked: true,
                         max: 100
                     }
                 }

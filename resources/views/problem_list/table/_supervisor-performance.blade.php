@@ -19,7 +19,7 @@
                 <th scope="col">{{ $problem->problem }}</th>
                 <th scope="col">{{ $problem->countermeasure}}</th>
                 <th scope="col">{{ $problem->due_date }}</th>
-                <th scope="col">{{ $problem->status }}</th>
+                <th scope="col" class="text-capitalize">{{ $problem->status }}</th>
                 <th scope="col">Action</th>
             </tr>
             @empty

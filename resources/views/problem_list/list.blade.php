@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @php
+    $now = \Carbon\Carbon::now();
     // Refactor Note: Logic title dipindah ke sini biar HTML bersih (Separation of Concerns)
     $titles = [
         'leader-performance' => 'Leader Performance',
@@ -87,6 +88,7 @@
                             @case('leader-consistency')
                                 @include('problem_list.table._leader-consistency', [
                                     'Problems' => $Problems,
+                                    'now' => $now
                                 ])
                             @break
 
@@ -99,6 +101,7 @@
                             @case('supervisor-consistency')
                                 @include('problem_list.table._supervisor-consistency', [
                                     'Problems' => $Problems,
+                                    'now' => $now
                                 ])
                             @break
 

@@ -23,9 +23,19 @@
                 <th scope="col">{{ $problem->operator_id }} - {{ $problem->operator_name }}</th>
                 <th scope="col">{{ $problem->problem }}</th>
                 <th scope="col">{{ $problem->countermeasure}}</th>
-                <th scope="col">Remark</th>
+                <th scope="col">
+                    @if (is_null($problem->created_at) && $now->gt($problem->due_date))
+                    Miss
+                    @endif
+                    @if (!is_null($problem->created_at) && $problem->created_at > $problem->due_date)
+                    Late
+                    @endif
+                    @if (!is_null($problem->created_at) && $problem->created_at <= $problem->due_date)
+                        Advanced
+                        @endif
+                </th>
                 <th scope="col">{{ $problem->due_date }}</th>
-                <th scope="col" class="capitalize">{{ $problem->status }}</th>
+                <th scope="col" class="text-capitalize">{{ $problem->status }}</th>
                 @if(auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor')
                 <th scope="col">
                     @if ($problem->status != 'close')
