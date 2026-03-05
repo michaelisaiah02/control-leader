@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ChecksheetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OperatorController;
+use App\Http\Controllers\ProblemListController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Middleware\CheckActiveChecksheet;
 use App\Http\Middleware\CheckRoleIsAdmin;
@@ -94,28 +96,27 @@ Route::middleware('auth')->group(function () {
             });
         });
     });
-});
 
-// Reports (Sementara)
-Route::controller(App\Http\Controllers\ReportController::class)->group(function () {
-    Route::get('/reports', 'index')->name('reports.index');
-    Route::get('/report/{type}', 'form')->name('reports.form');
-    Route::get('/reports/daily', 'daily')->name('reports.daily');
-    Route::get('/reports/{type}/monthly', 'monthly')->name('reports.monthly');
-    Route::get('/reports/{type}/score', 'leaderScore')->name('reports.score');
-    Route::get('/reports/leader-score', 'leaderScore')->name('reports.leaderScore');
-    Route::get('/reports/leader-consistency', 'leaderConsistency')->name('reports.leaderConsistency');
-    // API
-    Route::get('api/reports/daily', 'apiDaily');
-    Route::get('api/reports/monthly', 'apiMonthly');
-    Route::get('api/reports/leader-score', 'apiLeaderScore');
-    Route::get('api/reports/leader-consistency', 'apiLeaderConsistency');
-});
+    Route::prefix('list-problem')->as('listProblem.')->controller(ProblemListController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/{type}', 'list')->name('list');
+        Route::get('/{type}/{id}', 'edit')->name('edit');
+        Route::put('/{type}/{id}/update', 'update')->name('update');
+        Route::get('/{type}/edit', 'editTemplate');
+    });
 
-Route::controller(App\Http\Controllers\ProblemListController::class)->group(function () {
-    Route::get('/list-problem', 'index')->name("listProblem.index");
-    Route::get('/list-problem/{type}', 'list')->name("listProblem.list");
-    Route::get('/list-problem/{type}/{id}', 'edit')->name("listProblem.edit");
-    Route::put('/list-problem/{type}/{id}/update', 'update')->name("listProblem.update");
-    Route::get('/list-problem/{type}/edit', 'editTemplate');
+    Route::prefix('reports')->as('reports.')->controller(ReportController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/{type}', 'form')->name('form');
+        Route::get('/daily', 'daily')->name('daily');
+        Route::get('/{type}/monthly', 'monthly')->name('monthly');
+        Route::get('/{type}/score', 'leaderScore')->name('score');
+        Route::get('/leader-score', 'leaderScore')->name('leaderScore');
+        Route::get('/leader-consistency', 'leaderConsistency')->name('leaderConsistency');
+        // API
+        Route::get('/api/daily', 'apiDaily');
+        Route::get('/api/monthly', 'apiMonthly');
+        Route::get('/api/leader-score', 'apiLeaderScore');
+        Route::get('/api/leader-consistency', 'apiLeaderConsistency');
+    });
 });

@@ -1,45 +1,43 @@
 @php
-$role = explode('-', $type)[0];
+    // Identifikasi siapa yang lagi diaudit berdasarkan tipe URL
+    $pageRole = explode('-', $type)[0];
 @endphp
-<div class="d-flex w-100 justify-content-between align-items-center gap-2">
-    <div class="d-flex align-items-center gap-2 w-100">
-        <label for="date" class="col-md-6 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Tanggal</label>
-        <input type="date" name="date" id="date" disabled class="form-control bg-primary-subtle" value="{{ $problem->created_at->format('Y-m-d') }}" />
+
+<div class="row g-3">
+    {{-- Tanggal --}}
+    <div class="col-md-4">
+        <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
+            <i class="bi bi-calendar-event me-1"></i> Tanggal
+        </label>
+        <input type="text" class="form-control bg-light text-muted border-0 fw-bold"
+            value="{{ \Carbon\Carbon::parse($problem->created_at)->format('d F Y') }}" readonly>
     </div>
-    <div class="d-flex align-items-center gap-2 w-100">
-        @if ($role === 'leader')
-        <label for="leader" class="col-md-6 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">
-            Nama Leader
+
+    {{-- Person 1 (Auditor / Yang Ngecek) --}}
+    <div class="col-md-4">
+        <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
+            <i class="bi bi-person-badge me-1"></i> Nama ({{ ucfirst($pageRole) }})
         </label>
-        <input type="text" name="leader" id="leader" disabled class="form-control bg-primary-subtle" value="{{ $problem->leader_name }}" />
-        @elseif ($role === 'supervisor')
-        <label for="supervisor" class="col-md-6 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">
-            Nama Supervisor
-        </label>
-        <input type="text" name="supervisor" id="supervisor" disabled class="form-control bg-primary-subtle" value="" />
-        @else
-        Tidak Valid.
-        @endif
+        {{-- Panggil dari relasi $problem->user --}}
+        <input type="text" class="form-control bg-light text-muted border-0"
+            value="{{ $problem->user->name ?? 'Tidak Diketahui' }}" readonly>
     </div>
-    <div class="d-flex align-items-center gap-2 w-100">
-        @if ($role === 'leader')
-        <label for="operator" class="col-md-6 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">
-            Nama Operator
+
+    {{-- Person 2 (Auditee / Target yang dicek) --}}
+    <div class="col-md-4">
+        <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
+            <i class="bi bi-person-gear me-1"></i> Nama ({{ $pageRole === 'leader' ? 'Operator' : 'Leader' }})
         </label>
-        <input type="text" name="operator" id="operator" disabled class="form-control bg-primary-subtle" value="{{ $problem->operator_name }}" />
-        @elseif ($role === 'supervisor')
-        <label for="leader" class="col-md-6 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">
-            Nama Leader
-        </label>
-        <input type="text" name="leader" id="leader" disabled class="form-control bg-primary-subtle" value="" />
-        @else
-        Tidak Valid.
-        @endif
+        {{-- Panggil dari relasi $problem->inferior --}}
+        <input type="text" class="form-control bg-light text-muted border-0"
+            value="{{ $problem->inferior->name ?? 'Tidak Diketahui' }}" readonly>
     </div>
-</div>
-<div class="d-flex justify-content-between w-100">
-    <div class="d-flex align-items-center gap-2 w-100">
-        <label for="problem" class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Problem</label>
-        <input type="text" name="problem" id="problem" disabled class="form-control bg-primary-subtle" value="{{ $problem->problem }}">
+
+    {{-- Problem Description --}}
+    <div class="col-12 mt-3">
+        <label class="form-label small fw-bold text-danger text-uppercase mb-1">
+            <i class="bi bi-exclamation-octagon me-1"></i> Problem
+        </label>
+        <textarea class="form-control bg-light text-dark border-0 shadow-sm" rows="2" readonly>{{ $problem->problem }}</textarea>
     </div>
 </div>

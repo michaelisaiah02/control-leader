@@ -3,8 +3,8 @@
 @section('styles')
     <style>
         /* =========================================
-                                                                       1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
-                                                                       ========================================= */
+                                                                                               1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
+                                                                                               ========================================= */
         .schedule-table {
             border-collapse: separate !important;
             /* Wajib separate biar border gak nempel */
@@ -32,8 +32,8 @@
         }
 
         /* =========================================
-                                                                       2. Z-INDEX & STICKY LOGIC
-                                                                       ========================================= */
+                                                                                               2. Z-INDEX & STICKY LOGIC
+                                                                                               ========================================= */
 
         /* Header Bulan (Atas) */
         .schedule-table thead th {
@@ -79,8 +79,8 @@
         }
 
         /* =========================================
-                                                                       3. UI CELL (EXCEL MODE)
-                                                                       ========================================= */
+                                                                                               3. UI CELL (EXCEL MODE)
+                                                                                               ========================================= */
         .shift-select {
             min-width: 45px !important;
             padding: 4px 0 !important;
@@ -123,6 +123,10 @@
 @endpush
 
 @section('content')
+    @php
+        // Bikin gembok: Ambil akhir minggu dari hari ini (Default Carbon = Hari Minggu)
+        $endOfCurrentWeek = \Carbon\Carbon::now()->endOfWeek();
+    @endphp
     <div class="container-fluid layout-fixed pb-2">
 
         {{-- SECTION 1: FILTER (Compact Header) --}}
@@ -191,20 +195,28 @@
                                     @php
                                         $dateObj = \Carbon\Carbon::createFromDate($plan->year, $plan->month, $d);
                                         $dateStr = $dateObj->format('Y-m-d');
-                                        $weekNum = $dateObj->weekOfYear; // MANTAP, INI KUNCINYA!
+                                        $weekNum = $dateObj->weekOfYear;
                                         $isWeekend = $dateObj->isWeekend();
 
-                                        $isSelected = $target['dates'][$dateStr] === 'Y';
+                                        // LOGIKA KUNCIAN: Kalau tanggal ini <= akhir minggu ini, KUNCI!
+                                        $isLocked = $dateObj->lte($endOfCurrentWeek);
 
+                                        $isSelected =
+                                            isset($target['dates'][$dateStr]) && $target['dates'][$dateStr] === 'Y';
                                         $bgClass = $isWeekend ? 'bg-weekend' : '';
                                         $activeClass = $isSelected ? 'bg-primary text-white' : '';
+
+                                        // Kasih efek visual redup dikit kalau kekunci biar user paham
+                                        $lockedOpacity = $isLocked ? 'opacity: 0.6;' : '';
+                                        $cursorStyle = $isLocked ? 'cursor: not-allowed;' : 'cursor: pointer;';
                                     @endphp
 
                                     <td class="p-0 {{ $bgClass }} position-relative border-right border-bottom">
                                         <div class="schedule-cell w-100 h-100 d-flex align-items-center justify-content-center {{ $activeClass }}"
                                             data-user="{{ $target['id'] }}" data-date="{{ $dateStr }}"
                                             data-day="{{ $d }}" data-week="{{ $weekNum }}"
-                                            {{-- KITA TEMPEL DI SINI --}} style="min-height: 35px; cursor: pointer;">
+                                            data-locked="{{ $isLocked ? 'true' : 'false' }}" {{-- TEMPEL STATUS GEMBOK DISINI --}}
+                                            style="min-height: 35px; {{ $cursorStyle }} {{ $lockedOpacity }}">
                                             {!! $isSelected ? '<i class="bi bi-check-lg"></i>' : '' !!}
                                         </div>
                                     </td>
@@ -430,6 +442,19 @@
 
         document.querySelectorAll('.schedule-cell').forEach(cell => {
             cell.addEventListener('click', function() {
+                if (this.dataset.locked === 'true') {
+                    showToast('warning',
+                        'Jadwal untuk minggu ini (dan sebelumnya) sudah <b>terkunci</b>. Anda hanya bisa mengatur jadwal untuk minggu depan.'
+                        );
+
+                    // Kalau dia lagi nyoba bikin rentang (udah klik 1) terus klik yg kekunci, batalin
+                    if (startSelection) {
+                        startSelection.cell.classList.remove('bg-info', 'text-white');
+                        startSelection = null;
+                    }
+                    return; // Stop program eksekusi ke bawah
+                }
+
                 const userId = this.dataset.user;
                 const currentDay = parseInt(this.dataset.day);
                 const currentWeek = this.dataset.week;
@@ -474,7 +499,7 @@
                 // VALIDASI SAKTI: Cek apakah masih di minggu yang sama!
                 if (startSelection.week !== endWeek) {
                     showToast('warning',
-                    'Rentang waktu pengecekan harus berada di dalam minggu yang sama!');
+                        'Rentang waktu pengecekan harus berada di dalam minggu yang sama!');
                     startSelection.cell.classList.remove('bg-info', 'text-white'); // Reset klik pertama
                     startSelection = null;
                     return;
@@ -538,7 +563,7 @@
                 });
 
                 const data = await res.json();
-                if (!data.success) showToast('warning', 'Gagal save ke database bro!');
+                if (!data.success) showToast('danger', 'Gagal save ke database!');
 
             } catch (err) {
                 console.error(err);

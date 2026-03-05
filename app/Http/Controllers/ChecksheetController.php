@@ -35,7 +35,7 @@ class ChecksheetController extends Controller
 
     private function directionFor($me)
     {
-        return $me->role === 'Supervisor' ? 'supervisor_checks_leader' : 'leader_checks_operator';
+        return $me->role === 'supervisor' ? 'supervisor_checks_leader' : 'leader_checks_operator';
     }
 
     private function getEmployeeId(string $uid): string
@@ -303,7 +303,6 @@ class ChecksheetController extends Controller
         $questions = Question::whereIn('id', array_keys($answers))->get()->keyBy('id');
 
         $totalScore = 0;
-        $insertData = [];
 
         foreach ($answers as $qid => $val) {
             $question = $questions->get($qid);
@@ -311,17 +310,19 @@ class ChecksheetController extends Controller
                 continue;
             }
 
-            $insertData[] = [
+            // ✨ GANTI JADI CREATE DI SINI ✨
+            // Ini bakal nge-trigger event 'created' di model ChecksheetAnswer
+            ChecksheetAnswer::create([
                 'checksheet_id' => $checksheet->id,
                 'question_text' => $question->question_text,
                 'choices' => json_encode($question->choices),
                 'answer_value' => (string) $val,
                 'problem' => $probs[$qid] ?? null,
                 'countermeasure' => $cms[$qid] ?? null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+                // created_at dan updated_at otomatis diisi sama Eloquent
+            ]);
 
+            // Hitung Score
             $choicesCount = is_array($question->choices) ? count($question->choices) : 0;
             $answerValue = (int) $val;
 
@@ -332,7 +333,7 @@ class ChecksheetController extends Controller
             }
         }
 
-        ChecksheetAnswer::insert($insertData);
+        // Update total score di checksheet
         $checksheet->update(['score' => $totalScore]);
     }
 }

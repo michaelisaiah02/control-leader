@@ -55,8 +55,8 @@
                                     <option value="all" selected>Show All Status</option>
                                     <option value="open">Open</option>
                                     <option value="close">Close</option>
-                                    <option value="follow_up">Follow Up +1</option>
-                                    <option value="follow_up_on_delay">Follow Up +1 Delay</option>
+                                    <option value="follow_up">Follow Up 1</option>
+                                    <option value="follow_up_on_delay">Follow Up 1 Delay</option>
                                 </select>
                                 <label for="filterPackage" style="padding-left: 0.5rem; opacity: 0.6;">Filter by
                                     Status</label>

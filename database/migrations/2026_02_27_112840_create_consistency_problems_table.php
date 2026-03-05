@@ -11,17 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('problems', function (Blueprint $table) {
+        Schema::create('consistency_problems', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('checksheet_answer_id')->constrained('checksheet_answers')->cascadeOnDelete();
+            // Yang ngecek (Leader/Supervisor) -> diambil dari schedule_plans.scheduler_id
             $table->char('user_id', 5);
+            // Yang dicek (Operator/Leader) -> diambil dari schedule_details.target_user_id
             $table->char('inferior_id', 5);
+
+            $table->enum('role_type', ['leader', 'supervisor']);
+            $table->enum('remark', ['Miss', 'Late', 'Advanced']);
+
+            // Konteks jadwal biar gampang di-trace
+            $table->foreignId('schedule_detail_id')->nullable()->constrained('schedule_details')->nullOnDelete();
+
             $table->text('problem')->nullable();
             $table->text('countermeasure')->nullable();
             $table->enum('status', ['open', 'close', 'delay', 'follow_up_1', 'follow_up_1_delay'])->default('open');
             $table->date('due_date');
             $table->timestamps();
 
+            // Relasi ke users
             $table->foreign('user_id')->references('employeeID')->on('users')->cascadeOnDelete();
             $table->foreign('inferior_id')->references('employeeID')->on('users')->cascadeOnDelete();
         });
@@ -32,6 +41,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('problems');
+        Schema::dropIfExists('consistency_problems');
     }
 };

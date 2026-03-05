@@ -8,12 +8,12 @@ class DashboardController extends Controller
     {
         // Siapkan data yang dibutuhkan untuk view control leader
         $user = auth()->user(); // Contoh mengambil data user
-        $leaderName = $user->name;
-        $leaderRole = $user->role; // Ganti dengan data bagian/role yang sebenarnya
+        $userName = $user->name;
+        $userRole = $user->role; // Ganti dengan data bagian/role yang sebenarnya
 
         return view('dashboard', [
-            'leaderName' => $leaderName,
-            'leaderRole' => $leaderRole,
+            'userName' => $userName,
+            'userRole' => $userRole,
         ]);
     }
 }

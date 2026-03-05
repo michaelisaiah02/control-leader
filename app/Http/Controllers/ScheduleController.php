@@ -327,7 +327,7 @@ class ScheduleController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,employeeID',
-            'dates'   => 'required|array',
+            'dates' => 'required|array',
             'dates.*' => 'date_format:Y-m-d',
         ]);
 
@@ -344,23 +344,25 @@ class ScheduleController extends Controller
             foreach ($validated['dates'] as $date) {
                 $inserts[] = [
                     'schedule_plan_id' => $plan->id,
-                    'target_user_id'   => $validated['user_id'],
-                    'scheduled_date'   => $date,
-                    'shift'            => null, // Supervisor nggak pakai shift
-                    'division'         => null,
-                    'created_at'       => now(),
-                    'updated_at'       => now(),
+                    'target_user_id' => $validated['user_id'],
+                    'scheduled_date' => $date,
+                    'shift' => null, // Supervisor nggak pakai shift
+                    'division' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ];
             }
 
-            if (!empty($inserts)) {
+            if (! empty($inserts)) {
                 ScheduleDetail::insert($inserts); // Bulk insert biar makin wuzz 🚀
             }
 
             DB::commit();
+
             return response()->json(['success' => true]);
         } catch (Exception $e) {
             DB::rollBack();
+
             return response()->json(['success' => false, 'message' => 'DB Error'], 500);
         }
     }

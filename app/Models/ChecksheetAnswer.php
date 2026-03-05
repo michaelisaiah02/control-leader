@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class ChecksheetAnswer extends Model
@@ -23,16 +24,34 @@ class ChecksheetAnswer extends Model
 
     public function checksheet()
     {
-        return $this->belongsTo(Checksheet::class, 'checksheet_id');
+        return $this->belongsTo(Checksheet::class);
     }
 
-    public function question()
+    protected static function booted()
     {
-        return $this->belongsTo(Question::class, 'question_id');
-    }
+        // Event ini otomatis ke-trigger SATU KALI setelah record baru dibuat
+        static::created(function ($answer) {
 
-    public function problem()
-    {
-        return $this->belongsTo(Problem::class, 'checksheet_answer_id');
+            // Validasi: Cuma jalan kalau problem & countermeasure punya isi (bukan null/kosong)
+            if (! empty($answer->problem) && ! empty($answer->countermeasure)) {
+
+                // Load relasi checksheet buat dapetin data 'target'
+                $checksheet = $answer->checksheet;
+
+                Problem::create([
+                    'checksheet_answer_id' => $answer->id,
+
+                    'user_id' => auth()->user()->employeeID,
+                    'inferior_id' => $checksheet->target,
+
+                    'problem' => $answer->problem,
+                    'countermeasure' => $answer->countermeasure,
+                    'status' => 'open',
+
+                    // Pake Carbon buat nambahin 2 hari (H+2) dari waktu checksheet answer dibuat
+                    'due_date' => Carbon::parse($answer->created_at)->addDays(2),
+                ]);
+            }
+        });
     }
 }

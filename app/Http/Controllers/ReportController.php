@@ -8,7 +8,6 @@ use App\Models\Problem;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
-use DateTime;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
@@ -32,7 +31,7 @@ class ReportController extends Controller
             'departments',
             'supervisors',
             'leaders',
-            'operators'
+            'operators',
         ]));
     }
 
@@ -52,7 +51,7 @@ class ReportController extends Controller
 
             // Cek apakah Sabtu/Minggu
             if ($date->isWeekend()) {
-                $data[$key] = "l"; // Set "l" untuk libur
+                $data[$key] = 'l'; // Set "l" untuk libur
             } else {
                 // Untuk hari biasa, set default frequency (misal: 0 atau null)
                 // Nanti nilai ini bisa di-update/merge dengan data dari database
@@ -160,7 +159,7 @@ class ReportController extends Controller
                     ->whereYear('created_at', $year)
                     ->where('phase', $package)
                     ->get()
-                    ->map(fn($c) => $c->answers->avg('answer_value'))
+                    ->map(fn ($c) => $c->answers->avg('answer_value'))
                     ->avg();
                 $result[$package][] = $avg ? round($avg * 10, 2) : 0;
             }

@@ -3,29 +3,21 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Problem extends Model
+class ConsistencyProblem extends Model
 {
-    use HasFactory;
-
-    protected $table = 'problems';
-
     protected $fillable = [
-        'checksheet_answer_id',
         'user_id',
         'inferior_id',
+        'role_type',
+        'remark',
+        'schedule_detail_id',
         'problem',
         'countermeasure',
         'status',
         'due_date',
     ];
-
-    public function checksheetAnswer()
-    {
-        return $this->belongsTo(ChecksheetAnswer::class, 'checksheet_answer_id');
-    }
 
     public function user()
     {
@@ -37,13 +29,17 @@ class Problem extends Model
         return $this->belongsTo(User::class, 'inferior_id', 'employeeID');
     }
 
+    public function scheduleDetail()
+    {
+        return $this->belongsTo(ScheduleDetail::class, 'schedule_detail_id');
+    }
+
     public function getIsDueDateChangedAttribute()
     {
-        // Hitung default H+2 (format Y-m-d karena tipe data di DB lo date, bukan timestamp)
+        // Hitung default H+2 dari tanggal create
         $defaultDueDate = Carbon::parse($this->created_at)->addDays(2)->format('Y-m-d');
         $currentDueDate = Carbon::parse($this->due_date)->format('Y-m-d');
 
-        // Kalau beda, berarti udah pernah diedit = true
         return $defaultDueDate !== $currentDueDate;
     }
 }

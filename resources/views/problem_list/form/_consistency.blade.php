@@ -1,30 +1,51 @@
 @php
-    $role = explode('-', $type)[0];
+    $pageRole = explode('-', $type)[0];
 @endphp
-<div class="d-flex w-100 justify-content-between align-items-center gap-2">
-    <div class="d-flex align-items-center gap-2 w-100">
-        <label for="date" class="col-md-6 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Tanggal</label>
-        <input type="date" name="date" id="date" disabled class="form-control bg-primary-subtle" value="" />
+
+<div class="row g-3">
+    {{-- TANGGAL --}}
+    <div class="col-md-3">
+        <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
+            <i class="bi bi-calendar-event me-1"></i> Tanggal
+        </label>
+        <input type="text" class="form-control bg-light text-muted border-0 fw-bold"
+            value="{{ \Carbon\Carbon::parse($problem->created_at)->format('d F Y') }}" readonly>
     </div>
-    <div class="d-flex align-items-center gap-2 w-100">
-        @if ($role === 'leader')
-            <label for="leader" class="col-md-6 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">
-                Nama Leader
-            </label>
-            <input type="text" name="leader" id="leader" disabled class="form-control bg-primary-subtle" value="" />
-        @elseif ($role === 'supervisor')
-            <label for="supervisor" class="col-md-6 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">
-                Nama Supervisor
-            </label>
-            <input type="text" name="supervisor" id="supervisor" disabled class="form-control bg-primary-subtle" value="" />
-        @else
-            Tidak Valid.
-        @endif
+
+    {{-- NAMA TARGET (Yang kena problem konsistensi) --}}
+    <div class="col-md-5">
+        <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
+            <i class="bi bi-person-badge me-1"></i> Nama ({{ ucfirst($pageRole) }})
+        </label>
+        <input type="text" class="form-control bg-light text-muted border-0"
+            value="{{ $problem->inferior->name ?? '-' }}" readonly>
     </div>
-</div>
-<div class="d-flex justify-content-between w-100">
-    <div class="d-flex align-items-center gap-2 w-100">
-        <label for="problem" class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white">Problem</label>
-        <input type="text" name="problem" id="problem" disabled class="form-control bg-primary-subtle" value="">
+
+    {{-- REMARK (Miss / Late / Advanced) --}}
+    <div class="col-md-4">
+        <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
+            <i class="bi bi-flag-fill me-1"></i> Remark
+        </label>
+        <input type="text" class="form-control bg-light text-danger fw-bold border-0" value="{{ $problem->remark }}"
+            readonly>
+    </div>
+
+    {{-- PROBLEM --}}
+    <div class="col-12 mt-3">
+        <label class="form-label small fw-bold text-danger text-uppercase mb-1">
+            <i class="bi bi-exclamation-circle me-1"></i> Problem Detail
+        </label>
+        <textarea class="form-control bg-light text-dark border-0 shadow-sm" rows="2" readonly>{{ $problem->problem }}</textarea>
+
+        {{-- Bantuan penjelasan otomatis di bawah textbox --}}
+        <div class="form-text mt-1 text-muted small">
+            @if ($problem->remark === 'Miss')
+                <i class="bi bi-info-circle"></i> Indikasi: Tidak mengisi checksheet sesuai jadwal yang ditentukan.
+            @elseif($problem->remark === 'Late')
+                <i class="bi bi-info-circle"></i> Indikasi: Mengisi checksheet melebihi batas standar waktu pengisian.
+            @elseif($problem->remark === 'Advanced')
+                <i class="bi bi-info-circle"></i> Indikasi: Mengisi checksheet terlalu cepat dari jadwal seharusnya.
+            @endif
+        </div>
     </div>
 </div>

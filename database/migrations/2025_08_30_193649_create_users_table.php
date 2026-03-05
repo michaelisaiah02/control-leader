@@ -26,7 +26,7 @@ return new class extends Migration
 
             $table->unique('employeeID');
 
-            $table->foreign('superior_id')->references('employeeID')->on('users')->onDelete('set null');
+            $table->foreign('superior_id')->references('employeeID')->on('users')->nullOnDelete();
         });
 
         Schema::create('sessions', function (Blueprint $table) {
