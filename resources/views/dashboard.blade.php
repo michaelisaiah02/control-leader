@@ -64,7 +64,7 @@
                         <span>List Problem</span>
                         <span
                             class="position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill bg-danger border border-white shadow-sm">
-                            99+
+                            {{ $problemCount }}
                         </span>
                     </a>
                 </div>
@@ -85,16 +85,21 @@
                         </a>
                     </div>
                     <div class="col">
-                        <button type="button" class="btn-dashboard w-100 h-100">
+                        <button type="button" class="btn-dashboard w-100 h-100"
+                            onclick="window.location.href='{{ route('reports.index') }}'">
                             <i class="bi bi-file-text"></i>
                             <span>Report<br><small>Activity</small></span>
                         </button>
                     </div>
                     <div class="col">
-                        <button type="button" class="btn-dashboard w-100 h-100"
+                        <button type="button" class="btn-dashboard w-100 h-100 position-relative btn-dashboard-danger"
                             onclick="window.location.href='{{ route('listProblem.index') }}'">
                             <i class="bi bi-exclamation-octagon"></i>
                             <span>List Problem</span>
+                            <span
+                                class="position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill bg-danger border border-white shadow-sm">
+                                {{ $problemCount }}
+                            </span>
                         </button>
                     </div>
                     <div class="col">

@@ -19,6 +19,10 @@ class ConsistencyProblem extends Model
         'due_date',
     ];
 
+    protected $casts = [
+        'due_date' => 'date',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'employeeID');

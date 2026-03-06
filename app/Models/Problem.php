@@ -22,6 +22,10 @@ class Problem extends Model
         'due_date',
     ];
 
+    protected $casts = [
+        'due_date' => 'date',
+    ];
+
     public function checksheetAnswer()
     {
         return $this->belongsTo(ChecksheetAnswer::class, 'checksheet_answer_id');

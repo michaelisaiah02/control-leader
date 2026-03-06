@@ -1,32 +1,88 @@
 @extends('layouts.app')
 
+@section('styles')
+    <style>
+        /* Efek kartu keangkat dikit pas di-hover biar interaktif */
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+            border-color: var(--bs-primary) !important;
+        }
+    </style>
+@endsection
+
 @push('subtitle')
-    <p class="fs-2 w-75 p-0 my-auto sub-judul border border-white rounded-2 text-uppercase">
-        report
-    </p>
+    <div
+        class="d-inline-flex align-items-center justify-content-center px-4 py-1 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 border border-light text-white animate-fade-in subtitle">
+        <i class="bi bi-bar-chart-line me-2 fs-5"></i>
+        <span class="fs-5 fw-bold text-uppercase">Reports</span>
+    </div>
 @endpush
 
 @section('content')
-    <div class="px-5 my-5">
-        <div class="row">
-            <div class="col-md-6 my-auto d-flex w-100 flex-column justify-content-center align-items-center">
-                <div class="my-4 col-12 col-md-4">
-                    <a href="{{ route('reports.form', 'supervisor') }}"
-                        class="btn btn-primary btn-lg h-100 py-3 fs-4 align-content-center rounded-4 text-uppercase">Supervisor
-                        Performance Report</a>
-                </div>
-                <div class="my-4 col-12 col-md-8 d-flex gap-5 justify-content-center align-items-center">
-                    <a href="{{ route('reports.form', 'leader') }}"
-                        class="btn btn-primary btn-lg w-100 h-100 py-3 fs-4 align-content-center rounded-4 text-uppercase">Leader
-                        Performance Report</a>
-                    <a href="{{ route('reports.form', 'operator') }}"
-                        class="btn btn-primary btn-lg w-100 h-100 py-3 fs-4 align-content-center rounded-4 text-uppercase">Operator
-                        Performance Report</a>
-                </div>
+    <div class="container-fluid pb-5 mb-5 max-w-800 mx-auto animate-fade-in">
+
+        <div class="text-center mb-5 mt-4">
+            <h4 class="fw-bold text-dark">Pilih Kategori Report</h4>
+            <p class="text-muted small">Pilih level jabatan untuk melihat laporan performa</p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+
+            {{-- KARTU SUPERVISOR --}}
+            <div class="col-12 col-md-4">
+                <a href="{{ route('reports.form', 'supervisor') }}" class="text-decoration-none">
+                    <div class="card border border-light shadow-sm rounded-4 h-100 hover-lift text-center p-4">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3"
+                            style="width: 80px; height: 80px;">
+                            <i class="bi bi-person-workspace fs-1"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1 text-uppercase">Supervisor</h5>
+                        <p class="text-muted small mb-0">Performance Report</p>
+                    </div>
+                </a>
             </div>
+
+            {{-- KARTU LEADER --}}
+            <div class="col-12 col-md-4">
+                <a href="{{ route('reports.form', 'leader') }}" class="text-decoration-none">
+                    <div class="card border border-light shadow-sm rounded-4 h-100 hover-lift text-center p-4">
+                        <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3"
+                            style="width: 80px; height: 80px;">
+                            <i class="bi bi-person-badge fs-1"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1 text-uppercase">Leader</h5>
+                        <p class="text-muted small mb-0">Performance Report</p>
+                    </div>
+                </a>
+            </div>
+
+            {{-- KARTU OPERATOR --}}
+            <div class="col-12 col-md-4">
+                <a href="{{ route('reports.form', 'operator') }}" class="text-decoration-none">
+                    <div class="card border border-light shadow-sm rounded-4 h-100 hover-lift text-center p-4">
+                        <div class="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3"
+                            style="width: 80px; height: 80px;">
+                            <i class="bi bi-person-gear fs-1"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1 text-uppercase">Operator</h5>
+                        <p class="text-muted small mb-0">Performance Report</p>
+                    </div>
+                </a>
+            </div>
+
         </div>
-        <div class="h-100 py-5">
-            <a href="{{ route('dashboard') }}" class="btn btn-primary text-white py-2 px-4">Back</a>
-        </div>
+    </div>
+
+    {{-- STICKY ACTION BAR --}}
+    <div class="action-bar d-flex justify-content-between align-items-center px-3 px-md-5 bg-white border-top shadow-lg"
+        style="z-index: 1030;">
+        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+            <i class="bi bi-arrow-left me-2"></i> Kembali ke Dashboard
+        </a>
     </div>
 @endsection

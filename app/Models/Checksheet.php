@@ -33,6 +33,11 @@ class Checksheet extends Model
         'replacement_condition',
     ];
 
+    public function targetUser()
+    {
+        return $this->belongsTo(User::class, 'target', 'employeeID');
+    }
+
     public function getRemarkAttribute(): string
     {
         $createdAt = Carbon::parse($this->created_at);

@@ -106,17 +106,24 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::prefix('reports')->as('reports.')->controller(ReportController::class)->group(function () {
+        // 1. Static Routes (Tarik ke atas semua)
         Route::get('/', 'index')->name('index');
-        Route::get('/{type}', 'form')->name('form');
         Route::get('/daily', 'daily')->name('daily');
-        Route::get('/{type}/monthly', 'monthly')->name('monthly');
-        Route::get('/{type}/score', 'leaderScore')->name('score');
         Route::get('/leader-score', 'leaderScore')->name('leaderScore');
         Route::get('/leader-consistency', 'leaderConsistency')->name('leaderConsistency');
-        // API
+
+        // 2. API Routes
         Route::get('/api/daily', 'apiDaily');
         Route::get('/api/monthly', 'apiMonthly');
+        Route::get('/api/supervisor-score', 'apiSupervisorScore');
         Route::get('/api/leader-score', 'apiLeaderScore');
+        Route::get('/api/operator-score', 'apiOperatorScore');
+        Route::get('/api/supervisor-consistency', 'apiSupervisorConsistency');
         Route::get('/api/leader-consistency', 'apiLeaderConsistency');
+
+        // 3. Dynamic Routes (Taruh paling bawah biar nggak nyedot URL lain)
+        Route::get('/{type}', 'form')->name('form');
+        Route::get('/{type}/monthly', 'monthly')->name('monthly');
+        Route::get('/{type}/score', 'score')->name('score'); // Nama method gue sesuaikan jadi 'score'
     });
 });

@@ -4,85 +4,101 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    @vite(['resources/css/app.css', 'resources/sass/app.scss', 'resources/js/app.js'])
-    <title>Monthly Score Control Member Report</title>
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    <title>Monthly Consistency {{ ucfirst($type) }} Report</title>
 </head>
 
 <body>
     <div class="w-100">
         <div class="d-flex w-100 justify-content-between align-items-stretch">
-            <a class="border border-black" href="/">
-                <img src="{{ asset('image/logo-pt.png') }}" alt="Logo" class="mt-0 logo">
+            <a class="border border-black d-flex flex-column text-decoration-none" style="width: 80px" href="/">
+                <img src="{{ asset('image/logo-pt.png') }}" alt="Logo" class="mt-0 mx-auto" width="50">
+                <span class="text-center">
+                    PT. CAR
+                </span>
             </a>
             <div class="border border-black w-100 d-flex justify-content-center align-items-center">
-                <p class="text-center" style="text-transform: capitalize; font-size: 2rem">Monthly Consistency
-                    {{ $type }} Report
+                <p class="text-center" style="text-transform: capitalize; font-size: 2rem">Monthly {{ $type }}
+                    Consistency
+                    Report
                 </p>
             </div>
-            <a class="border border-black" href="/">
-                <img src="{{ asset('image/logo-rice.png') }}" alt="Logo" class="mt-0 logo">
+            <a class="border border-black text-decoration-none d-flex text-center" style="width: 80px" href="/">
+                <img src="{{ asset('image/logo-rice.png') }}" alt="Logo" class="my-1 mx-auto" width="60">
             </a>
         </div>
     </div>
     <div class="card p-3 shadow-sm">
         <div class="d-flex justify-content-center">
             <div class="col-md-8 col-sm-8 border border-1 border-black">
-                <canvas id="chart"></canvas>
+                <canvas id="chart" style="max-height: 300px;"></canvas>
             </div>
             <div class="col-md-4 border border-1 border-black d-flex flex-column justify-content-between">
                 <table>
                     <tr>
                         <th>Periode</th>
                         <th>:</th>
-                        <th>[Data]</th>
+                        <th>{{ $date->format('F Y') }}</th>
                     </tr>
                     <tr>
                         <th>Member Name</th>
                         <th>:</th>
-                        <th>[Data]</th>
+                        <th>{{ $member->name ?? 'N/A' }}</th>
                     </tr>
                     <tr>
                         <th>ID Member</th>
                         <th>:</th>
-                        <th>[Data]</th>
+                        <th>{{ $member->employeeID ?? 'N/A' }}</th>
                     </tr>
                     <tr>
                         <th>Dept</th>
                         <th>:</th>
-                        <th>[Data]</th>
+                        <th>{{ $department->name ?? 'N/A' }}</th>
                     </tr>
                     <tr>
                         <th>Bagian</th>
                         <th>:</th>
-                        <th>[Data]</th>
+                        <th class="text-capitalize">{{ $type }}</th>
                     </tr>
                 </table>
-                <div class="d-flex p-1 mt-5 gap-1">
-                    <table class="table table-bordered border-black">
+                <div class="d-flex p-1 gap-1 mt-5">
+                    <table class="table table-bordered border-black mb-0 pb-0">
                         <tr>
-                            <td>Disetujui</td>
+                            <td class="py-0 my-0">Disetujui</td>
                         </tr>
                         <tr>
-                            <td style="height: 80px;"></td>
+                            <td>
+                                <div style="height: 50px"></div>
+                            </td>
                         </tr>
                         <tr>
-                            <td>Daniel T</td>
-                        </tr>
-                    </table>
-                    <table class="table table-bordered border-black">
-                        <tr>
-                            <td>Diperiksa</td>
-                        </tr>
-                        <tr>
-                            <td style="height: 80px;"></td>
-                        </tr>
-                        <tr>
-                            <td>Febby</td>
+                            <td class="py-1 my-0">Daniel T</td>
                         </tr>
                     </table>
-                    <table class="table table-bordered border-black">
+                    <table class="table table-bordered border-black mb-0 pb-0">
                         <tr>
-                            <td rowspan="2">Dibuat</td>
+                            <td class="py-0 my-0">Diperiksa</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="height: 50px"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="py-1 my-0">Febby</td>
+                        </tr>
+                    </table>
+                    <table class="table table-bordered border-black mb-0 pb-0">
+                        <tr>
+                            <td class="py-0 my-0">Dibuat</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="height: 50px"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="py-1 my-0">Oki</td>
                         </tr>
                     </table>
                 </div>
@@ -102,33 +118,27 @@
                 </thead>
                 <tbody>
                     @forelse ($problems as $problem)
-                    <tr>
-                        <td class="text-center">{{ $loop->iteration }}</td>
-                        <td class="text-center">{{ $problem->created_at->format('d M Y') }}</td>
-                        <td class="text-center">{{ $problem->problem }}</td>
-                        <td class="text-center">{{ $problem->countermeasure }}</td>
-                        @if ($problem->due_date !== null)
-                        <td class="text-center">{{ $problem->due_date->format('d M Y') }}</td>
-                        @else
-                        <td class="text-center">-</td>
-                        @endif
-                        <td class="text-center text-capitalize">{{ $problem->status }}</td>
-                    </tr>
+                        <tr>
+                            <td class="text-center">{{ $loop->iteration }}</td>
+                            <td class="text-center">{{ $problem->created_at->format('d M Y') }}</td>
+                            <td>{{ $problem->problem }}</td>
+                            <td>{{ $problem->countermeasure }}</td>
+                            <td class="text-center">
+                                {{ $problem->due_date ? $problem->due_date->format('d M Y') : '-' }}</td>
+                            <td class="text-center text-capitalize">{{ str_replace('_', ' ', $problem->status) }}</td>
+                        </tr>
                     @empty
-                    <tr>
-                        <td class="text-center">1</td>
-                        <td class="text-center">25 Juli 2025</td>
-                        <td class="text-center">Operator tidak mengikuti 5 Minutes</td>
-                        <td class="text-center">Operator diberi sanksi SP 1</td>
-                        <td class="text-center">29 Juli 2025</td>
-                        <td class="text-center">Close</td>
-                    </tr>
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted fw-bold">
+                                Konsistensi sempurna! Tidak ada problem pada periode ini. ✅
+                            </td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div class="pt-2 pb-5 d-flex gap-3 justify-content-end align-items-center">
+        <div class="d-flex gap-3 justify-content-end align-items-center d-print-none">
             <a href="{{ route('reports.form', ['type' => $type]) }}"
                 class="btn btn-primary text-white py-2 px-4">Back</a>
             <button onclick="window.print()" class="btn btn-primary py-2 px-4">Print</button>
@@ -137,49 +147,64 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const rawData = @json($data);
-        const labels = Object.keys(rawData);
-        const values = Object.values(rawData).map(val => {
-            return val === 'l' ? 0 : val;
-        });
+        document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById('chart');
 
-        // Warna label (Sabtu-Minggu merah)
-        const labelColors = Object.values(rawData).map(val => {
-            return val === 'l' ? 'red' : 'black';
-        });
-        const barColors = Object.values(rawData).map(val => {
-            return val === 'l' ? '#cccccc' : '#f77f00';
-        });
+            let apiUrl = '';
+            const monthParam = `month={{ $date->format('Y-m') }}`;
 
-        const ctx = document.getElementById('chart');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                // labels: ['Awal Shift', 'Saat Kerja', 'Setelah Istirahat', 'Akhir Shift'],
-                labels,
-                datasets: [{
-                    label: 'Score',
-                    data: values,
-                    backgroundColor: barColors
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        stacked: true,
-                        ticks: {
-                            color: function(context) {
-                                return labelColors[context.index];
+            @if ($type === 'supervisor')
+                apiUrl =
+                    `/reports/api/supervisor-consistency?${monthParam}&supervisor_id={{ request('supervisor') }}`;
+            @elseif ($type === 'leader')
+                apiUrl = `/reports/api/leader-consistency?${monthParam}&leader_id={{ request('leader') }}`;
+            @endif
+
+            if (apiUrl !== '') {
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        new Chart(ctx, {
+                            data: {
+                                labels: data.labels,
+                                datasets: data.datasets
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        max: 100,
+                                        ticks: {
+                                            callback: function(value) {
+                                                return value + '%';
+                                            }
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'bottom'
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return context.dataset.label + ': ' + context.parsed
+                                                    .y + '%';
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        stacked: true,
-                        max: 100
-                    }
-                }
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Gagal load data chart:", error);
+                        ctx.parentElement.innerHTML =
+                            '<p class="text-center text-danger mt-5">Gagal memuat grafik</p>';
+                    });
             }
         });
     </script>
