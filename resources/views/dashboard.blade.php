@@ -3,7 +3,7 @@
 @push('subtitle')
     {{-- Badge Nama User (Tetap Sama) --}}
     <div
-        class="d-inline-flex align-items-center justify-content-center px-3 py-2 rounded-pill bg-white bg-opacity-10 border border-light text-white mt-1 mb-0 subtitle">
+        class="d-inline-flex align-items-center justify-content-center px-4 py-1 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 text-white animate-fade-in subtitle">
         <i class="bi bi-person-badge me-2"></i>
         <span class="fw-bold text-uppercase small">{{ $userName }}</span>
         <span class="mx-2">|</span>

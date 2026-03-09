@@ -37,7 +37,7 @@
 
 @push('subtitle')
     <div
-        class="d-inline-flex align-items-center justify-content-center px-4 py-1 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 border border-light text-white animate-fade-in subtitle">
+        class="d-inline-flex align-items-center justify-content-center px-4 py-1 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 text-white animate-fade-in subtitle">
         <i class="bi bi-pencil-square me-2 fs-5"></i>
         <span class="fs-5 fw-bold text-uppercase">
             {{ $map[$type] ?? 'Tipe Tidak Valid' }}

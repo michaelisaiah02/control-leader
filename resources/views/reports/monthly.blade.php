@@ -105,9 +105,9 @@
             </div>
         </div>
         <div class="row my-3">
-            <table class="table table-bordered border-black">
+            <table class="table table-sm table-bordered border-black align-middle">
                 <thead>
-                    <tr>
+                    <tr class="align-middle">
                         <th class="text-center">No.</th>
                         <th class="text-center">Date</th>
                         <th class="text-center">Problem</th>
@@ -173,7 +173,12 @@
                                 responsive: true,
                                 maintainAspectRatio: false,
                                 scales: {
+                                    // 🔥 BIKIN STACKED KHUSUS LEADER 🔥
+                                    x: {
+                                        stacked: {{ $type === 'leader' ? 'true' : 'false' }}
+                                    },
                                     y: {
+                                        stacked: {{ $type === 'leader' ? 'true' : 'false' }},
                                         beginAtZero: true,
                                         max: 100,
                                         ticks: {

@@ -19,7 +19,7 @@
 
 @push('subtitle')
     <div
-        class="d-inline-flex align-items-center justify-content-center px-3 py-2 mt-1 mb-0 rounded-3 bg-white bg-opacity-10 border border-light text-white subtitle">
+        class="d-inline-flex align-items-center justify-content-center px-4 py-1 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 text-white animate-fade-in subtitle">
         <div class="badge {{ $badgeColor }} me-2 p-2 rounded-circle">
             <i class="bi {{ $icon }}"></i>
         </div>
@@ -88,7 +88,7 @@
                             @case('leader-consistency')
                                 @include('problem_list.table._leader-consistency', [
                                     'Problems' => $Problems,
-                                    'now' => $now
+                                    'now' => $now,
                                 ])
                             @break
 
@@ -101,7 +101,7 @@
                             @case('supervisor-consistency')
                                 @include('problem_list.table._supervisor-consistency', [
                                     'Problems' => $Problems,
-                                    'now' => $now
+                                    'now' => $now,
                                 ])
                             @break
 

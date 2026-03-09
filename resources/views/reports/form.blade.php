@@ -1,193 +1,213 @@
 @extends('layouts.app')
 
 @push('subtitle')
-    <div class="fs-2 w-75 p-0 my-auto sub-judul border border-white rounded-2 text-uppercase text-center">
-        @switch($type)
-            @case('leader')
-                Leader Performance Report
-            @break
+    <div
+        class="d-inline-flex align-items-center justify-content-center px-4 py-1 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 text-white animate-fade-in subtitle">
+        <i class="bi bi-funnel me-2 fs-5"></i>
+        <span class="fs-5 fw-bold text-uppercase">
+            @switch($type)
+                @case('leader')
+                    Leader Performance Report
+                @break
 
-            @case('supervisor')
-                Supervisor Performance Report
-            @break
+                @case('supervisor')
+                    Supervisor Performance Report
+                @break
 
-            @case('operator')
-                Operator Performance Report
-            @break
+                @case('operator')
+                    Operator Performance Report
+                @break
 
-            @default
-                Performance Report
-        @endswitch
+                @default
+                    Performance Report
+            @endswitch
+        </span>
     </div>
 @endpush
 
 @section('content')
-    <div class="px-5 my-5">
+    <div class="container-fluid max-w-800 px-0 mx-0 animate-fade-in">
+
         {{-- Form method GET biar data filter masuk ke URL (bisa di-bookmark/share) --}}
         <form method="GET">
 
-            {{-- DYNAMIC FILTER INPUTS --}}
-            @switch($type)
-                @case('leader')
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <label for="department"
-                            class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white m-0">Department</label>
-                        <select name="department" id="department" class="form-select bg-warning-subtle" required>
-                            <option value="" selected disabled>-- Pilih Department --</option>
-                            @foreach ($departments as $department)
-                                <option value="{{ $department->id }}">{{ $department->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <label for="supervisor"
-                            class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white m-0">Supervisor</label>
-                        <select name="supervisor" id="supervisor" class="form-select bg-warning-subtle" required>
-                            <option value="" selected disabled>-- Pilih Supervisor --</option>
-                            @foreach ($supervisors as $supervisor)
-                                <option value="{{ $supervisor->employeeID }}">{{ $supervisor->employeeID }} -
-                                    {{ $supervisor->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <label for="leader"
-                            class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white m-0">Leader</label>
-                        <select name="leader" id="leader" class="form-select bg-warning-subtle" required>
-                            <option value="" selected disabled>-- Pilih Leader --</option>
-                            @foreach ($leaders as $leader)
-                                <option value="{{ $leader->employeeID }}">{{ $leader->employeeID }} - {{ $leader->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @break
+            <div class="card border-0 shadow-sm rounded-4 mb-5">
+                <div class="card-header bg-light border-bottom-0 py-2 rounded-top-4">
+                    <h6 class="fw-bold text-secondary mb-0 text-uppercase small">
+                        <i class="bi bi-sliders me-1"></i> Filter Parameter Report
+                    </h6>
+                </div>
 
-                @case('supervisor')
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <label for="department"
-                            class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white m-0">Department</label>
-                        <select name="department" id="department" class="form-select bg-warning-subtle" required>
-                            <option value="" selected disabled>-- Pilih Department --</option>
-                            @foreach ($departments as $department)
-                                <option value="{{ $department->id }}">{{ $department->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <label for="supervisor"
-                            class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white m-0">Supervisor</label>
-                        <select name="supervisor" id="supervisor" class="form-select bg-warning-subtle" required>
-                            <option value="" selected disabled>-- Pilih Supervisor --</option>
-                            @foreach ($supervisors as $supervisor)
-                                <option value="{{ $supervisor->employeeID }}">{{ $supervisor->employeeID }} -
-                                    {{ $supervisor->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @break
+                <div class="card-body p-3">
 
-                @case('operator')
-                    <div class="d-flex align-items-center gap-2 mb-3 w-100">
-                        <label for="department"
-                            class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white m-0">Department</label>
-                        <select name="department" id="department" class="form-select bg-warning-subtle" required>
-                            <option value="" selected disabled>-- Pilih Department --</option>
-                            @foreach ($departments as $department)
-                                <option value="{{ $department->id }}">{{ $department->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mb-3 w-100">
-                        <label for="supervisor"
-                            class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white m-0">Supervisor</label>
-                        <select name="supervisor" id="supervisor" class="form-select bg-warning-subtle" required>
-                            <option value="" selected disabled>-- Pilih Supervisor --</option>
-                            @foreach ($supervisors as $supervisor)
-                                <option value="{{ $supervisor->employeeID }}">{{ $supervisor->employeeID }} -
-                                    {{ $supervisor->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mb-3 w-100">
-                        <label for="leader"
-                            class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white m-0">Leader</label>
-                        <select name="leader" id="leader" class="form-select bg-warning-subtle" required>
-                            <option value="" selected disabled>-- Pilih Leader --</option>
-                            @foreach ($leaders as $leader)
-                                <option value="{{ $leader->employeeID }}">{{ $leader->employeeID }} - {{ $leader->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mb-3 w-100">
-                        <label for="operator"
-                            class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white m-0">Operator</label>
-                        <select name="operator" id="operator" class="form-select bg-warning-subtle" required>
-                            <option value="" selected disabled>-- Pilih Operator --</option>
-                            {{-- FIX: Sebelumnya hardcode "Data", sekarang dilooping --}}
-                            @foreach ($operators as $operator)
-                                <option value="{{ $operator->employeeID }}">{{ $operator->employeeID }} - {{ $operator->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                @break
-            @endswitch
+                    {{-- DYNAMIC FILTER INPUTS --}}
+                    @switch($type)
+                        @case('leader')
+                        @case('supervisor')
 
-            {{-- PERIODE BULAN --}}
-            <div class="d-flex align-items-center gap-2 mb-4">
-                <p
-                    class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white m-0">
-                    Periode</p>
-                <div class="d-flex align-items-center gap-2 w-100">
-                    <label for="month"
-                        class="col-md-2 text-center form-label bg-primary text-white px-4 py-2 rounded shadow border border-white m-0">Month
-                        & Year</label>
-                    <input type="month" name="month" id="month" class="form-control bg-warning-subtle w-100"
-                        required />
+                        @case('operator')
+                            <div class="row g-4 mb-4">
+
+                                {{-- Filter: Department --}}
+                                <div class="col-md-6">
+                                    <label for="department" class="form-label fw-bold text-secondary small text-uppercase mb-1">
+                                        <i class="bi bi-building me-1"></i> Department
+                                    </label>
+                                    <select name="department" id="department" class="form-select bg-light" required
+                                        {{ auth()->user()->role !== 'leader' && auth()->user()->role !== 'supervisor' ? '' : 'readonly' }}>
+                                        <option value="" disabled>-- Pilih Department --</option>
+                                        @foreach ($departments as $department)
+                                            <option value="{{ $department->id }}"
+                                                {{ auth()->user()->department_id === $department->id ? 'selected' : '' }}>
+                                                {{ $department->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                {{-- Filter: Supervisor --}}
+                                <div class="col-md-6">
+                                    <label for="supervisor" class="form-label fw-bold text-secondary small text-uppercase mb-1">
+                                        <i class="bi bi-person-workspace me-1"></i> Supervisor
+                                    </label>
+                                    <select name="supervisor" id="supervisor" class="form-select bg-light" required
+                                        {{ auth()->user()->role !== 'leader' && auth()->user()->role !== 'supervisor' ? '' : 'readonly' }}>
+                                        <option value="" selected disabled>-- Pilih Supervisor --</option>
+                                        @foreach ($supervisors as $supervisor)
+                                            <option value="{{ $supervisor->employeeID }}"
+                                                {{ (auth()->user()->employeeID === $supervisor->employeeID ? 'selected' : auth()->user()->superior_id === $supervisor->employeeID) ? 'selected' : '' }}>
+                                                {{ $supervisor->employeeID }} - {{ $supervisor->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                {{-- Filter: Leader (Muncul untuk report Leader & Operator) --}}
+                                @if ($type === 'leader' || $type === 'operator')
+                                    <div class="col-md-6">
+                                        <label for="leader" class="form-label fw-bold text-secondary small text-uppercase mb-1">
+                                            <i class="bi bi-person-badge me-1"></i> Leader
+                                        </label>
+                                        <select name="leader" id="leader" class="form-select bg-light" required
+                                            {{ auth()->user()->role !== 'leader' ? '' : 'readonly' }}>
+                                            <option value="" disabled>-- Pilih Leader --</option>
+                                            @foreach ($leaders as $leader)
+                                                <option value="{{ $leader->employeeID }}"
+                                                    {{ auth()->user()->employeeID === $leader->employeeID ? 'selected' : '' }}>
+                                                    {{ $leader->employeeID }} - {{ $leader->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endif
+
+                                {{-- Filter: Operator (Muncul HANYA untuk report Operator) --}}
+                                @if ($type === 'operator')
+                                    <div class="col-md-6">
+                                        <label for="operator" class="form-label fw-bold text-secondary small text-uppercase mb-1">
+                                            <i class="bi bi-person-gear me-1"></i> Operator
+                                        </label>
+                                        <select name="operator" id="operator" class="form-select bg-light" required>
+                                            <option value="" selected disabled>-- Pilih Operator --</option>
+                                            @foreach ($operators as $operator)
+                                                <option value="{{ $operator->employeeID }}">
+                                                    {{ $operator->employeeID }} - {{ $operator->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endif
+
+                            </div>
+                        @break
+                    @endswitch
+
+                    <hr class="opacity-10 mb-4">
+
+                    {{-- PERIODE BULAN --}}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="month" class="form-label fw-bold text-primary small text-uppercase mb-1">
+                                <i class="bi bi-calendar-event me-1"></i> Periode (Bulan & Tahun)
+                            </label>
+                            <input type="month" name="month" id="month"
+                                class="form-control border-primary shadow-sm" required />
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
-            {{-- DYNAMIC ACTION BUTTONS --}}
-            @switch($type)
-                @case('leader')
-                    <div class="my-3 pb-5 d-flex justify-content-center align-items-center gap-4">
-                        <button type="submit" formaction="{{ route('reports.monthly', ['type' => $type]) }}"
-                            class="btn btn-primary btn-lg py-3 fs-5 rounded-4 text-uppercase fw-bold shadow-sm w-50">View Leader
-                            Consistency Report</button>
-                        <button type="submit" formaction="{{ route('reports.score', ['type' => $type]) }}"
-                            class="btn btn-primary btn-lg py-3 fs-5 rounded-4 text-uppercase fw-bold shadow-sm w-50">View Score
-                            Leader Report</button>
-                    </div>
-                @break
+            {{-- STICKY ACTION BAR --}}
+            <div class="action-bar d-flex justify-content-between align-items-center px-3 px-md-5 mx-0 bg-white border-top shadow-lg"
+                style="z-index: 1030;">
+                <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+                    <i class="bi bi-arrow-left me-2"></i> Kembali
+                </a>
 
-                @case('supervisor')
-                    <div class="my-3 pb-5 d-flex justify-content-center align-items-center gap-4">
-                        {{-- FIX: Ganti <a> jadi <button> biar form disubmit --}}
-                        <button type="submit" formaction="{{ route('reports.monthly', ['type' => $type]) }}"
-                            class="btn btn-primary btn-lg py-3 fs-5 rounded-4 text-uppercase fw-bold shadow-sm w-50">View Supervisor
-                            Consistency Report</button>
-                        <button type="submit" formaction="{{ route('reports.score', ['type' => $type]) }}"
-                            class="btn btn-primary btn-lg py-3 fs-5 rounded-4 text-uppercase fw-bold shadow-sm w-50">View Score
-                            Supervisor Report</button>
-                    </div>
-                @break
+                <div class="d-flex gap-2">
+                    @switch($type)
+                        @case('leader')
+                        @case('supervisor')
+                            <button type="submit" formaction="{{ route('reports.monthly', ['type' => $type]) }}"
+                                class="btn btn-info rounded-pill px-4 fw-bold shadow-sm text-white">
+                                <i class="bi bi-graph-up me-1"></i> Consistency Report
+                            </button>
+                            <button type="submit" formaction="{{ route('reports.score', ['type' => $type]) }}"
+                                class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                                <i class="bi bi-star me-1"></i> Score Report
+                            </button>
+                        @break
 
-                @case('operator')
-                    <div class="my-3 pb-1 d-flex justify-content-center align-items-center gap-4">
-                        {{-- FIX: Ganti <a> jadi <button> --}}
-                        <button type="submit" formaction="{{ route('reports.score', ['type' => $type]) }}"
-                            class="btn btn-primary btn-lg py-3 fs-5 rounded-4 text-uppercase fw-bold shadow-sm w-50">View Score
-                            Performance Report</button>
-                    </div>
-                @break
-            @endswitch
-
-            <div>
-                <a href="{{ route('reports.index') }}"
-                    class="btn btn-secondary text-white py-2 px-4 rounded-pill fw-bold"><i
-                        class="bi bi-arrow-left me-2"></i> Kembali</a>
+                        @case('operator')
+                            <button type="submit" formaction="{{ route('reports.score', ['type' => $type]) }}"
+                                class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                                <i class="bi bi-star me-1"></i> View Score Report
+                            </button>
+                        @break
+                    @endswitch
+                </div>
             </div>
+
         </form>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Set default value bulan ini
+            const monthInput = document.getElementById('month');
+            if (!monthInput.value) {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                monthInput.value = `${yyyy}-${mm}`;
+            }
+
+            // UX Enhancement: Tambahin loading text saat tombol ditekan
+            const buttons = document.querySelectorAll('button[type="submit"]');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const form = this.closest('form');
+                    if (form.checkValidity()) {
+                        const originalText = this.innerHTML;
+                        this.innerHTML =
+                            '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
+                        // Kita gabisa nge-disable button yg diklik, karena form bakal ilang data formaction-nya,
+                        // jadi disable button lainnya aja
+                        buttons.forEach(b => {
+                            if (b !== this) b.disabled = true;
+                        });
+
+                        // Kembalikan tulisan seperti semula setelah bbrp detik (karena ini cuma get request yg bakal buka page baru)
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                            buttons.forEach(b => b.disabled = false);
+                        }, 3000);
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

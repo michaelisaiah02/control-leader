@@ -122,20 +122,20 @@ class Checksheet extends Model
         $ranges = [
             1 => [
                 'awal_shift' => ['start' => '07:00', 'end' => '08:30'],
-                'bekerja' => ['start' => '08:30', 'end' => '12:00'],
-                'istirahat' => ['start' => '13:00', 'end' => '14:00'],
+                'saat_bekerja' => ['start' => '08:30', 'end' => '12:00'],
+                'setelah_istirahat' => ['start' => '13:00', 'end' => '14:00'],
                 'akhir_shift' => ['start' => '14:00', 'end' => '15:00'],
             ],
             2 => [
                 'awal_shift' => ['start' => '15:00', 'end' => '16:30'],
-                'istirahat' => ['start' => '19:00', 'end' => '20:00'],
-                'bekerja' => ['start' => '20:00', 'end' => '22:00'],
+                'setelah_istirahat' => ['start' => '19:00', 'end' => '20:00'],
+                'saat_bekerja' => ['start' => '20:00', 'end' => '22:00'],
                 'akhir_shift' => ['start' => '22:00', 'end' => '23:00'],
             ],
             3 => [
                 'awal_shift' => ['start' => '23:00', 'end' => '00:30'], // Lewat tengah malam
-                'bekerja' => ['start' => '00:30', 'end' => '04:00'],
-                'istirahat' => ['start' => '05:00', 'end' => '06:00'],
+                'saat_bekerja' => ['start' => '00:30', 'end' => '04:00'],
+                'setelah_istirahat' => ['start' => '05:00', 'end' => '06:00'],
                 'akhir_shift' => ['start' => '06:00', 'end' => '07:00'],
             ],
         ];

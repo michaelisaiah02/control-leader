@@ -3,7 +3,7 @@
 @push('subtitle')
     {{-- Styling subtitle disamakan dengan dashboard biar konsisten --}}
     <div
-        class="d-inline-flex align-items-center justify-content-center px-4 py-2 rounded-pill bg-white bg-opacity-10 border border-light text-white mt-1 mb-0 subtitle">
+        class="d-inline-flex align-items-center justify-content-center px-4 py-1 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 text-white animate-fade-in subtitle">
         <i class="bi bi-exclamation-triangle me-2"></i>
         <span class="fw-bold text-uppercase">List Problem</span>
     </div>

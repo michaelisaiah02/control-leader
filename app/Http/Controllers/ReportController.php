@@ -10,7 +10,6 @@ use App\Models\ScheduleDetail;
 use App\Models\SchedulePlan;
 use App\Models\User;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
@@ -112,7 +111,7 @@ class ReportController extends Controller
     {
         $month = $request->month ?? now()->month;
         $year = $request->year ?? now()->year;
-        $packages = ['awal_shift', 'bekerja', 'istirahat', 'akhir_shift'];
+        $packages = ['awal_shift', 'saat_bekerja', 'setelah_istirahat', 'akhir_shift'];
         $data = [];
 
         // Tarik data SEMUA phase sekaligus di bulan tersebut (Eager Loading)
@@ -154,7 +153,7 @@ class ReportController extends Controller
         $month = $request->month ?? now()->month;
         $year = $request->year ?? now()->year;
         $days_in_month = Carbon::create($year, $month)->daysInMonth;
-        $packages = ['awal_shift', 'bekerja', 'istirahat', 'akhir_shift'];
+        $packages = ['awal_shift', 'saat_bekerja', 'setelah_istirahat', 'akhir_shift'];
 
         $data = [];
 
@@ -196,40 +195,123 @@ class ReportController extends Controller
 
     public function apiLeaderConsistency(Request $request)
     {
-        $month = $request->month ?? now()->month;
-        $year = $request->year ?? now()->year;
-        $days_in_month = Carbon::create($year, $month)->daysInMonth;
-        $packages = ['awal_shift', 'bekerja', 'istirahat', 'akhir_shift'];
+        $monthInput = $request->month ?? now()->format('Y-m');
+        $date = Carbon::createFromFormat('Y-m', $monthInput);
+        $leaderId = $request->leader_id;
 
-        $data = [];
+        $days_in_month = $date->daysInMonth;
 
-        // Sama persis optimasinya dengan apiMonthly, 1 kali query
-        $checksheets = Checksheet::with('answers')
-            ->whereMonth('created_at', $month)
-            ->whereYear('created_at', $year)
+        // 1. Tarik jadwal (Schedule) Leader ini untuk tahu ekspektasi target Operator harian
+        $plans = SchedulePlan::where('scheduler_id', $leaderId)
+            ->where('type', 'leader_checks_operator')
+            ->pluck('id');
+
+        $schedules = ScheduleDetail::whereIn('schedule_plan_id', $plans)
+            ->whereMonth('scheduled_date', $date->month)
+            ->whereYear('scheduled_date', $date->year)
             ->get();
 
-        foreach ($packages as $package) {
-            $phaseData = $checksheets->where('phase', $package);
+        // 2. Tarik realisasi checksheet yang diisi Leader ini
+        $checksheets = Checksheet::whereHas('schedulePlan', function ($q) use ($leaderId) {
+            $q->where('scheduler_id', $leaderId);
+        })
+            ->whereMonth('created_at', $date->month)
+            ->whereYear('created_at', $date->year)
+            ->get();
 
-            for ($day = 1; $day <= $days_in_month; $day++) { // FIX: Mulai dari hari ke-1, bukan ke-0
-                $dayData = $phaseData->filter(fn($c) => $c->created_at->day == $day);
+        $labels = range(1, $days_in_month);
+        $targetData = array_fill(0, $days_in_month, 100);
 
-                if ($dayData->isEmpty()) {
-                    $data[$package][] = 0;
+        // Konfigurasi warna persis kayak gambar referensi lo
+        $phases = [
+            'awal_shift' => ['label' => 'Awal Shift', 'color' => '#ed7d31'],       // Orange
+            'saat_bekerja'    => ['label' => 'Saat Bekerja', 'color' => '#a5a5a5'],     // Abu-abu
+            'setelah_istirahat'  => ['label' => 'Setelah Istirahat', 'color' => '#5b9bd5'], // Biru
+            'akhir_shift' => ['label' => 'Akhir Shift', 'color' => '#ffc000']       // Kuning
+        ];
+
+        $datasets = [];
+        $phaseDataArrays = [
+            'awal_shift' => [],
+            'saat_bekerja' => [],
+            'setelah_istirahat' => [],
+            'akhir_shift' => []
+        ];
+        $liburData = [];
+
+        for ($day = 1; $day <= $days_in_month; $day++) {
+            $currentDate = $date->copy()->day($day);
+
+            // Deteksi Weekend (Sabtu & Minggu)
+            if ($currentDate->isWeekend()) {
+                $liburData[] = 100;
+                foreach ($phases as $key => $config) {
+                    $phaseDataArrays[$key][] = 0;
+                }
+            } else {
+                $liburData[] = 0;
+
+                // Total Operator yang WAJIB dicek di hari ini (dari jadwal)
+                $expectedOperators = $schedules->filter(function ($s) use ($currentDate) {
+                    return Carbon::parse($s->scheduled_date)->isSameDay($currentDate);
+                })->pluck('target_user_id')->unique()->count();
+
+                if ($expectedOperators == 0) {
+                    // Kalau emang ga ada jadwal di hari kerja itu, skor 0
+                    foreach ($phases as $key => $config) {
+                        $phaseDataArrays[$key][] = 0;
+                    }
                 } else {
-                    $avg = $dayData->map(fn($c) => $c->answers->avg('answer_value') ?? 0)->avg();
-                    $data[$package][] = round($avg * 10, 2); // FIX: Masukin ke $data, bukan ke $result
+                    foreach ($phases as $key => $config) {
+                        // Total checksheet yang REAL diisi untuk phase ini (unique per operator)
+                        $filledChecksheets = $checksheets->filter(function ($c) use ($day, $key) {
+                            return $c->created_at->day == $day && $c->phase == $key;
+                        })->pluck('target')->unique()->count();
+
+                        // 🔥 RUMUS KLIEN: (Isi / Target) * 25% 🔥
+                        $score = ($filledChecksheets / $expectedOperators) * 25;
+
+                        // Masukin ke array (maksimal 25 biar ga over 100% kalo ada ngisi dobel)
+                        $phaseDataArrays[$key][] = round(min(25, $score), 2);
+                    }
                 }
             }
         }
 
+        // Susun dataset untuk 4 phase
+        foreach ($phases as $key => $config) {
+            $datasets[] = [
+                'type' => 'bar',
+                'label' => $config['label'],
+                'data' => $phaseDataArrays[$key],
+                'backgroundColor' => $config['color'],
+            ];
+        }
+
+        // Tambah dataset Libur (Merah)
+        $datasets[] = [
+            'type' => 'bar',
+            'label' => 'Libur',
+            'data' => $liburData,
+            'backgroundColor' => '#ff0000',
+        ];
+
+        // Tambah dataset Target (Garis Ijo)
+        $datasets[] = [
+            'type' => 'line',
+            'label' => 'Target',
+            'data' => $targetData,
+            'borderColor' => '#33a02c',
+            'borderWidth' => 2,
+            'fill' => false,
+            'pointRadius' => 0,
+        ];
+
         return response()->json([
-            'labels' => range(1, $days_in_month),
-            'data' => $data,
+            'labels' => $labels,
+            'datasets' => $datasets
         ]);
     }
-
 
     public function apiSupervisorScore(Request $request)
     {
@@ -417,8 +499,8 @@ class ReportController extends Controller
         // Konfigurasi 4 Phase (sesuai legend di gambar lo)
         $phases = [
             'awal_shift' => ['label' => 'Awal Shift', 'color' => '#f47920'],    // Orange
-            'bekerja'    => ['label' => 'Saat Kerja', 'color' => '#5b9bd5'],    // Biru Muda
-            'istirahat'  => ['label' => 'Setelah Istirahat', 'color' => '#255e91'], // Biru Tua
+            'saat_bekerja'    => ['label' => 'Saat Kerja', 'color' => '#5b9bd5'],    // Biru Muda
+            'setelah_istirahat'  => ['label' => 'Setelah Istirahat', 'color' => '#255e91'], // Biru Tua
             'akhir_shift' => ['label' => 'Akhir Shift', 'color' => '#ffc000']    // Kuning
         ];
 

@@ -45,7 +45,7 @@
 
 @push('subtitle')
     <div
-        class="d-inline-flex align-items-center justify-content-center px-3 py-1 mt-1 mb-0 rounded-3 bg-white bg-opacity-10 border border-light text-white subtitle">
+        class="d-inline-flex align-items-center justify-content-center px-4 py-1 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 text-white animate-fade-in subtitle">
         <i class="bi bi-plus-circle me-2 fs-6"></i>
         <span class="fs-6 fw-bold text-uppercase">Add Question</span>
     </div>
