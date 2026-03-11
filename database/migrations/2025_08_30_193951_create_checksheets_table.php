@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('schedule_plan_id')->constrained('schedule_plans')
                 ->cascadeOnDelete();
+            $table->foreignId('schedule_detail_id')->nullable()->constrained('schedule_details')->nullOnDelete();
             $table->unsignedInteger('stopwatch_duration')->comment('Durasi dalam detik')->nullable();
             $table->string('phase')->default('awal_shift')
                 ->comment('Fase checksheet: awal_shift, bekerja, istirahat, akhir_shift, leader');
@@ -25,7 +26,7 @@ return new class extends Migration
                 ->comment('Snapshot target yang dijadwalkan: "id - nama"');
 
             // Kolom untuk 4 jawaban Bagian A yang tetap
-            $table->integer('shift', false, true)
+            $table->integer('shift', false, true)->nullable()
                 ->comment('Shift: 1, 2, 3');
             $table->string('target');
             $table->foreign('target')->references('employeeID')->on('users')->cascadeOnDelete();

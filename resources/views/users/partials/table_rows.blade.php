@@ -13,10 +13,6 @@
                     <i class="bi bi-person-rolodex"></i> YPQ Team
                 @break
 
-                @case('admin')
-                    <i class="bi bi-person-gear"></i> Admin
-                @break
-
                 @case('supervisor')
                     <i class="bi bi-person-up"></i> Supervisor
                 @break
@@ -33,7 +29,7 @@
         <td>{{ $user->superior?->name ?? '-' }}</td>
         <td>{{ $user->department?->name ?? '-' }}</td>
         <td>
-            @if (in_array(auth()->user()->role, ['admin', 'management', 'ypq']))
+            @if (in_array(auth()->user()->role, ['management', 'ypq']))
                 <button class="btn btn-sm btn-outline-primary btn-edit-user" data-id="{{ $user->id }}"
                     data-name="{{ $user->name }}" data-employeeid="{{ $user->employeeID }}"
                     data-role="{{ $user->role }}" data-department="{{ $user->department_id }}"

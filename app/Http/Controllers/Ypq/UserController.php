@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Ypq;
 
 use App\Http\Controllers\Controller;
 use App\Models\Department;
@@ -13,10 +13,10 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('superior')->whereNotIn('role', ['operator'])->get();
+        $users = User::with('superior')->whereNotIn('role', ['operator'])->orderBy('employeeID')->get();
         $departments = Department::all();
 
-        return view('admin.users.index', compact('users', 'departments'), [
+        return view('users.index', compact('users', 'departments'), [
             'title' => 'MASTER DATA INPUT - USERS TABLE',
         ]);
     }
@@ -27,7 +27,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'employeeID' => ['required', 'size:5', 'unique:users,employeeID'],
             'department_id' => ['nullable', 'integer', Rule::exists('departments', 'id')],
-            'role' => ['required', 'in:admin,management,ypq,leader,supervisor,guest'],
+            'role' => ['required', 'in:management,ypq,leader,supervisor,guest'],
             'password' => ['required', 'string', 'min:8'],
             'superior_id' => ['nullable', 'string', Rule::exists('users', 'employeeID')],
         ]);
@@ -37,7 +37,7 @@ class UserController extends Controller
 
         User::create($validated);
 
-        return redirect()->route('admin.users.index')->with('success', 'User added successfully.');
+        return redirect()->route('users.index')->with('success', 'User added successfully.');
     }
 
     public function update(Request $request, $id)
@@ -47,7 +47,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'employeeID' => ['required', 'size:5', Rule::unique('users', 'employeeID')->ignore($user->id)],
-            'role' => 'required|in:admin,management,ypq,leader,supervisor,guest',
+            'role' => 'required|in:management,ypq,leader,supervisor,guest',
             'password' => 'nullable|string|min:6',
             'department_id' => ['nullable', 'integer', Rule::exists('departments', 'id')],
             'superior_id' => ['nullable', 'string', Rule::exists('users', 'employeeID')],
@@ -68,7 +68,7 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('admin.users.index')
+        return redirect()->route('users.index')
             ->with('success', 'User updated successfully.');
     }
 
@@ -77,7 +77,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->delete();
 
-        return redirect()->route('admin.users.index')->with('success', 'User has been successfully deleted.');
+        return redirect()->route('users.index')->with('success', 'User has been successfully deleted.');
     }
 
     public function search(Request $request)
@@ -96,10 +96,10 @@ class UserController extends Controller
                 $q->where('role', $role); // <-- filter role kalau ada
             });
 
-        $users = $query->orderBy('created_at', 'desc')->get();
+        $users = $query->orderBy('employeeID')->get();
 
         return response()->json([
-            'html' => view('admin.users.partials.table_rows', compact('users'))->render(),
+            'html' => view('users.partials.table_rows', compact('users'))->render(),
         ]);
     }
 
@@ -117,10 +117,7 @@ class UserController extends Controller
         switch ($role) {
             case 'leader':
                 // Logic: Leader butuh Supervisor di departemen yang sama
-                $rolesToFetch = ['supervisor'];
-
-                // Query
-                $query = User::whereIn('role', $rolesToFetch);
+                $query = User::where('role', 'supervisor');
 
                 // Hanya filter departemen jika departmentId tidak kosong
                 if (! empty($departmentId)) {
@@ -131,9 +128,13 @@ class UserController extends Controller
                 break;
 
             case 'supervisor':
-                // Logic: Supervisor butuh YPQ atau Management (Bebas departemen?)
-                $rolesToFetch = ['ypq', 'management'];
-                $superiors = User::whereIn('role', $rolesToFetch)->get();
+                // Logic: Supervisor butuh YPQ (Bebas departemen karena tidak ada departemen di user YPQ)
+                $superiors = User::where('role', 'ypq')->get();
+                break;
+
+            case 'ypq':
+                // Logic: YPQ butuh Management (Bebas departemen karena tidak ada departemen di user Management)
+                $superiors = User::where('role', 'management')->get();
                 break;
 
             default:

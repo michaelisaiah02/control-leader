@@ -6,15 +6,15 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckRoleIsAdmin
+class CheckRole
 {
     public function handle(Request $request, Closure $next): Response
     {
         $role = auth()->user()->role;
+        // Cek user
+        if ($role !== 'management' && $role !== 'ypq') {
 
-        // Cek apakah user adalah admin
-        if ($role !== 'admin' && $role !== 'management' && $role !== 'ypq') {
-
+            dd($role);
             return redirect()->back()->with('error', 'Tidak ada izin akses!');
         }
 

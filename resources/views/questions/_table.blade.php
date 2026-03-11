@@ -62,12 +62,12 @@
 
                     <td class="text-end pe-3">
                         <div class="d-flex justify-content-end gap-1">
-                            <a href="{{ route('admin.question.edit', $question->id) }}"
+                            <a href="{{ route('question.edit', $question->id) }}"
                                 class="btn btn-sm btn-outline-primary border-0" title="Edit">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
 
-                            <form method="POST" action="{{ route('admin.question.destroy', $question->id) }}"
+                            <form method="POST" action="{{ route('question.destroy', $question->id) }}"
                                 class="d-inline">
                                 @csrf
                                 @method('DELETE')

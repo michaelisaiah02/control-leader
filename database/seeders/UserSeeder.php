@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
         $password = '00000';
 
         // Helper buat bikin ID 5 digit
-        $makeID = fn ($n) => str_pad($n, 5, '0', STR_PAD_LEFT);
+        $makeID = fn($n) => str_pad($n, 5, '0', STR_PAD_LEFT);
 
         // Ambil daftar department_id dan division_id yang ada
         $departmentIds = DB::table('departments')->pluck('id')->toArray();
@@ -27,8 +27,8 @@ class UserSeeder extends Seeder
         $users = [
             [
                 'employeeID' => $makeID(1),
-                'name' => 'Admin System',
-                'role' => 'admin',
+                'name' => 'Management System',
+                'role' => 'management',
                 'department_id' => null,
                 'division_id' => null,
                 'can_login' => true,
@@ -36,8 +36,9 @@ class UserSeeder extends Seeder
             ],
             [
                 'employeeID' => $makeID(2),
-                'name' => 'Guest Viewer',
-                'role' => 'guest',
+                'name' => 'YPQ System',
+                'role' => 'ypq',
+                'superior_id' => $makeID(1),
                 'department_id' => null,
                 'division_id' => null,
                 'can_login' => true,
@@ -45,16 +46,17 @@ class UserSeeder extends Seeder
             ],
             [
                 'employeeID' => $makeID(3),
-                'name' => 'Supervisor Deni',
+                'name' => 'Supervisor System',
                 'role' => 'supervisor',
+                'superior_id' => $makeID(2),
                 'department_id' => $departmentIds[array_rand($departmentIds)],
                 'division_id' => null,
                 'can_login' => true,
                 'password' => Hash::make($password),
             ],
             [
-                'employeeID' => 24556,
-                'name' => fake('id_ID')->name(),
+                'employeeID' => $makeID(4),
+                'name' => 'Leader System',
                 'role' => 'leader',
                 'superior_id' => $makeID(3),
                 'department_id' => $departmentIds[array_rand($departmentIds)],
@@ -64,10 +66,19 @@ class UserSeeder extends Seeder
             ],
             [
                 'employeeID' => 12025,
-                'name' => fake('id_ID')->name(),
+                'name' => 'Leader System 2',
                 'role' => 'leader',
                 'superior_id' => $makeID(3),
                 'department_id' => $departmentIds[array_rand($departmentIds)],
+                'division_id' => null,
+                'can_login' => true,
+                'password' => Hash::make($password),
+            ],
+            [
+                'employeeID' => $makeID(99999),
+                'name' => 'Guest Viewer',
+                'role' => 'guest',
+                'department_id' => null,
                 'division_id' => null,
                 'can_login' => true,
                 'password' => Hash::make($password),
@@ -79,9 +90,9 @@ class UserSeeder extends Seeder
                 'role' => 'operator',
                 'department_id' => null,
                 'division_id' => $divisionIds[array_rand($divisionIds)],
-                'superior_id' => $makeID(24556), // Leader Rina
+                'superior_id' => $makeID(4),
                 'can_login' => false,
-                'password' => Hash::make(Str::random(10)), // dummy
+                'password' => Hash::make(Str::random(10)),
             ],
             [
                 'employeeID' => $makeID(101),
@@ -89,7 +100,7 @@ class UserSeeder extends Seeder
                 'role' => 'operator',
                 'department_id' => null,
                 'division_id' => $divisionIds[array_rand($divisionIds)],
-                'superior_id' => $makeID(24556), // Leader Rina
+                'superior_id' => $makeID(4),
                 'can_login' => false,
                 'password' => Hash::make(Str::random(10)),
             ],
@@ -99,7 +110,7 @@ class UserSeeder extends Seeder
                 'role' => 'operator',
                 'department_id' => null,
                 'division_id' => $divisionIds[array_rand($divisionIds)],
-                'superior_id' => $makeID(24556), // Leader Rina
+                'superior_id' => $makeID(4),
                 'can_login' => false,
                 'password' => Hash::make(Str::random(10)),
             ],
@@ -109,7 +120,7 @@ class UserSeeder extends Seeder
                 'role' => 'operator',
                 'department_id' => null,
                 'division_id' => $divisionIds[array_rand($divisionIds)],
-                'superior_id' => $makeID(12025), // Leader Fajar
+                'superior_id' => $makeID(12025),
                 'can_login' => false,
                 'password' => Hash::make(Str::random(10)),
             ],
@@ -119,7 +130,7 @@ class UserSeeder extends Seeder
                 'role' => 'operator',
                 'department_id' => null,
                 'division_id' => $divisionIds[array_rand($divisionIds)],
-                'superior_id' => $makeID(12025), // Leader Fajar
+                'superior_id' => $makeID(12025),
                 'can_login' => false,
                 'password' => Hash::make(Str::random(10)),
             ],

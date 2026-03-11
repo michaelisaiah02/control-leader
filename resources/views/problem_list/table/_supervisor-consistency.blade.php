@@ -13,6 +13,25 @@
         </thead>
         <tbody class="align-middle">
             @forelse ($Problems as $problem)
+            @php
+            // 1. Cek apakah sudah lewat tenggat waktu
+            $isOverdue = $problem->due_date <= \Carbon\Carbon::now();
+
+            // 2. Tentukan teks dan warna default
+            $displayStatus = str_replace('_', ' ', $problem->status);
+            $badgeColor = 'bg-light text-dark';
+
+            // 3. Timpa teks dan warna berdasarkan kondisi status & tanggal
+            if ($problem->status === 'close') {
+                $badgeColor = 'bg-danger';
+            } elseif ($problem->status === 'open') {
+                $displayStatus = $isOverdue ? 'Delay' : 'Open';
+                $badgeColor    = $isOverdue ? 'bg-warning text-dark' : 'bg-success';
+            } elseif ($problem->status === 'follow_up_1') {
+                $displayStatus = $isOverdue ? 'Follow Up 1 Delay' : 'Follow Up 1';
+                $badgeColor    = $isOverdue ? 'bg-secondary' : 'bg-info text-dark';
+            }
+        @endphp
                 <tr data-status="{{ strtolower($problem->status) }}">
                     <td class="text-center">{{ \Carbon\Carbon::parse($problem->created_at)->format('d/m/Y') }}</td>
                     <td>{{ $problem->problem }}</td>
@@ -22,18 +41,8 @@
                         {{ \Carbon\Carbon::parse($problem->due_date)->format('d/m/Y') }}
                     </td>
                     <td class="text-center">
-                        @php
-                            $badgeColor = match ($problem->status) {
-                                'open' => 'bg-success',
-                                'close' => 'bg-danger',
-                                'delay' => 'bg-warning text-dark',
-                                'follow_up_1' => 'bg-info text-dark',
-                                'follow_up_1_delay' => 'bg-secondary',
-                                default => 'bg-light text-dark',
-                            };
-                        @endphp
                         <span class="badge {{ $badgeColor }} text-uppercase">
-                            {{ str_replace('_', ' ', $problem->status) }}
+                            {{ $displayStatus }}
                         </span>
                     </td>
                     <td class="text-center">

@@ -13,7 +13,7 @@
     <div class="container-fluid layout-fixed pb-2">
 
         {{-- FILTER SECTION --}}
-        <div class="card border-0 shadow-sm mb-2 rounded-3 flex-shrink-0">
+        <div class="card border-0 shadow-sm mb-2 rounded-3 shrink-0">
             <div class="card-body p-2">
                 <div class="row g-2 align-items-center justify-content-between">
                     <div class="col-auto">
@@ -109,11 +109,11 @@
                                 <option value="" disabled selected>Select Role</option>
                                 <option value="management">Management</option>
                                 <option value="ypq">YPQ Team</option>
-                                <option value="admin">Admin</option>
                                 <option value="supervisor">Supervisor</option>
                                 <option value="leader">Leader</option>
                                 <option value="guest">Guest</option>
                             </select>
+                            <div class="invalid-feedback">Please select a role.</div>
                         </div>
                     </div>
 
@@ -122,6 +122,7 @@
                             <label for="name" class="form-label small fw-bold text-secondary mb-1">Full Name</label>
                             <input type="text" class="form-control form-control-sm" id="name" name="name"
                                 placeholder="John Doe" required>
+                            <div class="invalid-feedback">Please enter a full name.</div>
                         </div>
                         <div class="col-12 col-md-6" id="departmentForm">
                             <label for="department" class="form-label small fw-bold text-secondary mb-1">Department</label>
@@ -131,6 +132,7 @@
                                     <option value="{{ $department->id }}">{{ $department->name }}</option>
                                 @endforeach
                             </select>
+                            <div class="invalid-feedback">Please select a department.</div>
                         </div>
                     </div>
 
@@ -144,18 +146,19 @@
                                 <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                     <i class="bi bi-eye"></i>
                                 </button>
+                                <div class="invalid-feedback">
+                                    Min 8 chars, Uppercase, Lowercase, Number, Symbol.
+                                </div>
                             </div>
                             <small class="text-muted d-block" style="font-size: 0.7rem;">Leave empty if unchanged (Edit
                                 Mode)</small>
-                            <div class="invalid-feedback">
-                                Min 8 chars, Uppercase, Lowercase, Number, Symbol.
-                            </div>
                         </div>
                         <div class="col-12 col-md-6" id="superiorForm" style="display: none;">
                             <label for="superior" class="form-label small fw-bold text-secondary mb-1">Superior</label>
                             <select class="form-select form-select-sm" id="superior" name="superior_id">
                                 <option value="" disabled selected>Select Superior</option>
                             </select>
+                            <div class="invalid-feedback">Please select a superior.</div>
                         </div>
                     </div>
                 </div>
@@ -192,18 +195,17 @@
     </div>
 
     <x-toast />
-    {{-- @dd($users[3]->superior_id) --}}
 @endsection
 
 @section('scripts')
     <script type="module">
         $(document).ready(function() {
             const ROUTES = {
-                SEARCH: "{{ route('admin.users.search') }}",
-                STORE: "{{ route('admin.users.store') }}",
-                UPDATE: "{{ url('admin/users/update-user') }}",
-                DELETE: "{{ url('admin/users/delete-user') }}",
-                SUPERIORS: "{{ route('admin.users.getSuperiors') }}"
+                SEARCH: "{{ route('users.search') }}",
+                STORE: "{{ route('users.store') }}",
+                UPDATE: "{{ url('users/update-user') }}",
+                DELETE: "{{ url('users/delete-user') }}",
+                SUPERIORS: "{{ route('users.getSuperiors') }}"
             };
 
             let debounceTimer;
@@ -240,7 +242,7 @@
                 const deptId = $('#department').val();
                 const $supSelect = $('#superior');
 
-                if (!role || !deptId) return;
+                // if (!role || !deptId) return;
 
                 // Loading state di dropdown
                 $supSelect.html('<option>Loading...</option>');
@@ -300,10 +302,16 @@
 
             // Toggle Superior Field Visibility
             function toggleSuperiorVisibility() {
-                if ($('#role').val() && $('#department').val()) {
-                    $('#superiorForm').fadeIn();
-                    $('#superiorForm').find('select').attr('required', true);
-                    fetchSuperiors(); // Panggil fetch cuma kalau dua-duanya keisi
+                if ($('#role').val() !== 'management' && $('#role').val() !== 'guest') {
+                    if ($('#role').val() === 'ypq' || $('#department').val()) {
+                        $('#superiorForm').fadeIn();
+                        $('#superiorForm').find('select').attr('required', true);
+                        fetchSuperiors();
+                    } else {
+                        $('#superiorForm').hide();
+                        $('#superiorForm').find('select').attr('required', false);
+                        $('#superior').val('');
+                    }
                 } else {
                     $('#superiorForm').hide();
                     $('#superiorForm').find('select').attr('required', false);

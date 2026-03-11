@@ -53,8 +53,10 @@
                                     <label for="department" class="form-label fw-bold text-secondary small text-uppercase mb-1">
                                         <i class="bi bi-building me-1"></i> Department
                                     </label>
-                                    <select name="department" id="department" class="form-select bg-light" required
-                                        {{ auth()->user()->role !== 'leader' && auth()->user()->role !== 'supervisor' ? '' : 'readonly' }}>
+                                    <select name="department" id="department"
+                                        class="form-select {{ auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor' ? 'bg-light' : 'bg-warning-subtle' }}"
+                                        required
+                                        style="{{ auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor' ? 'pointer-events: none;' : '' }}">
                                         <option value="" disabled>-- Pilih Department --</option>
                                         @foreach ($departments as $department)
                                             <option value="{{ $department->id }}"
@@ -70,8 +72,10 @@
                                     <label for="supervisor" class="form-label fw-bold text-secondary small text-uppercase mb-1">
                                         <i class="bi bi-person-workspace me-1"></i> Supervisor
                                     </label>
-                                    <select name="supervisor" id="supervisor" class="form-select bg-light" required
-                                        {{ auth()->user()->role !== 'leader' && auth()->user()->role !== 'supervisor' ? '' : 'readonly' }}>
+                                    <select name="supervisor" id="supervisor"
+                                        class="form-select {{ auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor' ? 'bg-light' : 'bg-warning-subtle' }}"
+                                        required
+                                        style="{{ auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor' ? 'pointer-events: none;' : '' }}">
                                         <option value="" selected disabled>-- Pilih Supervisor --</option>
                                         @foreach ($supervisors as $supervisor)
                                             <option value="{{ $supervisor->employeeID }}"
@@ -88,8 +92,10 @@
                                         <label for="leader" class="form-label fw-bold text-secondary small text-uppercase mb-1">
                                             <i class="bi bi-person-badge me-1"></i> Leader
                                         </label>
-                                        <select name="leader" id="leader" class="form-select bg-light" required
-                                            {{ auth()->user()->role !== 'leader' ? '' : 'readonly' }}>
+                                        <select name="leader" id="leader"
+                                            class="form-select {{ auth()->user()->role === 'leader' ? ' bg-light' : 'bg-warning-subtle' }}"
+                                            required
+                                            style="{{ auth()->user()->role === 'leader' ? 'pointer-events: none;' : '' }}">
                                             <option value="" disabled>-- Pilih Leader --</option>
                                             @foreach ($leaders as $leader)
                                                 <option value="{{ $leader->employeeID }}"
@@ -107,7 +113,7 @@
                                         <label for="operator" class="form-label fw-bold text-secondary small text-uppercase mb-1">
                                             <i class="bi bi-person-gear me-1"></i> Operator
                                         </label>
-                                        <select name="operator" id="operator" class="form-select bg-light" required>
+                                        <select name="operator" id="operator" class="form-select bg-warning-subtle" required>
                                             <option value="" selected disabled>-- Pilih Operator --</option>
                                             @foreach ($operators as $operator)
                                                 <option value="{{ $operator->employeeID }}">
@@ -208,6 +214,92 @@
                     }
                 });
             });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Ubah data dari Laravel ke format Javascript Array
+            const allLeaders = @json($leaders);
+            const allOperators = @json($operators);
+
+            // 2. Tangkap elemen select-nya
+            const supervisorSelect = document.getElementById('supervisor');
+            const leaderSelect = document.getElementById('leader');
+            const operatorSelect = document.getElementById('operator');
+
+            // ==========================================
+            // FILTER LEADER BERDASARKAN SUPERVISOR
+            // ==========================================
+            if (supervisorSelect && leaderSelect) {
+                supervisorSelect.addEventListener('change', function() {
+                    const supervisorId = this.value;
+
+                    // Reset pilihan Leader
+                    leaderSelect.innerHTML =
+                        '<option value="" selected disabled>-- Pilih Leader --</option>';
+
+                    // Reset pilihan Operator (kalau elemennya ada)
+                    if (operatorSelect) {
+                        operatorSelect.innerHTML =
+                            '<option value="" selected disabled>-- Pilih Operator --</option>';
+                    }
+
+                    // Filter Leader yang 'superior_id'-nya sama dengan Supervisor yang dipilih
+                    const filteredLeaders = allLeaders.filter(l => l.superior_id === supervisorId);
+
+                    // Masukin hasil filter ke dropdown Leader
+                    filteredLeaders.forEach(leader => {
+                        const option = document.createElement('option');
+                        option.value = leader.employeeID;
+                        option.textContent = `${leader.employeeID} - ${leader.name}`;
+
+                        // Kalau usernya lagi login sebagai Leader ini, otomatis di-select
+                        if ('{{ auth()->user()->employeeID }}' === leader.employeeID) {
+                            option.selected = true;
+                        }
+                        leaderSelect.appendChild(option);
+                    });
+
+                    // Trigger event change ke Leader biar Operator ikut ke-update kalau Leader otomatis ke-select
+                    if (leaderSelect.value) {
+                        leaderSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+
+                // Trigger pertama kali pas halaman beres loading (buat auto-fill kalau Supervisor udah ke-select otomatis)
+                if (supervisorSelect.value) {
+                    supervisorSelect.dispatchEvent(new Event('change'));
+                }
+            }
+
+            // ==========================================
+            // FILTER OPERATOR BERDASARKAN LEADER
+            // ==========================================
+            if (leaderSelect && operatorSelect) {
+                leaderSelect.addEventListener('change', function() {
+                    const leaderId = this.value;
+
+                    // Reset pilihan Operator
+                    operatorSelect.innerHTML =
+                        '<option value="" selected disabled>-- Pilih Operator --</option>';
+
+                    // Filter Operator yang 'superior_id'-nya sama dengan Leader yang dipilih
+                    const filteredOperators = allOperators.filter(o => o.superior_id === leaderId);
+
+                    // Masukin hasil filter ke dropdown Operator
+                    filteredOperators.forEach(operator => {
+                        const option = document.createElement('option');
+                        option.value = operator.employeeID;
+                        option.textContent = `${operator.employeeID} - ${operator.name}`;
+                        operatorSelect.appendChild(option);
+                    });
+                });
+
+                // Trigger auto-fill pertama kali jika dibutuhkan
+                if (leaderSelect.value) {
+                    leaderSelect.dispatchEvent(new Event('change'));
+                }
+            }
         });
     </script>
 @endsection

@@ -12,8 +12,8 @@
         }
 
         /* FIX LAYOUT: Override Navbar Layout Utama khusus page ini.
-                       Kita bikin navbar melayang di atas background, jadi gak nambah tinggi halaman.
-                    */
+                           Kita bikin navbar melayang di atas background, jadi gak nambah tinggi halaman.
+                        */
         nav.navbar {
             position: absolute;
             top: 0;
@@ -88,7 +88,7 @@
 
                         {{-- Password with Toggle --}}
                         <div class="input-group mb-4">
-                            <div class="form-floating flex-grow-1">
+                            <div class="form-floating grow">
                                 <input type="password" class="form-control" placeholder="Password" id="password"
                                     name="password" required autocomplete="current-password"
                                     style="border-top-right-radius: 0; border-bottom-right-radius: 0;">

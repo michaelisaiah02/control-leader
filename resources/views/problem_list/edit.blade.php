@@ -26,8 +26,8 @@
         $canEditStatus = in_array($loggedInRole, ['supervisor']);
         $superiorRoleName = 'Supervisor';
     } elseif ($pageRole === 'supervisor') {
-        // Atasan Supervisor adalah Management / Admin / YPQ
-        $canEditStatus = in_array($loggedInRole, ['management', 'admin', 'ypq']);
+        // Atasan Supervisor adalah Management / YPQ
+        $canEditStatus = in_array($loggedInRole, ['management', 'ypq']);
         $superiorRoleName = 'Management';
     }
 

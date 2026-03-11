@@ -13,8 +13,6 @@ class QuestionSeeder extends Seeder
         string $text,
         ?array $choices = null,             // kalau null -> default choices
         bool $extraFields = false,          // true = perlu problem & countermeasure fields
-        ?string $problemLabel = null,
-        ?string $counterLabel = null,
         int $order = 0
     ): array {
         // default choices
@@ -22,22 +20,11 @@ class QuestionSeeder extends Seeder
             $choices = ['0' => 'Pilihan 0', '1' => 'Pilihan 1', '2' => 'Pilihan 2'];
         }
 
-        // label default jika extraFields true
-        if ($extraFields) {
-            $problemLabel = $problemLabel ?? 'Problem';
-            $counterLabel = $counterLabel ?? 'Countermeasure';
-        } else {
-            $problemLabel = null;
-            $counterLabel = null;
-        }
-
         return [
             'package' => $package,
             'question_text' => $text,
             'choices' => json_encode($choices, JSON_UNESCAPED_UNICODE),
             'extra_fields' => $extraFields,
-            'problem_label' => $problemLabel,
-            'countermeasure_label' => $counterLabel,
             'display_order' => $order,
             'is_active' => true,
             'created_at' => now(),
@@ -61,8 +48,6 @@ class QuestionSeeder extends Seeder
             'Apakah operator ikut 5 Minute Talk sampai selesai?',
             ['0' => 'Tidak mengikuti 5 minutes talk', '1' => 'Mengikuti namun tidak memperhatikan', '2' => 'Mengikuti sampai selesai'],
             true,
-            'Problem',
-            'Countermeasure',
             1
         );
         $rows[] = $this->q(
@@ -70,8 +55,6 @@ class QuestionSeeder extends Seeder
             'Apakah operator melakukan 5R sebelum bekerja? (check pakai checksheet 5R)',
             ['0' => 'Tidak melakukan 5R', '1' => 'Melakukan 5R dengan baik'],
             true,
-            'Reason',
-            'Quick Action',
             2
         );
         $rows[] = $this->q(
@@ -79,8 +62,6 @@ class QuestionSeeder extends Seeder
             'PPE (APD) lengkap sesuai area kerja?',
             ['0' => 'Tidak lengkap', '1' => 'Lengkap'],
             false,
-            '',
-            '',
             3
         );
         $rows[] = $this->q(
@@ -88,8 +69,6 @@ class QuestionSeeder extends Seeder
             'Kondisi mesin dan area kerja bersih?',
             ['0' => 'Kotor', '1' => 'Perlu dibersihkan', '2' => 'Bersih'],
             true,
-            'Temuan',
-            'Perbaikan',
             4
         );
         $rows[] = $this->q(
@@ -97,8 +76,6 @@ class QuestionSeeder extends Seeder
             'Komunikasi handover dari shift sebelumnya sudah dilakukan?',
             ['0' => 'Belum', '1' => 'Sudah'],
             true,
-            'Alasan',
-            'Tindak lanjut',
             5
         );
 
@@ -111,8 +88,6 @@ class QuestionSeeder extends Seeder
             'Operator mengikuti instruksi kerja (WI) saat proses?',
             ['0' => 'Tidak sesuai WI', '1' => 'Sebagian sesuai', '2' => 'Sesuai WI'],
             true,
-            'Pelanggaran WI',
-            'Countermeasure',
             1
         );
         $rows[] = $this->q(
@@ -120,8 +95,6 @@ class QuestionSeeder extends Seeder
             'Kualitas produk sesuai standar?',
             ['0' => 'NG berat', '1' => 'NG ringan', '2' => 'OK'],
             false,
-            '',
-            '',
             2
         );
         $rows[] = $this->q(
@@ -129,8 +102,6 @@ class QuestionSeeder extends Seeder
             'Penggunaan alat ukur benar?',
             ['0' => 'Tidak benar', '1' => 'Benar'],
             true,
-            'Kesalahan',
-            'Pelatihan/Sosialisasi',
             3
         );
         $rows[] = $this->q(
@@ -138,8 +109,6 @@ class QuestionSeeder extends Seeder
             'Safety guard terpasang & digunakan?',
             ['0' => 'Tidak', '1' => 'Ya'],
             true,
-            'Bahaya',
-            'Mitigasi',
             4
         );
         $rows[] = $this->q(
@@ -147,8 +116,6 @@ class QuestionSeeder extends Seeder
             '5S (Seiri/Seiton/Seiso/Seiketsu/Shitsuke) dijaga selama proses?',
             ['0' => 'Buruk', '1' => 'Cukup', '2' => 'Baik'],
             true,
-            'Temuan 5S',
-            'Perbaikan 5S',
             5
         );
 
@@ -161,8 +128,6 @@ class QuestionSeeder extends Seeder
             'Operator kembali tepat waktu setelah istirahat?',
             ['0' => 'Terlambat', '1' => 'Tepat waktu'],
             false,
-            '',
-            '',
             1
         );
         $rows[] = $this->q(
@@ -170,8 +135,6 @@ class QuestionSeeder extends Seeder
             'Kesiapan operator setelah istirahat (fisik/mental)?',
             ['0' => 'Tidak siap', '1' => 'Kurang siap', '2' => 'Siap'],
             true,
-            'Catatan',
-            'Pendampingan',
             2
         );
         $rows[] = $this->q(
@@ -179,8 +142,6 @@ class QuestionSeeder extends Seeder
             'Kebersihan area setelah istirahat terjaga?',
             ['0' => 'Kotor', '1' => 'Perlu dirapikan', '2' => 'Rapi'],
             true,
-            'Temuan',
-            'Aksi 5S',
             3
         );
         $rows[] = $this->q(
@@ -188,8 +149,6 @@ class QuestionSeeder extends Seeder
             'Pengisian log sheet dilanjutkan?',
             ['0' => 'Belum', '1' => 'Sudah'],
             true,
-            'Kenapa belum?',
-            'Tindak lanjut',
             4
         );
         $rows[] = $this->q(
@@ -197,8 +156,6 @@ class QuestionSeeder extends Seeder
             'Komunikasi ke leader terkait issue sebelum istirahat sudah dilakukan?',
             ['0' => 'Belum', '1' => 'Sudah'],
             true,
-            'Issue',
-            'Follow-up',
             5
         );
 
@@ -211,8 +168,6 @@ class QuestionSeeder extends Seeder
             'Pembersihan area kerja akhir shift sudah dilakukan?',
             ['0' => 'Belum', '1' => 'Sebagian', '2' => 'Sudah'],
             true,
-            'Area kotor',
-            'Rencana bersih-bersih',
             1
         );
         $rows[] = $this->q(
@@ -220,8 +175,6 @@ class QuestionSeeder extends Seeder
             'Serah terima ke shift berikutnya dilakukan?',
             ['0' => 'Belum', '1' => 'Sudah'],
             true,
-            'Alasan',
-            'Rencana Handover',
             2
         );
         $rows[] = $this->q(
@@ -229,8 +182,6 @@ class QuestionSeeder extends Seeder
             'Pengecekan material/alat selesai & tercatat?',
             ['0' => 'Tidak', '1' => 'Ya'],
             true,
-            'Kekurangan',
-            'Cara pemenuhan',
             3
         );
         $rows[] = $this->q(
@@ -238,8 +189,6 @@ class QuestionSeeder extends Seeder
             'Target output shift tercapai?',
             ['0' => 'Jauh dari target', '1' => 'Kurang sedikit', '2' => 'Tercapai'],
             true,
-            'Sebab',
-            'Action plan',
             4
         );
         $rows[] = $this->q(
@@ -247,8 +196,6 @@ class QuestionSeeder extends Seeder
             'Abnormalitas selama shift dilaporkan?',
             ['0' => 'Tidak', '1' => 'Ya'],
             false,
-            '',
-            '',
             5
         );
 
@@ -261,8 +208,6 @@ class QuestionSeeder extends Seeder
             'Leader melakukan 5 Minute Talk ke anggota?',
             ['0' => 'Tidak', '1' => 'Ya'],
             true,
-            'Alasan',
-            'Perbaikan',
             1
         );
         $rows[] = $this->q(
@@ -270,8 +215,6 @@ class QuestionSeeder extends Seeder
             'Kedisiplinan hadir leader?',
             ['0' => 'Sering absen', '1' => 'Kadang terlambat', '2' => 'Baik'],
             true,
-            'Catatan',
-            'Pembinaan',
             2
         );
         $rows[] = $this->q(
@@ -279,8 +222,6 @@ class QuestionSeeder extends Seeder
             'Monitoring kualitas & safety dilakukan?',
             ['0' => 'Tidak', '1' => 'Ya'],
             true,
-            'Kurang monitor',
-            'Rencana monitoring',
             3
         );
         $rows[] = $this->q(
@@ -288,8 +229,6 @@ class QuestionSeeder extends Seeder
             'Dokumentasi laporan harian rapi?',
             ['0' => 'Tidak rapi', '1' => 'Cukup', '2' => 'Rapi'],
             true,
-            'Kekurangan',
-            'Perbaikan',
             4
         );
         $rows[] = $this->q(
@@ -297,8 +236,6 @@ class QuestionSeeder extends Seeder
             'Tindak lanjut temuan kemarin diselesaikan?',
             ['0' => 'Belum', '1' => 'Sudah'],
             true,
-            'Alasan',
-            'Rencana selesai',
             5
         );
 

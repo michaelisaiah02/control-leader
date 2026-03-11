@@ -16,6 +16,7 @@ class Checksheet extends Model
 
     protected $fillable = [
         'schedule_plan_id',
+        'schedule_detail_id',
         'stopwatch_duration',
         'score',
         'scheduled_target',

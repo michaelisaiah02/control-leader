@@ -18,32 +18,41 @@
         </thead>
         <tbody>
             @forelse ($Problems as $problem)
+            @php
+            // 1. Cek apakah sudah lewat tenggat waktu
+            $isOverdue = $problem->due_date <= \Carbon\Carbon::now();
+
+            // 2. Tentukan teks dan warna default
+            $displayStatus = str_replace('_', ' ', $problem->status);
+            $badgeColor = 'bg-light text-dark';
+
+            // 3. Timpa teks dan warna berdasarkan kondisi status & tanggal
+            if ($problem->status === 'close') {
+                $badgeColor = 'bg-danger';
+            } elseif ($problem->status === 'open') {
+                $displayStatus = $isOverdue ? 'Delay' : 'Open';
+                $badgeColor    = $isOverdue ? 'bg-warning text-dark' : 'bg-success';
+            } elseif ($problem->status === 'follow_up_1') {
+                $displayStatus = $isOverdue ? 'Follow Up 1 Delay' : 'Follow Up 1';
+                $badgeColor    = $isOverdue ? 'bg-secondary' : 'bg-info text-dark';
+            }
+        @endphp
                 <tr data-status="{{ strtolower($problem->status) }}">
-                    <th scope="col">{{ $problem->created_at->format('d/m/Y') }}</th>
+                    <td scope="col">{{ $problem->created_at->format('d/m/Y') }}</td>
                     @if (auth()->user()->role !== 'leader')
                         <th scope="col">{{ $problem->user->name }}</th>
                     @endif
-                    <th scope="col">{{ $problem->inferior_id }} - {{ $problem->inferior->name }}</th>
-                    <th scope="col">{{ $problem->problem }}</th>
-                    <th scope="col">{{ $problem->countermeasure }}</th>
-                    <th scope="col">{{ \Carbon\Carbon::parse($problem->due_date)->format('d/m/Y') }}</th>
-                    <th>
-                        @php
-                            $badgeColor = match ($problem->status) {
-                                'open' => 'bg-success',
-                                'close' => 'bg-danger',
-                                'delay' => 'bg-warning text-dark',
-                                'follow_up_1' => 'bg-info text-dark',
-                                'follow_up_1_delay' => 'bg-secondary',
-                                default => 'bg-light text-dark',
-                            };
-                        @endphp
+                    <td scope="col">{{ $problem->inferior_id }} - {{ $problem->inferior->name }}</td>
+                    <td scope="col">{{ $problem->problem }}</td>
+                    <td scope="col">{{ $problem->countermeasure }}</td>
+                    <td scope="col">{{ \Carbon\Carbon::parse($problem->due_date)->format('d/m/Y') }}</td>
+                    <td>
                         <span class="badge {{ $badgeColor }} text-uppercase">
-                            {{ str_replace('_', ' ', $problem->status) }}
+                            {{ $displayStatus }}
                         </span>
-                    </th>
+                    </td>
                     @if (auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor')
-                        <th scope="col">
+                        <td scope="col">
                             @if ($problem->status != 'close')
                                 <a href="{{ route('listProblem.edit', ['type' => 'leader-performance', 'id' => $problem->id]) }}"
                                     class="btn btn-sm btn-outline-primary rounded-circle"><i
@@ -51,7 +60,7 @@
                             @else
                                 -
                             @endif
-                        </th>
+                        </td>
                     @endif
                 </tr>
             @empty

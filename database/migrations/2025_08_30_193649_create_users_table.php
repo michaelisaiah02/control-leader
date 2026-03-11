@@ -14,7 +14,7 @@ return new class extends Migration
             $table->char('employeeID', 5);
             $table->foreignId('department_id')->nullable()->constrained('departments');
             $table->foreignId('division_id')->nullable()->constrained('divisions');
-            $table->enum('role', ['management', 'ypq', 'admin', 'guest', 'supervisor', 'leader', 'operator']);
+            $table->enum('role', ['management', 'ypq', 'guest', 'supervisor', 'leader', 'operator']);
             $table->char('superior_id', 5)->nullable();
             $table->string('password');
             $table->boolean('can_login')->default(true);

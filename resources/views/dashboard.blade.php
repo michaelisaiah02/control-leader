@@ -62,10 +62,12 @@
                     <a href="{{ route('listProblem.index') }}" class="btn-dashboard position-relative btn-dashboard-danger">
                         <i class="bi bi-exclamation-triangle"></i>
                         <span>List Problem</span>
-                        <span
-                            class="position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill bg-danger border border-white shadow-sm">
-                            {{ $problemCount }}
-                        </span>
+                        @if ($problemCount > 0)
+                            <span
+                                class="position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill bg-danger border border-white shadow-sm">
+                                {{ $problemCount }}
+                            </span>
+                        @endif
                     </a>
                 </div>
             </div>
@@ -96,10 +98,12 @@
                             onclick="window.location.href='{{ route('listProblem.index') }}'">
                             <i class="bi bi-exclamation-octagon"></i>
                             <span>List Problem</span>
-                            <span
-                                class="position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill bg-danger border border-white shadow-sm">
-                                {{ $problemCount }}
-                            </span>
+                            @if ($problemCount > 0)
+                                <span
+                                    class="position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill bg-danger border border-white shadow-sm">
+                                    {{ $problemCount }}
+                                </span>
+                            @endif
                         </button>
                     </div>
                     <div class="col">
@@ -112,7 +116,7 @@
 
                 {{-- Menu Database (Hidden by default) --}}
                 <div id="menu-database" class="row row-cols-1 row-cols-md-3 g-3 justify-content-center d-none">
-                    <div class="col-12 text-center mb-2">
+                    <div class="col-12 text-center mb-2 d-flex align-items-end justify-content-center">
                         <button class="btn btn-sm btn-outline-secondary" id="btn-back-menu">
                             <i class="bi bi-arrow-left me-1"></i> Back
                         </button>
@@ -134,20 +138,45 @@
                     </div>
                 </div>
             </div>
-            {{-- ROLE: ADMIN --}}
-        @elseif(in_array(auth()->user()->role, ['admin', 'management', 'ypq']))
+
+            {{-- ROLE: Management atau YPQ --}}
+        @elseif(in_array(auth()->user()->role, ['management', 'ypq']))
             <div class="row g-4 justify-content-center animate-fade-in">
-                <div class="col-12 col-md-6">
-                    <a href="{{ route('admin.question.index') }}" class="btn-dashboard">
-                        <i class="bi bi-question-circle"></i>
-                        <span>Question List</span>
-                    </a>
-                </div>
-                <div class="col-12 col-md-6">
-                    <a href="{{ route('admin.users.index') }}" class="btn-dashboard">
-                        <i class="bi bi-person-gear"></i>
-                        <span>Users List</span>
-                    </a>
+                <div id="menu-main"
+                    class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-3 g-xl-4 justify-content-center animate-fade-in"
+                    style="max-width: 900px; margin: 0 auto;">
+                    <div class="col">
+                        <a href="{{ route('question.index') }}" class="btn-dashboard">
+                            <i class="bi bi-question-circle"></i>
+                            <span>Question List</span>
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a href="{{ route('users.index') }}" class="btn-dashboard">
+                            <i class="bi bi-person-gear"></i>
+                            <span>Users List</span>
+                        </a>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn-dashboard w-100 h-100"
+                            onclick="window.location.href='{{ route('reports.index') }}'">
+                            <i class="bi bi-file-text"></i>
+                            <span>Report<br><small>Activity</small></span>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn-dashboard w-100 h-100 position-relative btn-dashboard-danger"
+                            onclick="window.location.href='{{ route('listProblem.index') }}'">
+                            <i class="bi bi-exclamation-octagon"></i>
+                            <span>List Problem</span>
+                            @if ($problemCount > 0)
+                                <span
+                                    class="position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill bg-danger border border-white shadow-sm">
+                                    {{ $problemCount }}
+                                </span>
+                            @endif
+                        </button>
+                    </div>
                 </div>
             </div>
 

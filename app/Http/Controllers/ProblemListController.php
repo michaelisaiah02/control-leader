@@ -86,9 +86,9 @@ class ProblemListController extends Controller
         $canEditStatus = false;
 
         if ($pageRole === 'leader') {
-            $canEditStatus = in_array($loggedInRole, ['supervisor', 'management', 'admin']);
+            $canEditStatus = in_array($loggedInRole, ['supervisor', 'management', 'ypq']);
         } elseif ($pageRole === 'supervisor') {
-            $canEditStatus = in_array($loggedInRole, ['management', 'admin']);
+            $canEditStatus = in_array($loggedInRole, ['management', 'ypq']);
         }
 
         if (! $canEditCountermeasure && ! $canEditStatus) {

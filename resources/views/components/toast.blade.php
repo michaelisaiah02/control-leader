@@ -31,6 +31,14 @@
         $icon = 'bi-x-square-fill';
         $bgColor = 'text-bg-danger';
     }
+    // Cek Info
+    elseif (session()->has('info')) {
+        $toastType = 'info';
+        $message = session('info');
+        $title = config('app.name') . ' - Info';
+        $icon = 'bi-info-circle-fill';
+        $bgColor = 'text-bg-info';
+    }
     // Cek Validation Errors
     elseif ($errors->any()) {
         $toastType = 'validation';

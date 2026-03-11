@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
-
-            // 5 paket pertanyaan
             $table->enum('package', [
                 'awal_shift',        // operator awal shift
                 'saat_bekerja',     // operator saat bekerja
@@ -22,24 +20,11 @@ return new class extends Migration
                 'akhir_shift',       // operator akhir shift
                 'leader',         // supervisor cek leader (sekali/hari, no shift split)
             ])->default('awal_shift');
-
-            $table->text('question_text'); // pertanyaan inti
-
-            // pilihan jawaban (JSON array [{value,label}])
+            $table->text('question_text');
             $table->json('choices')->nullable();
-
-            // true = wajib isi problem/countermeasure, false = tidak perlu
-            $table->boolean('extra_fields');
-
-            // label field tambahan
-            $table->string('problem_label')->nullable();
-            $table->string('countermeasure_label')->nullable();
-
-            // urutan tampil di checksheet
+            $table->boolean('extra_fields')->comment('Apakah pertanyaan ini membutuhkan input tambahan untuk problem/countermeasure?');
             $table->integer('display_order')->default(0);
-
             $table->boolean('is_active')->default(true)->comment('Set True untuk digunakan di checksheet');
-
             $table->timestamps();
 
             $table->index(['package', 'display_order']);

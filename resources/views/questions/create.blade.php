@@ -53,7 +53,7 @@
 
 @section('content')
     <div class="container-fluid layout-fixed pb-2">
-        <form method="POST" action="{{ route('admin.question.store') }}" id="questionForm" class="h-100 d-flex flex-column">
+        <form method="POST" action="{{ route('question.store') }}" id="questionForm" class="h-100 d-flex flex-column">
             @csrf
 
             {{-- SECTION 1: MAIN INFO --}}
@@ -142,35 +142,7 @@
                                             disabled>
                                     </div>
                                 </div>
-
                             </div>
-
-                            {{-- EXTRA FIELDS BLOCK --}}
-                            <div id="extra-fields-block" class="builder-card bg-white p-3 rounded-3 mb-3 animate-fade-in"
-                                style="display: none;">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <label class="fw-bold text-dark small text-uppercase"><i
-                                            class="bi bi-exclamation-triangle me-2"></i>Issue Tracking</label>
-                                    <button type="button" class="btn-close btn-sm" id="btnRemoveExtra"></button>
-                                </div>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <div class="form-floating">
-                                            <input type="text" name="problem_label"
-                                                class="form-control form-control-sm" placeholder="Label">
-                                            <label>Label Problem</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-floating">
-                                            <input type="text" name="countermeasure_label"
-                                                class="form-control form-control-sm" placeholder="Label">
-                                            <label>Label Countermeasure</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
                 </div>
@@ -182,27 +154,30 @@
                             <h6 class="fw-bold text-secondary mb-3 small text-uppercase">Config</h6>
 
                             <div class="d-grid gap-2 mb-auto">
-                                <div class="alert alert-light border small text-muted mb-3">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Pilih mode <strong>2 Opsi</strong> atau <strong>3 Opsi</strong> di panel kiri.
+                                {{-- TOGGLE EXTRA FIELDS YANG LEBIH SIMPEL --}}
+                                <div class="form-check form-switch border rounded-3 p-3 d-flex align-items-center justify-content-between mb-3 bg-light cursor-pointer"
+                                    id="extraFieldsContainer">
+                                    <label class="form-check-label fw-bold mb-0 cursor-pointer" for="extra_fields">
+                                        <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Wajib Isi Problem &
+                                        Countermeasure?
+                                    </label>
+                                    <input class="form-check-input fs-5 m-0" type="checkbox" role="switch"
+                                        id="extra_fields" name="extra_fields" value="1">
                                 </div>
 
-                                <button type="button" class="btn btn-outline-secondary text-start py-3 border"
-                                    id="btnToggleExtra">
-                                    <div class="d-flex justify-content-between align-items-center w-100">
-                                        <span><i class="bi bi-input-cursor-text me-2"></i> Problem & Countermeasure</span>
-                                        <i class="bi bi-toggle-off fs-5" id="toggleIcon"></i>
-                                    </div>
-                                </button>
+                                <div class="alert alert-info border small text-muted mb-3">
+                                    <i class="bi bi-info-circle me-1"></i> Aktifkan jika opsi jawaban NG mewajibkan user
+                                    mengisi form Issue Tracking.
+                                </div>
                             </div>
 
                             <hr class="text-muted opacity-25">
 
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary fw-bold shadow-sm">
+                                <button type="submit" class="btn btn-primary fw-bold shadow-sm" id="btnSubmit">
                                     <i class="bi bi-save me-2"></i> Save Question
                                 </button>
-                                <a href="{{ route('admin.question.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                                <a href="{{ route('question.index') }}" class="btn btn-outline-secondary">Cancel</a>
                             </div>
                         </div>
                     </div>
@@ -216,96 +191,52 @@
 @section('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script type="module">
-        document.addEventListener("DOMContentLoaded", () => {
-            const radioList = document.getElementById("radio-options-list");
-            const extraBlock = document.getElementById("extra-fields-block");
-            const btnToggleExtra = document.getElementById("btnToggleExtra");
-            const toggleIcon = document.getElementById("toggleIcon");
+        function toggleOptionMode() {
+            // Cari value radio button yang lagi checked
+            let isMode3 = $('input[name="option_mode"]:checked').val() === '3';
 
-            // --- 1. LOGIC 2 vs 3 OPSI (SWITCHER) ---
-            const modeRadios = document.querySelectorAll('input[name="option_mode"]');
-            const container3 = document.getElementById('option-3-container');
-            const input3 = document.getElementById('input-3');
+            // Pisahin toggle-nya biar ga tabrakan
+            $('#option-3-container')
+                .toggleClass('d-flex', isMode3) // Tambah d-flex kalau mode 3, hapus kalau nggak
+                .toggleClass('d-none', !isMode3); // Tambah d-none kalau BUKAN mode 3, hapus kalau iya
 
-            // Function buat update tampilan berdasarkan mode
-            function updateOptionMode() {
-                // Cari mana yang diceklis
-                const selectedMode = document.querySelector('input[name="option_mode"]:checked').value;
-                const optionItems = radioList.querySelectorAll('.option-item');
+            // Disable inputnya biar ga ikut ke-submit pas mode 2
+            $('#input-3').prop({
+                disabled: !isMode3,
+                required: isMode3
+            });
+        }
 
-                if (selectedMode === "3") {
-                    // Show item ke-3 (tapi harus tau item ke-3 itu elemen yang mana kalau udah disortir)
-                    // Simplenya: Kita toggle class d-none di container ke-3 yang kita hardcode ID-nya
-                    container3.classList.remove('d-none');
-                    container3.classList.add('d-flex');
-                    input3.disabled = false; // Aktifin biar dikirim ke server
-                    input3.required = true;
+        $(document).ready(function() {
+            // 1. Logic 2 vs 3 Opsi Pake jQuery (Jauh lebih pendek kan?)
+            $('input[name="option_mode"]').change(toggleOptionMode);
+            toggleOptionMode();
+
+            // 2. Efek Visual UI pas switch Problem di-klik
+            $('#extra_fields').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#extraFieldsContainer').removeClass('bg-light').addClass(
+                        'bg-primary-subtle border-primary');
                 } else {
-                    // Hide item ke-3
-                    container3.classList.add('d-none');
-                    container3.classList.remove('d-flex');
-                    input3.disabled = true; // Disable biar GAK dikirim ke server
-                    input3.required = false;
+                    $('#extraFieldsContainer').removeClass('bg-primary-subtle border-primary').addClass(
+                        'bg-light');
                 }
-            }
-
-            // Listen perubahan switch
-            modeRadios.forEach(radio => {
-                radio.addEventListener('change', updateOptionMode);
             });
 
-
-            // --- 2. SORTABLE (Tetap ada buat nuker posisi OK/NG) ---
-            Sortable.create(radioList, {
+            // 3. SortableJS (Tetep jalan secara native karena performance lebih bagus buat drag & drop)
+            Sortable.create(document.getElementById("radio-options-list"), {
                 animation: 150,
                 handle: ".cursor-grab",
                 ghostClass: "sortable-ghost",
-                onStart: () => document.body.classList.add('cursor-grabbing'),
-                onEnd: () => {
-                    document.body.classList.remove('cursor-grabbing');
-                    // Kalau mau re-numbering (1. 2. 3.) secara visual bisa disini
-                }
+                onStart: () => $('body').addClass('cursor-grabbing'),
+                onEnd: () => $('body').removeClass('cursor-grabbing')
             });
 
-
-            // --- 3. TOGGLE EXTRA FIELDS (Sama kayak sebelumnya) ---
-            function setExtraState(isActive) {
-                const inputs = extraBlock.querySelectorAll('input');
-                if (isActive) {
-                    extraBlock.style.display = 'block';
-                    btnToggleExtra.classList.add('border-primary', 'bg-primary-subtle');
-                    btnToggleExtra.classList.remove('btn-outline-secondary');
-                    toggleIcon.classList.replace('bi-toggle-off', 'bi-toggle-on');
-                    toggleIcon.classList.add('text-primary');
-                    inputs.forEach(el => el.required = true);
-                } else {
-                    extraBlock.style.display = 'none';
-                    btnToggleExtra.classList.remove('border-primary', 'bg-primary-subtle');
-                    btnToggleExtra.classList.add('btn-outline-secondary');
-                    toggleIcon.classList.replace('bi-toggle-on', 'bi-toggle-off');
-                    toggleIcon.classList.remove('text-primary');
-                    inputs.forEach(el => {
-                        el.required = false;
-                        el.value = '';
-                    });
-                }
-            }
-
-            btnToggleExtra.addEventListener("click", () => {
-                const isHidden = extraBlock.style.display === 'none';
-                setExtraState(isHidden);
-            });
-
-            document.getElementById("btnRemoveExtra").addEventListener("click", () => {
-                setExtraState(false);
-            });
-
-            // Loading State
-            document.getElementById('questionForm').addEventListener('submit', function() {
+            // 4. Loading State Form Submit
+            $('#questionForm').submit(function() {
                 if (this.checkValidity()) {
-                    const btn = this.querySelector('button[type="submit"]');
-                    btn.disabled = true;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+                    $('#btnSubmit').prop('disabled', true).html(
+                        '<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
                 }
             });
         });

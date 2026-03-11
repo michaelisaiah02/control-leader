@@ -23,7 +23,7 @@
                 @break
 
                 @default
-                    JUDUL CHECKSHEET
+                    CONTROL LEADER
             @endswitch
         </span>
     </div>
@@ -127,13 +127,13 @@
                             class="extra-fields-wrap mt-3 p-3 bg-danger-subtle border border-danger-subtle rounded-3 d-none animate-fade-in">
                             <div class="mb-3 problem-wrap">
                                 <label class="form-label fw-bold text-danger small text-uppercase"><i
-                                        class="bi bi-x-circle me-1"></i>{{ $q->problem_label ?? 'Deskripsi Problem' }}</label>
+                                        class="bi bi-x-circle me-1"></i>Problem</label>
                                 <input type="text" name="problems[{{ $q->id }}]"
                                     class="form-control border-danger" placeholder="Ketik alasan / temuan...">
                             </div>
                             <div class="counter-wrap">
                                 <label class="form-label fw-bold text-primary small text-uppercase"><i
-                                        class="bi bi-wrench me-1"></i>{{ $q->countermeasure_label ?? 'Tindakan (Countermeasure)' }}</label>
+                                        class="bi bi-wrench me-1"></i>Countermeasure</label>
                                 <input type="text" name="countermeasures[{{ $q->id }}]"
                                     class="form-control border-primary" placeholder="Ketik perbaikan...">
                             </div>

@@ -23,7 +23,7 @@
                 @break
 
                 @default
-                    JUDUL CHECKSHEET
+                    CONTROL LEADER
             @endswitch
         </span>
     </div>
@@ -45,10 +45,12 @@
         </div>
 
         {{-- PROGRESS WIZARD --}}
-        <div class="progress mb-2" style="height: 4px;">
-            <div class="progress-bar bg-primary transition-all" id="wizard-progress" role="progressbar" style="width: 50%;">
+        @if ($phase !== 'leader')
+            <div class="progress mb-2" style="height: 4px;">
+                <div class="progress-bar bg-primary transition-all" id="wizard-progress" role="progressbar"
+                    style="width: 50%;"></div>
             </div>
-        </div>
+        @endif
 
         {{-- FORM START --}}
         <form id="partA" onsubmit="return false;" class="position-relative">
@@ -66,27 +68,30 @@
                     <div class="card-body p-3">
 
                         {{-- 1. Shift --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-secondary small text-uppercase">1. Shift Kerja</label>
-                            <div class="d-flex gap-2">
-                                @foreach ([1, 2, 3] as $s)
-                                    <button type="button"
-                                        class="btn btn-outline-primary flex-fill fw-bold {{ session('shift') == $s ? 'active' : '' }}"
-                                        {{ session('shift') != $s ? 'disabled' : '' }}>
-                                        Shift {{ $s }}
-                                        @if (session('shift') == $s)
-                                            <i class="bi bi-check-circle-fill ms-1"></i>
-                                        @endif
-                                    </button>
-                                @endforeach
-                                <input type="hidden" name="shift" value="{{ session('shift') }}">
+                        @if ($phase !== 'leader')
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary small text-uppercase">1. Shift Kerja</label>
+                                <div class="d-flex gap-2">
+                                    @foreach ([1, 2, 3] as $s)
+                                        <button type="button"
+                                            class="btn btn-outline-primary flex-fill fw-bold {{ session('shift') == $s ? 'active' : '' }}"
+                                            {{ session('shift') != $s ? 'disabled' : '' }}>
+                                            Shift {{ $s }}
+                                            @if (session('shift') == $s)
+                                                <i class="bi bi-check-circle-fill ms-1"></i>
+                                            @endif
+                                        </button>
+                                    @endforeach
+                                    <input type="hidden" name="shift" value="{{ session('shift') }}">
+                                </div>
                             </div>
-                        </div>
+                        @endif
 
                         {{-- 2. Target Pick --}}
                         <div class="mb-3">
-                            <label class="form-label fw-bold text-secondary small text-uppercase">2.
-                                {{ $targetLabel }}</label>
+                            <label class="form-label fw-bold text-secondary small text-uppercase">
+                                {{ $phase === 'leader' ? '1' : '2' }}. {{ $targetLabel }}
+                            </label>
                             <select id="target_pick" name="target_pick" placeholder="Pilih {{ $targetLabel }}..." required>
                                 <option value="">Pilih {{ $targetLabel }}...</option>
                                 @foreach ($options as $option)
@@ -97,8 +102,9 @@
 
                         {{-- 3. Bagian --}}
                         <div class="mb-3">
-                            <label class="form-label fw-bold text-secondary small text-uppercase">3. Bagian
-                                (Auto-fill)</label>
+                            <label class="form-label fw-bold text-secondary small text-uppercase">
+                                {{ $phase === 'leader' ? '2' : '3' }}. Bagian (Auto-fill)
+                            </label>
                             <input type="text" name="bagian" class="form-control bg-light" placeholder="-" readonly>
                         </div>
 
@@ -110,123 +116,132 @@
             {{-- =====================================
              PAGE 2: KEHADIRAN
              ===================================== --}}
-            <div id="page2" class="d-none animate-fade-in">
-                <div class="card border-0 shadow-sm rounded-4 mb-3">
-                    <div class="card-header bg-light border-bottom-0 pt-3 pb-2 rounded-top-4">
-                        <h6 class="fw-bold text-primary mb-0"><i class="bi bi-2-circle me-2"></i>Status Kehadiran</h6>
-                    </div>
-
-                    <div class="card-body p-3">
-
-                        {{-- 4. Check Kehadiran --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-dark fs-5 mb-3">Apakah operator hadir?</label>
-
-                            {{-- Hint Box --}}
-                            <div class="alert alert-warning border-warning-subtle small py-2 mb-3">
-                                <strong><i class="bi bi-exclamation-triangle-fill me-1"></i>Jika Absen:</strong>
-                                <ul class="mb-0 ps-3 mt-1 text-muted">
-                                    <li>Isi perubahan Man Power di Henkaten Board</li>
-                                    <li>Operator pengganti harus sesuai Skill Map</li>
-                                    <li>Konfirmasi hasil awal pengganti (Hasil OK)</li>
-                                </ul>
-                            </div>
-
-                            {{-- Custom Radio Buttons as Blocks --}}
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <input type="radio" class="btn-check" name="attendance" id="att_hadir" value="1">
-                                    <label class="btn btn-outline-success w-100 py-2 fw-bold rounded-3" for="att_hadir">
-                                        <i class="bi bi-person-check fs-4 d-block mb-1"></i> Hadir
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <input type="radio" class="btn-check" name="attendance" id="att_absen" value="0">
-                                    <label class="btn btn-outline-danger w-100 py-2 fw-bold rounded-3" for="att_absen">
-                                        <i class="bi bi-person-x fs-4 d-block mb-1"></i> Absen
-                                    </label>
-                                </div>
-                            </div>
+            @if ($phase !== 'leader')
+                <div id="page2" class="d-none animate-fade-in">
+                    <div class="card border-0 shadow-sm rounded-4 mb-3">
+                        <div class="card-header bg-light border-bottom-0 pt-3 pb-2 rounded-top-4">
+                            <h6 class="fw-bold text-primary mb-0"><i class="bi bi-2-circle me-2"></i>Status Kehadiran</h6>
                         </div>
 
-                        {{-- === BILA HADIR === --}}
-                        <div id="hadirWrap" class="d-none bg-light p-3 rounded-3 border mb-3 animate-fade-in">
-                            <label class="form-label fw-bold text-dark mb-2">Kondisi Operator saat ini:</label>
-                            <div class="d-flex gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="kondisi" id="kondisi_sehat"
-                                        value="Sehat">
-                                    <label class="form-check-label text-success fw-bold" for="kondisi_sehat">Sehat</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="kondisi" id="kondisi_sakit"
-                                        value="Sakit">
-                                    <label class="form-check-label text-danger fw-bold" for="kondisi_sakit">Sakit</label>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="card-body p-3">
 
-                        {{-- === BILA ABSEN === --}}
-                        <div id="penggantiWrap" class="d-none mb-3 animate-fade-in">
-                            <label class="form-label fw-bold text-dark mb-2">Apakah ada operator pengganti?</label>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <input type="radio" class="btn-check" name="ada_pengganti" id="pengganti_ya"
-                                        value="1">
-                                    <label class="btn btn-outline-primary w-100 py-2 fw-bold" for="pengganti_ya">Ya,
-                                        Ada</label>
-                                </div>
-                                <div class="col-6">
-                                    <input type="radio" class="btn-check" name="ada_pengganti" id="pengganti_tidak"
-                                        value="0">
-                                    <label class="btn btn-outline-secondary w-100 py-2 fw-bold"
-                                        for="pengganti_tidak">Tidak Ada</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- === FORM PENGGANTI (Muncul jika ada pengganti) === --}}
-                        <div id="absenWrap" class="d-none bg-light p-3 rounded-3 border animate-fade-in">
-                            <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">Data Operator Pengganti</h6>
-
+                            {{-- 4. Check Kehadiran --}}
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary text-uppercase">Nama
-                                    Pengganti</label>
-                                <select id="nama_pengganti" name="nama_pengganti" placeholder="Cari Nama Operator...">
-                                    <option value="">Cari Nama Operator...</option>
-                                    @foreach ($options as $opt)
-                                        <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
-                                    @endforeach
-                                </select>
+                                <label class="form-label fw-bold text-dark fs-5 mb-3">Apakah operator hadir?</label>
+
+                                {{-- Hint Box --}}
+                                <div class="alert alert-warning border-warning-subtle small py-2 mb-3">
+                                    <strong><i class="bi bi-exclamation-triangle-fill me-1"></i>Jika Absen:</strong>
+                                    <ul class="mb-0 ps-3 mt-1 text-muted">
+                                        <li>Isi perubahan Man Power di Henkaten Board</li>
+                                        <li>Operator pengganti harus sesuai Skill Map</li>
+                                        <li>Konfirmasi hasil awal pengganti (Hasil OK)</li>
+                                    </ul>
+                                </div>
+
+                                {{-- Custom Radio Buttons as Blocks --}}
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input type="radio" class="btn-check" name="attendance" id="att_hadir"
+                                            value="1">
+                                        <label class="btn btn-outline-success w-100 py-2 fw-bold rounded-3" for="att_hadir">
+                                            <i class="bi bi-person-check fs-4 d-block mb-1"></i> Hadir
+                                        </label>
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="radio" class="btn-check" name="attendance" id="att_absen"
+                                            value="0">
+                                        <label class="btn btn-outline-danger w-100 py-2 fw-bold rounded-3" for="att_absen">
+                                            <i class="bi bi-person-x fs-4 d-block mb-1"></i> Absen
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary text-uppercase">Bagian
-                                    Pengganti</label>
-                                <input type="text" class="form-control bg-white" name="bagian_pengganti"
-                                    placeholder="-" readonly>
-                            </div>
-
-                            <div class="mb-1">
-                                <label class="form-label small fw-bold text-secondary text-uppercase">Kondisi
-                                    Pengganti</label>
+                            {{-- === BILA HADIR === --}}
+                            <div id="hadirWrap" class="d-none bg-light p-3 rounded-3 border mb-3 animate-fade-in">
+                                <label class="form-label fw-bold text-dark mb-2">Kondisi Operator saat ini:</label>
                                 <div class="d-flex gap-3">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="kondisi_pengganti"
-                                            id="kp_sehat" value="Sehat">
-                                        <label class="form-check-label text-success fw-bold" for="kp_sehat">Sehat</label>
+                                        <input class="form-check-input" type="radio" name="kondisi" id="kondisi_sehat"
+                                            value="Sehat">
+                                        <label class="form-check-label text-success fw-bold"
+                                            for="kondisi_sehat">Sehat</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="kondisi_pengganti"
-                                            id="kp_sakit" value="Sakit">
-                                        <label class="form-check-label text-danger fw-bold" for="kp_sakit">Sakit</label>
+                                        <input class="form-check-input" type="radio" name="kondisi" id="kondisi_sakit"
+                                            value="Sakit">
+                                        <label class="form-check-label text-danger fw-bold"
+                                            for="kondisi_sakit">Sakit</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- === BILA ABSEN === --}}
+                            <div id="penggantiWrap" class="d-none mb-3 animate-fade-in">
+                                <label class="form-label fw-bold text-dark mb-2">Apakah ada operator pengganti?</label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input type="radio" class="btn-check" name="ada_pengganti" id="pengganti_ya"
+                                            value="1">
+                                        <label class="btn btn-outline-primary w-100 py-2 fw-bold" for="pengganti_ya">Ya,
+                                            Ada</label>
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="radio" class="btn-check" name="ada_pengganti"
+                                            id="pengganti_tidak" value="0">
+                                        <label class="btn btn-outline-secondary w-100 py-2 fw-bold"
+                                            for="pengganti_tidak">Tidak Ada</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- === FORM PENGGANTI (Muncul jika ada pengganti) === --}}
+                            <div id="absenWrap" class="d-none bg-light p-3 rounded-3 border animate-fade-in">
+                                <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">Data Operator Pengganti</h6>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-secondary text-uppercase">Nama
+                                        Pengganti</label>
+                                    <select id="nama_pengganti" name="nama_pengganti"
+                                        placeholder="Cari Nama Operator...">
+                                        <option value="">Cari Nama Operator...</option>
+                                        @foreach ($options as $opt)
+                                            <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-secondary text-uppercase">Bagian
+                                        Pengganti</label>
+                                    <input type="text" class="form-control bg-white" name="bagian_pengganti"
+                                        placeholder="-" readonly>
+                                </div>
+
+                                <div class="mb-1">
+                                    <label class="form-label small fw-bold text-secondary text-uppercase">Kondisi
+                                        Pengganti</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="kondisi_pengganti"
+                                                id="kp_sehat" value="Sehat">
+                                            <label class="form-check-label text-success fw-bold"
+                                                for="kp_sehat">Sehat</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="kondisi_pengganti"
+                                                id="kp_sakit" value="Sakit">
+                                            <label class="form-check-label text-danger fw-bold"
+                                                for="kp_sakit">Sakit</label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
         </form>
     </div>
 
@@ -239,9 +254,17 @@
         {{-- Spacing filler saat tombol back hide --}}
         <div id="prevSpacer" style="width: 100px;"></div>
 
-        <button type="button" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm ms-auto" id="nextBtn">
-            Lanjut <i class="bi bi-arrow-right ms-2" id="nextIcon"></i>
-        </button>
+        @if ($phase === 'leader')
+            <button type="submit" class="btn btn-success rounded-pill px-5 py-2 fw-bold shadow-sm ms-auto"
+                id="nextBtn">
+                <i class="bi bi-check-lg me-2"></i> Submit
+            </button>
+        @else
+            <button type="button" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm ms-auto"
+                id="nextBtn">
+                Lanjut <i class="bi bi-arrow-right ms-2" id="nextIcon"></i>
+            </button>
+        @endif
     </div>
 
     <x-toast />
@@ -300,11 +323,13 @@
                 dropdownParent: 'body'
             })[0].selectize;
 
-            let penggantiSelectize = $('[name="nama_pengganti"]').selectize({
-                theme: 'bootstrap5',
-                dropdownParent: 'body'
-            })[0].selectize;
-            let originalPenggantiOptions = Object.values(penggantiSelectize.options);
+            if (PHASE !== 'leader') {
+                let penggantiSelectize = $('[name="nama_pengganti"]').selectize({
+                    theme: 'bootstrap5',
+                    dropdownParent: 'body'
+                })[0].selectize;
+                let originalPenggantiOptions = Object.values(penggantiSelectize.options);
+            }
 
             $('[name="target_pick"]').on('change', function() {
                 const selectedValue = $(this).val();
@@ -318,17 +343,20 @@
                 } else {
                     $('[name="bagian"]').val('');
                 }
-
-                const $pengganti = $('#nama_pengganti');
-                const currentPenggantiVal = $pengganti.val();
-                $pengganti.empty();
-                originalPenggantiOptions.forEach(opt => {
-                    if (opt.value === "" || opt.value !== selectedValue) {
-                        const isSelected = (opt.value === currentPenggantiVal) ? 'selected' : '';
-                        $pengganti.append(
-                            `<option value="${opt.value}" ${isSelected}>${opt.text}</option>`);
-                    }
-                });
+                if (PHASE !== 'leader') {
+                    const $pengganti = $('#nama_pengganti');
+                    const currentPenggantiVal = $pengganti.val();
+                    $pengganti.empty();
+                    originalPenggantiOptions.forEach(opt => {
+                        if (opt.value === "" || opt.value !== selectedValue) {
+                            const isSelected = (opt.value === currentPenggantiVal) ? 'selected' :
+                                '';
+                            $pengganti.append(
+                                `<option value="${opt.value}" ${isSelected}>${opt.text}</option>`
+                            );
+                        }
+                    });
+                }
             });
 
             $('[name="nama_pengganti"]').on('change', function() {
@@ -396,8 +424,27 @@
                 const target = $('[name="target_pick"]').val();
                 const bagian = $('[name="bagian"]').val();
 
+                if (!target) return showToast('Silakan pilih target terlebih dahulu.', 'warning');
+
+                // === LOGIC UNTUK LEADER (SUPERVISOR NGECEK) ===
+                if (PHASE === 'leader') {
+                    // Simpan data target ke session aja, gausah langsung tembak API
+                    const payload = {
+                        shift: null,
+                        target: target,
+                        bagian: bagian,
+                        attendance: '1', // Hardcode hadir
+                        has_replacement: '0'
+                    };
+                    sessionStorage.setItem(key('partA'), JSON.stringify(payload));
+
+                    // Langsung lempar ke Part B biar bisa ngisi jawaban!
+                    window.location.href = `${PARTB_URL}?type=${encodeURIComponent(PHASE)}&plan=${PLAN}`;
+                    return;
+                }
+
+                // === LOGIKA WIZARD (SELAIN LEADER) ===
                 if (page === 1) {
-                    if (!target) return showToast('Silakan pilih target terlebih dahulu.', 'warning');
                     page = 2;
                     updateWizardUI();
                     return;

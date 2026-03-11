@@ -93,7 +93,7 @@
             {{-- Wrapper ini akan di-replace oleh AJAX --}}
             {{-- Kita kasih ID biar JS tau mau inject kemana --}}
             <div id="questionTableWrapper" class="d-flex flex-column h-100">
-                @include('admin.questions._table', ['questions' => $questions])
+                @include('questions._table', ['questions' => $questions])
             </div>
 
         </div>
@@ -103,8 +103,7 @@
             <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold">
                 <i class="bi bi-arrow-left me-2"></i> Back
             </a>
-            <a href="{{ route('admin.question.create') }}"
-                class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm">
+            <a href="{{ route('question.create') }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm">
                 <i class="bi bi-plus-lg me-2"></i> Add Question
             </a>
         </div>
@@ -201,7 +200,7 @@
             }
 
             function saveOrderToBackend(orderData) {
-                fetch("{{ route('admin.question.updateOrder') }}", {
+                fetch("{{ route('question.updateOrder') }}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -250,7 +249,7 @@
             // --- 3. EVENT LISTENERS ---
             filterPackage.addEventListener('change', () => {
                 const pkg = filterPackage.value;
-                let url = `{{ route('admin.question.index') }}`;
+                let url = `{{ route('question.index') }}`;
                 if (pkg) url += `?package=${encodeURIComponent(pkg)}`;
                 loadQuestions(url);
             });

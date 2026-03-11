@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\Admin\QuestionController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ChecksheetController;
 use App\Http\Controllers\DashboardController;
@@ -9,8 +7,10 @@ use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\ProblemListController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\Ypq\QuestionController;
+use App\Http\Controllers\Ypq\UserController;
 use App\Http\Middleware\CheckActiveChecksheet;
-use App\Http\Middleware\CheckRoleIsAdmin;
+use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\SingleLogin;
 use Illuminate\Support\Facades\Route;
 
@@ -54,7 +54,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('/search', 'search')->name('search');
             });
 
-            Route::middleware(CheckRoleIsAdmin::class)->prefix('admin')->as('admin.')->group(function () {
+            Route::middleware(CheckRole::class)->group(function () {
                 // ------------------------
                 // QUESTIONS CRUD
                 // ------------------------
