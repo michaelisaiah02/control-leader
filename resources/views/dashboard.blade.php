@@ -199,12 +199,7 @@
                 <div class="fw-bold text-dark">{{ auth()->user()->name }}</div>
             </div>
 
-            <form action="{{ route('logout') }}" method="post" class="ms-auto">
-                @csrf
-                <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold d-flex align-items-center">
-                    <i class="bi bi-box-arrow-right me-2"></i> Logout
-                </button>
-            </form>
+            <x-logout />
         </div>
 
     </div>

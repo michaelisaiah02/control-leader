@@ -58,6 +58,9 @@
                             <small class="d-block text-white-50">
                                 {{ auth()->user()->role }}
                             </small>
+                            @if (!request()->is('login'))
+                                <x-logout />
+                            @endif
                         </div>
                     @endif
 
