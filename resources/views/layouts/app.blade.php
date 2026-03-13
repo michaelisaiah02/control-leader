@@ -53,7 +53,7 @@
                         <div class="user-badge border border-1 p-2 text-uppercase text-center rounded bg-primary-dark d-none d-lg-block"
                             style="min-width: 140px;">
                             <div class="fw-bold text-truncate" style="max-width: 150px;">
-                                {{ auth()->user()->name }}
+                                {{ strlen(auth()->user()->name) > 10 ? explode(' ', auth()->user()->name)[0] : auth()->user()->name }}
                             </div>
                             <small class="d-block text-white-50">
                                 {{ auth()->user()->role }}

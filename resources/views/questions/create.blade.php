@@ -89,9 +89,10 @@
                         <div
                             class="card-header bg-white border-bottom-0 py-2 d-flex justify-content-between align-items-center">
                             <h6 class="fw-bold text-secondary mb-0"><i class="bi bi-ui-checks me-2"></i>Answer Options</h6>
-                            <span class="badge bg-light text-secondary border">Urutkan: Terbaik <i
-                                    class="bi bi-hand-thumbs-up-fill text-success"></i> ke Terburuk <i
-                                    class="bi bi-hand-thumbs-down-fill text-danger"></i></span>
+                            <span class="badge bg-light text-secondary border">
+                                Urutkan: Terburuk <i class="bi bi-hand-thumbs-down-fill text-danger"></i>
+                                ke Terbaik <i class="bi bi-hand-thumbs-up-fill text-success"></i>
+                            </span>
                         </div>
 
                         <div class="card-body overflow-y-auto p-3">
