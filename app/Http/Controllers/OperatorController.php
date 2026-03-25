@@ -15,7 +15,10 @@ class OperatorController extends Controller
     {
         $users = User::where('role', 'operator')->with('division')->get();
         $leaders = User::where('role', 'leader')->with('department')->get();
-        $divisions = Division::all();
+        $divisions = Division::with('department')->get()->groupBy(function ($data) {
+            // Jika tidak ada department, masukkan ke grup 'Lainnya' atau 'No Department'
+            return $data->department ? $data->department->name : 'Tanpa Departemen';
+        });
 
         return view('schedule.operator', compact('users', 'divisions', 'leaders'), [
             'title' => 'DATA OPERATOR',
@@ -79,8 +82,8 @@ class OperatorController extends Controller
         $leaderInput = $request->query('leader');
 
         $leaderIds = collect($leaderInput === null ? [] : (array) $leaderInput)
-            ->flatMap(fn ($value) => is_array($value) ? $value : explode(',', (string) $value))
-            ->map(fn ($value) => trim((string) $value))
+            ->flatMap(fn($value) => is_array($value) ? $value : explode(',', (string) $value))
+            ->map(fn($value) => trim((string) $value))
             ->filter()
             ->values();
 

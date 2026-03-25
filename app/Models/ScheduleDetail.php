@@ -17,7 +17,6 @@ class ScheduleDetail extends Model
     protected $fillable = [
         'schedule_plan_id',
         'target_user_id',
-        'division',
         'scheduled_date',
         'shift',
     ];

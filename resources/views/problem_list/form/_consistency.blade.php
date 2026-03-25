@@ -18,7 +18,7 @@
             <i class="bi bi-person-badge me-1"></i> Nama ({{ ucfirst($pageRole) }})
         </label>
         <input type="text" class="form-control bg-light text-muted border-0"
-            value="{{ $problem->inferior->name ?? '-' }}" readonly>
+            value="{{ $problem->user->employeeID . ' - ' . $problem->user->name ?? '-' }}" readonly>
     </div>
 
     {{-- REMARK (Miss / Late / Advanced) --}}

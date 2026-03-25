@@ -3,8 +3,8 @@
 @section('styles')
     <style>
         /* =========================================
-                               1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
-                               ========================================= */
+                                                               1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
+                                                               ========================================= */
         .schedule-table {
             border-collapse: separate !important;
             border-spacing: 0;
@@ -25,8 +25,8 @@
         }
 
         /* =========================================
-                               2. Z-INDEX & STICKY LOGIC
-                               ========================================= */
+                                                               2. Z-INDEX & STICKY LOGIC
+                                                               ========================================= */
         .schedule-table thead th {
             position: sticky;
             top: 0;
@@ -67,8 +67,8 @@
         }
 
         /* =========================================
-                               3. UI CELL (EXCEL MODE)
-                               ========================================= */
+                                                               3. UI CELL (EXCEL MODE)
+                                                               ========================================= */
         .shift-select {
             min-width: 45px !important;
             padding: 4px 0 !important;
@@ -92,22 +92,6 @@
         .shift-select:disabled {
             cursor: not-allowed;
             background-color: transparent;
-        }
-
-        .division-select {
-            min-width: 110px;
-            font-size: 0.8rem;
-            padding: 4px 20px 4px 8px;
-            /* Sisakan panah dropdown buat division */
-            border-radius: 0;
-            border: 0 !important;
-            background-color: transparent;
-            cursor: pointer;
-        }
-
-        .division-select:focus {
-            background-color: var(--bs-light);
-            box-shadow: inset 0 0 0 2px var(--bs-primary);
         }
 
         /* Penanda Weekend */
@@ -155,7 +139,7 @@
                                     @foreach ($availableLeaders as $leader)
                                         <option value="{{ $leader->employeeID }}"
                                             {{ request('leader') == $leader->employeeID ? 'selected' : '' }}>
-                                            {{ $leader->name }}
+                                            {{ $leader->employeeID . ' - ' . $leader->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -179,7 +163,6 @@
                         <tr class="text-uppercase small">
                             <th class="sticky-col-left align-middle text-start ps-3" style="min-width: 180px;">Operator Name
                             </th>
-                            <th class="align-middle" style="min-width: 120px;">Division</th>
 
                             @for ($d = 1; $d <= $daysInMonth; $d++)
                                 @php
@@ -201,21 +184,7 @@
                             <tr data-user="{{ $target['id'] }}">
                                 {{-- Sticky Column 1 --}}
                                 <td class="sticky-col-left text-start ps-3 fw-bold text-secondary">
-                                    {{ $target['name'] }}
-                                </td>
-
-                                {{-- Dropdown Divisi --}}
-                                <td class="p-0">
-                                    <select class="form-select form-select-sm division-select"
-                                        {{ $isPastMonth ? 'disabled' : '' }}>
-                                        <option value="" class="text-muted">-- Divisi --</option>
-                                        @foreach ($divisionOptions as $option)
-                                            <option value="{{ $option->name }}"
-                                                {{ $target['division'] === $option->name ? 'selected' : '' }}>
-                                                {{ $option->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    {{ $target['id'] . ' - ' . $target['name'] }}
                                 </td>
 
                                 {{-- Cells Tanggal --}}
@@ -265,7 +234,6 @@
                                 style="letter-spacing: 1px;">
                                 Total Shift Masuk
                             </td>
-                            <td></td>
                             @for ($d = 1; $d <= $daysInMonth; $d++)
                                 <td class="total-day fw-bold align-middle" data-day="{{ $d }}">0</td>
                             @endfor
@@ -337,13 +305,12 @@
         }
 
         // --- HANDLERS ---
-        const saveShiftDebounced = debounce(async (userId, date, shift, division) => {
-            const url = "{{ route('schedule.updateCellOperator', ':id') }}".replace(':id', planId);
+        const saveShiftDebounced = debounce(async (userId, date, shift) => {
+            const url = "{{ route('schedule.updateCell', ':id') }}".replace(':id', planId);
             await postData(url, {
                 user_id: userId,
                 date: date,
-                shift: shift,
-                division: division
+                shift: shift
             });
         }, 400);
 
@@ -352,10 +319,9 @@
             const shift = sel.value;
             const row = sel.closest("tr");
             const userId = row.dataset.user;
-            const division = row.querySelector(".division-select").value;
 
             if (shift === '' || shift === 'L') {
-                saveShiftWrapper(sel, userId, division);
+                saveShiftWrapper(sel, userId);
                 return;
             }
 
@@ -372,37 +338,13 @@
                 return;
             }
 
-            saveShiftWrapper(sel, userId, division);
+            saveShiftWrapper(sel, userId);
         }
 
-        function saveShiftWrapper(sel, userId, division) {
-            if (!division && sel.value !== '') {
-                alert("Pilih divisi dulu bos sebelum isi shift.");
-                sel.value = "";
-                return;
-            }
-
+        function saveShiftWrapper(sel, userId) {
             updateCellVisuals(sel);
             calculateTotals();
-            saveShiftDebounced(userId, sel.dataset.date, sel.value, division);
-        }
-
-        async function handleDivisionChange(sel) {
-            const row = sel.closest("tr");
-            const userId = row.dataset.user;
-            const newDivision = sel.value;
-
-            if (!newDivision) return;
-
-            const url = "{{ route('schedule.updateDivisionOperator', ':id') }}".replace(':id', planId);
-            const res = await postData(url, {
-                user_id: userId,
-                division: newDivision
-            });
-
-            if (!res || !res.success) {
-                alert("Gagal mengupdate divisi.");
-            }
+            saveShiftDebounced(userId, sel.dataset.date, sel.value);
         }
 
         function calculateTotals() {
@@ -452,12 +394,10 @@
             calculateTotals();
             document.querySelectorAll('.shift-select').forEach(sel => updateCellVisuals(sel));
 
-            // Event Delegation for both Shift and Division selects
+            // Event Delegation for both Shift selects
             document.querySelector('#scheduleTable tbody').addEventListener('change', (e) => {
                 if (e.target.classList.contains('shift-select')) {
                     handleShiftChange(e.target);
-                } else if (e.target.classList.contains('division-select')) {
-                    handleDivisionChange(e.target);
                 }
             });
         });

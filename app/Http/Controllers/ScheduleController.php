@@ -132,8 +132,7 @@ class ScheduleController extends Controller
                         'scheduled_date' => $validated['date'],
                     ],
                     [
-                        'shift' => $validated['shift'],
-                        'division' => null, // FORCE NULL sesuai request
+                        'shift' => $validated['shift']
                     ]
                 );
             }
@@ -144,7 +143,7 @@ class ScheduleController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
 
-            return response()->json(['success' => false, 'message' => 'DB Error'], 500);
+            return response()->json(['success' => false, 'message' => $e], 500);
         }
     }
 
@@ -261,68 +260,6 @@ class ScheduleController extends Controller
         ));
     }
 
-    public function updateCellOperator(Request $request, SchedulePlan $plan)
-    {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,employeeID',
-            'date' => 'required|date_format:Y-m-d',
-            'shift' => 'nullable|in:1,2,3,L',
-            'division' => 'required|string', // Division wajib dikirim dari JS
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            if (empty($validated['shift'])) {
-                // Delete
-                ScheduleDetail::where('schedule_plan_id', $plan->id)
-                    ->where('target_user_id', $validated['user_id'])
-                    ->where('scheduled_date', $validated['date'])
-                    ->delete();
-            } else {
-                // Update or Create
-                ScheduleDetail::updateOrCreate(
-                    [
-                        'schedule_plan_id' => $plan->id,
-                        'target_user_id' => $validated['user_id'],
-                        'scheduled_date' => $validated['date'],
-                    ],
-                    [
-                        'shift' => $validated['shift'],
-                        'division' => $validated['division'], // Save division
-                    ]
-                );
-            }
-
-            DB::commit();
-
-            return response()->json(['success' => true]);
-        } catch (Exception $e) {
-            DB::rollBack();
-
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-        }
-    }
-
-    public function updateDivisionOperator(Request $request, SchedulePlan $plan)
-    {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,employeeID',
-            'division' => 'required|string',
-        ]);
-
-        try {
-            // Update SEMUA record user ini di plan ini dengan divisi baru
-            ScheduleDetail::where('schedule_plan_id', $plan->id)
-                ->where('target_user_id', $validated['user_id'])
-                ->update(['division' => $validated['division']]);
-
-            return response()->json(['success' => true]);
-        } catch (Exception $e) {
-            return response()->json(['success' => false], 500);
-        }
-    }
-
     public function updateRange(Request $request, SchedulePlan $plan)
     {
         $validated = $request->validate([
@@ -347,7 +284,6 @@ class ScheduleController extends Controller
                     'target_user_id' => $validated['user_id'],
                     'scheduled_date' => $date,
                     'shift' => null, // Supervisor nggak pakai shift
-                    'division' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -363,7 +299,7 @@ class ScheduleController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
 
-            return response()->json(['success' => false, 'message' => 'DB Error'], 500);
+            return response()->json(['success' => false, 'message' => $e], 500);
         }
     }
 }

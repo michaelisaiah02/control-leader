@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('schedule_plan_id')->constrained('schedule_plans')->cascadeOnDelete()->cascadeOnUpdate();
             $table->char('target_user_id', 5);
-            $table->string('division')->nullable();
             $table->string('shift')->nullable();
             $table->date('scheduled_date');
             $table->timestamps();

@@ -2,9 +2,9 @@
 
 @section('styles')
     <style>
-        /* =========================================
-                                                                                               1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
-                                                                                               ========================================= */
+        /* ========================================= */
+        /* 1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED) */
+        /* ========================================= */
         .schedule-table {
             border-collapse: separate !important;
             /* Wajib separate biar border gak nempel */
@@ -31,9 +31,9 @@
             border-left: 1px solid #dee2e6 !important;
         }
 
-        /* =========================================
-                                                                                               2. Z-INDEX & STICKY LOGIC
-                                                                                               ========================================= */
+        /* ========================================= */
+        /* 2. Z-INDEX & STICKY LOGIC */
+        /* ========================================= */
 
         /* Header Bulan (Atas) */
         .schedule-table thead th {
@@ -78,9 +78,9 @@
             z-index: 1023 !important;
         }
 
-        /* =========================================
-                                                                                               3. UI CELL (EXCEL MODE)
-                                                                                               ========================================= */
+        /* ========================================= */
+        /* 3. UI CELL (EXCEL MODE) */
+        /* ========================================= */
         .shift-select {
             min-width: 45px !important;
             padding: 4px 0 !important;
@@ -187,7 +187,7 @@
                             <tr data-user="{{ $target['id'] }}">
                                 {{-- Sticky Column 1 --}}
                                 <td class="sticky-col-left text-start ps-3 fw-bold text-secondary">
-                                    {{ $target['name'] }}
+                                    {{ $target['id'] . ' - ' . $target['name'] }}
                                 </td>
 
                                 {{-- Cells Tanggal --}}
@@ -445,7 +445,7 @@
                 if (this.dataset.locked === 'true') {
                     showToast('warning',
                         'Jadwal untuk minggu ini (dan sebelumnya) sudah <b>terkunci</b>. Anda hanya bisa mengatur jadwal untuk minggu depan.'
-                        );
+                    );
 
                     // Kalau dia lagi nyoba bikin rentang (udah klik 1) terus klik yg kekunci, batalin
                     if (startSelection) {

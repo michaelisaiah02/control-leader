@@ -65,7 +65,6 @@ class ScheduleSeeder extends Seeder
                         'target_user_id' => $operator->employeeID,
                     ],
                     [
-                        'division' => 'Finishing',
                         'shift' => rand(1, 3),
                     ]
                 );

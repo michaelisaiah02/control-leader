@@ -20,7 +20,7 @@
         </label>
         {{-- Panggil dari relasi $problem->user --}}
         <input type="text" class="form-control bg-light text-muted border-0"
-            value="{{ $problem->user->name ?? 'Tidak Diketahui' }}" readonly>
+            value="{{ $problem->user->employeeID . ' - ' . $problem->user->name ?? '-' }}" readonly>
     </div>
 
     {{-- Person 2 (Auditee / Target yang dicek) --}}
@@ -28,9 +28,8 @@
         <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
             <i class="bi bi-person-gear me-1"></i> Nama ({{ $pageRole === 'leader' ? 'Operator' : 'Leader' }})
         </label>
-        {{-- Panggil dari relasi $problem->inferior --}}
         <input type="text" class="form-control bg-light text-muted border-0"
-            value="{{ $problem->inferior->name ?? 'Tidak Diketahui' }}" readonly>
+            value="{{ $problem->inferior->employeeID . ' - ' . $problem->inferior->name ?? '-' }}" readonly>
     </div>
 
     {{-- Problem Description --}}

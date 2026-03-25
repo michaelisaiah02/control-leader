@@ -42,7 +42,6 @@ Route::middleware('auth')->group(function () {
                 // PAGE: Leader Checks Operator
                 Route::get('/leader', 'leaderIndex')->name('leader');
                 Route::post('/{plan}/update-cell-operator', 'updateCellOperator')->name('updateCellOperator');
-                Route::post('/{plan}/update-division-operator', 'updateDivisionOperator')->name('updateDivisionOperator');
             });
 
             // Operator data view

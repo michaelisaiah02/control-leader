@@ -8,6 +8,35 @@
     </div>
 @endpush
 
+@section('styles')
+    <style>
+        .selectize-dropdown .optgroup-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            /* Opsional: sedikit lebih kecil biar beda sama opsi */
+            background-color: #f8f9fa;
+            /* Opsional: kasih warna background abu-abu terang */
+            color: #6c757d;
+        }
+
+        /* Menyesuaikan Selectize agar ukurannya setara dengan form-select-sm */
+        .selectize-input {
+            min-height: calc(1.5em + .5rem + 2px) !important;
+            padding: 0.25rem 0.5rem !important;
+            font-size: 0.875rem !important;
+            border-radius: 0.25rem !important;
+            display: flex !important;
+            align-items: center;
+        }
+
+        /* Memperbaiki posisi text placeholder */
+        .selectize-input>input {
+            font-size: 0.875rem !important;
+        }
+    </style>
+@endsection
+
 @section('content')
     {{-- Layout Fixed: Halaman Gak Bisa Scroll, Cuma Tabel yang Scroll --}}
     <div class="container-fluid layout-fixed pb-2">
@@ -87,7 +116,7 @@
             </div>
 
             {{-- Footer Pagination --}}
-            <div class="card-footer bg-white border-top p-1 flex-shrink-0">
+            <div class="card-footer bg-white border-top p-1 shrink-0">
                 <div id="pagination-links" class="d-flex justify-content-center justify-content-md-end small"></div>
             </div>
         </div>
@@ -140,8 +169,12 @@
                             <label for="division" class="form-label small fw-bold text-secondary mb-1">Division</label>
                             <select class="form-select form-select-sm" id="division" name="division_id" required>
                                 <option value="" disabled selected>Select Division</option>
-                                @foreach ($divisions as $division)
-                                    <option value="{{ $division->id }}">{{ $division->name }}</option>
+                                @foreach ($divisions as $departmentName => $deptDivisions)
+                                    <optgroup label="{{ $departmentName }}">
+                                        @foreach ($deptDivisions as $division)
+                                            <option value="{{ $division->id }}">{{ $division->name }}</option>
+                                        @endforeach
+                                    </optgroup>
                                 @endforeach
                             </select>
                         </div>
@@ -259,16 +292,32 @@
             $(document).on('click', '.btn-edit-operator', function() {
                 const btn = $(this);
                 const id = btn.data('id');
+
                 $('#operator-id').val(id);
                 $('#employeeID').val(btn.data('employeeid'));
                 $('#name').val(btn.data('name'));
-                $('#division').val(btn.data('division'));
                 $('#leaderModal').val(btn.data('leader'));
+
+                // --- PERBAIKAN SELECTIZE DI SINI ---
+                // 1. Ambil ID divisi dari tombol
+                const divisionId = btn.data('division');
+
+                // 2. Ambil instance Selectize dari elemen #division
+                const divisionSelectize = $('#division')[0].selectize;
+
+                // 3. Set nilainya menggunakan API Selectize
+                if (divisionSelectize) {
+                    divisionSelectize.setValue(divisionId);
+                }
+                // -----------------------------------
+
                 $('#operatorModalLabel').text('Edit Operator');
                 $('#operatorForm').attr('action', `${ROUTES.UPDATE}/${id}`);
+
                 if ($('#operatorForm').find('input[name="_method"]').length === 0) {
                     $('#operatorForm').prepend('<input type="hidden" name="_method" value="PUT">');
                 }
+
                 const myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById(
                     'operatorModal'));
                 myModal.show();
@@ -288,6 +337,33 @@
                     $('#btn-save').prop('disabled', true).text('Saving...');
                 }
                 $(this).addClass('was-validated');
+            });
+
+            $('#division').selectize({
+                sortField: 'text', // Mengurutkan opsi berdasarkan teks secara alfabetis (opsional)
+                searchField: ['text'], // Memastikan fitur pencarian aktif untuk teks di dalam option
+                placeholder: 'Select Division...'
+            });
+
+            // Event ini jalan otomatis tiap kali modal ditutup
+            $('#operatorModal').on('hidden.bs.modal', function() {
+                // 1. Reset inputan text biasa di dalam form
+                $('#operatorForm')[0].reset();
+                $('#operator-id').val('');
+
+                // 2. Kosongkan nilai Selectize pakai API bawaannya
+                const divisionSelectize = $('#division')[0].selectize;
+                if (divisionSelectize) {
+                    divisionSelectize.clear(); // Ini yang bikin opsinya hilang/reset ke placeholder
+                }
+
+                // 3. Kembalikan kondisi form untuk "Add New"
+                $('#operatorModalLabel').text('Add New Operator');
+                $('#operatorForm').attr('action', ROUTES
+                .STORE); // Pastikan ini mengarah ke route untuk Create/Store
+
+                // Hapus input hidden _method=PUT bekas dari form Edit (agar form Add pakai POST biasa)
+                $('#operatorForm').find('input[name="_method"]').remove();
             });
 
             // Initial Load
