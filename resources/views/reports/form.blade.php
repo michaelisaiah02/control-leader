@@ -47,7 +47,6 @@
 
                         @case('operator')
                             <div class="row g-4 mb-4">
-
                                 {{-- Filter: Department --}}
                                 <div class="col-md-6">
                                     <label for="department" class="form-label fw-bold text-secondary small text-uppercase mb-1">
@@ -57,8 +56,11 @@
                                         class="form-select {{ auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor' ? 'bg-light' : 'bg-warning-subtle' }}"
                                         required
                                         style="{{ auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor' ? 'pointer-events: none;' : '' }}">
-                                        <option value="" disabled>-- Pilih Department --</option>
+                                        <option value=""
+                                            {{ auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor' ? '' : 'selected' }}
+                                            disabled>-- Pilih Department --</option>
                                         @foreach ($departments as $department)
+                                            {{-- @dd(auth()->user()->department_id === $department->id) --}}
                                             <option value="{{ $department->id }}"
                                                 {{ auth()->user()->department_id === $department->id ? 'selected' : '' }}>
                                                 {{ $department->name }}
@@ -76,7 +78,9 @@
                                         class="form-select {{ auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor' ? 'bg-light' : 'bg-warning-subtle' }}"
                                         required
                                         style="{{ auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor' ? 'pointer-events: none;' : '' }}">
-                                        <option value="" selected disabled>-- Pilih Supervisor --</option>
+                                        <option value=""
+                                            {{ auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor' ? '' : 'selected' }}
+                                            disabled>-- Pilih Supervisor --</option>
                                         @foreach ($supervisors as $supervisor)
                                             <option value="{{ $supervisor->employeeID }}"
                                                 {{ (auth()->user()->employeeID === $supervisor->employeeID ? 'selected' : auth()->user()->superior_id === $supervisor->employeeID) ? 'selected' : '' }}>
@@ -96,7 +100,8 @@
                                             class="form-select {{ auth()->user()->role === 'leader' ? ' bg-light' : 'bg-warning-subtle' }}"
                                             required
                                             style="{{ auth()->user()->role === 'leader' ? 'pointer-events: none;' : '' }}">
-                                            <option value="" disabled>-- Pilih Leader --</option>
+                                            <option value="" {{ auth()->user()->role !== 'leader' ? 'selected' : '' }}
+                                                disabled>-- Pilih Leader --</option>
                                             @foreach ($leaders as $leader)
                                                 <option value="{{ $leader->employeeID }}"
                                                     {{ auth()->user()->employeeID === $leader->employeeID ? 'selected' : '' }}>
@@ -155,7 +160,7 @@
                     @switch($type)
                         @case('leader')
                         @case('supervisor')
-                            <button type="submit" formaction="{{ route('reports.monthly', ['type' => $type]) }}"
+                            <button type="submit" formaction="{{ route('reports.consistency', ['type' => $type]) }}"
                                 class="btn btn-info rounded-pill px-4 fw-bold shadow-sm text-white">
                                 <i class="bi bi-graph-up me-1"></i> Consistency Report
                             </button>

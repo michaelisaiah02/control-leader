@@ -35,7 +35,7 @@ class ReportController extends Controller
         ]));
     }
 
-    public function monthly($type, Request $request)
+    public function consistency($type, Request $request)
     {
         // 1. Tangkap parameter form
         $monthInput = $request->month ?? now()->format('Y-m');
@@ -56,7 +56,7 @@ class ReportController extends Controller
             ->latest()
             ->get();
 
-        return view('reports.monthly', compact('type', 'problems', 'member', 'department', 'date'));
+        return view('reports.consistency', compact('type', 'problems', 'member', 'department', 'date'));
     }
 
     public function score($type, Request $request)

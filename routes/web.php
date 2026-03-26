@@ -113,7 +113,7 @@ Route::middleware('auth')->group(function () {
 
         // 2. API Routes
         Route::get('/api/daily', 'apiDaily');
-        Route::get('/api/monthly', 'apiMonthly');
+        Route::get('/api/consistency', 'apiConsistency');
         Route::get('/api/supervisor-score', 'apiSupervisorScore');
         Route::get('/api/leader-score', 'apiLeaderScore');
         Route::get('/api/operator-score', 'apiOperatorScore');
@@ -122,7 +122,7 @@ Route::middleware('auth')->group(function () {
 
         // 3. Dynamic Routes (Taruh paling bawah biar nggak nyedot URL lain)
         Route::get('/{type}', 'form')->name('form');
-        Route::get('/{type}/monthly', 'monthly')->name('monthly');
+        Route::get('/{type}/consistency', 'consistency')->name('consistency');
         Route::get('/{type}/score', 'score')->name('score'); // Nama method gue sesuaikan jadi 'score'
     });
 });
