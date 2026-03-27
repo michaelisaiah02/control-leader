@@ -20,7 +20,7 @@ class DepartmentDivisionSeeder extends Seeder
         ];
 
         $divisions = [
-            'Warehouse' => 'Warehouse',
+            'Warehouse' => ['Warehouse'],
             'Compound' => [
                 'Weighing',
                 'Mixing A',

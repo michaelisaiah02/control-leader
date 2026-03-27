@@ -11,60 +11,178 @@
     </div>
 @endpush
 
+@section('styles')
+    <style>
+        /* ========================================= */
+        /* OPTIMASI DASHBOARD CARDS */
+        /* ========================================= */
+        .btn-dashboard {
+            text-decoration: none !important;
+            /* Ilangin garis bawah norak */
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        }
+
+        /* Efek ngangkat & shadow pas di-hover */
+        .btn-dashboard:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Styling Badge Jam Default (Terang) */
+        .time-badge {
+            background-color: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            /* Biar icon & text bener-bener sejajar */
+            align-items: center;
+            /* Rata tengah vertikal */
+            justify-content: center;
+            gap: 6px;
+            /* Jarak icon dan text */
+        }
+
+        /* 🔥 INI OBATNYA: Maksa ikon jam balik normal 🔥 */
+        .time-badge i {
+            font-size: 1rem !important;
+            /* Ukuran standar, batalin ukuran raksasa dari btn-dashboard */
+            line-height: 1;
+            margin: 0 !important;
+            /* Bersihin margin kalau ada */
+        }
+
+        /* Styling Badge Jam pas di-hover (Background Gelap) */
+        .btn-dashboard:hover .time-badge {
+            background-color: rgba(255, 255, 255, 0.15);
+            /* Transparan putih */
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+@endsection
+
 @section('content')
     <div class="container-fluid dashboard-container pb-5 pb-md-0">
         {{-- ROLE: LEADER --}}
         @if (auth()->user()->role === 'leader')
+            @php
+                $currentShift = session('shift', 1);
+
+                $timeRanges = [
+                    1 => [
+                        'awal_shift' => '07:00 - 08:30',
+                        'saat_bekerja' => '08:30 - 12:00',
+                        'setelah_istirahat' => '13:00 - 14:00',
+                        'akhir_shift' => '14:00 - 15:00',
+                    ],
+                    2 => [
+                        'awal_shift' => '15:00 - 16:30',
+                        'saat_bekerja' => '20:00 - 22:00',
+                        'setelah_istirahat' => '19:00 - 20:00',
+                        'akhir_shift' => '22:00 - 23:00',
+                    ],
+                    3 => [
+                        'awal_shift' => '23:00 - 00:30',
+                        'saat_bekerja' => '00:30 - 04:00',
+                        'setelah_istirahat' => '05:00 - 06:00',
+                        'akhir_shift' => '06:00 - 07:00',
+                    ],
+                ];
+
+                $ranges = $timeRanges[$currentShift] ?? $timeRanges[1];
+            @endphp
+
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-xl-4 justify-content-center text-center">
 
                 {{-- Baris 1 --}}
                 <div class="col">
-                    <a href="{{ route('checksheets.create', ['type' => 'awal_shift']) }}" class="btn-dashboard">
-                        <i class="bi bi-sunrise"></i>
-                        <span>Awal Shift Sebelum
-                            Bekerja<br><small class="fw-light opacity-75" style="font-size: 0.7em">Checksheet</small></span>
+                    <a href="{{ route('checksheets.create', ['type' => 'awal_shift']) }}"
+                        class="btn-dashboard d-flex flex-column align-items-center justify-content-center">
+                        <i class="bi bi-sunrise mb-0 pb-0"></i>
+                        <span>
+                            Awal Shift Sebelum Bekerja
+                            <br>
+                            <small class="fw-light opacity-75" style="font-size: 0.7em">Checksheet</small>
+                        </span>
+                        <div class="mt-3 time-badge rounded-pill px-3 py-1">
+                            <i class="bi bi-clock me-1"></i> {{ $ranges['awal_shift'] }}
+                        </div>
                     </a>
                 </div>
 
                 <div class="col">
-                    <a href="{{ route('checksheets.create', ['type' => 'saat_bekerja']) }}" class="btn-dashboard">
-                        <i class="bi bi-tools"></i>
-                        <span>Saat Bekerja<br><small class="fw-light opacity-75"
-                                style="font-size: 0.7em">Checksheet</small></span>
+                    <a href="{{ route('checksheets.create', ['type' => 'saat_bekerja']) }}"
+                        class="btn-dashboard d-flex flex-column align-items-center justify-content-center">
+                        <i class="bi bi-tools mb-0 pb-0"></i>
+                        <span>
+                            Saat Bekerja
+                            <br>
+                            <small class="fw-light opacity-75" style="font-size: 0.7em">Checksheet</small>
+                        </span>
+                        <div class="mt-3 time-badge rounded-pill px-3 py-1">
+                            <i class="bi bi-clock me-1"></i> {{ $ranges['saat_bekerja'] }}
+                        </div>
                     </a>
                 </div>
 
                 <div class="col">
-                    <a href="{{ route('checksheets.create', ['type' => 'setelah_istirahat']) }}" class="btn-dashboard">
-                        <i class="bi bi-cup-hot"></i>
-                        <span>Setelah Istirahat<br><small class="fw-light opacity-75"
-                                style="font-size: 0.7em">Checksheet</small></span>
+                    <a href="{{ route('checksheets.create', ['type' => 'setelah_istirahat']) }}"
+                        class="btn-dashboard d-flex flex-column align-items-center justify-content-center">
+                        <i class="bi bi-cup-hot mb-0 pb-0"></i>
+                        <span>
+                            Setelah Istirahat
+                            <br>
+                            <small class="fw-light opacity-75" style="font-size: 0.7em">Checksheet</small>
+                        </span>
+                        <div class="mt-3 time-badge rounded-pill px-3 py-1">
+                            <i class="bi bi-clock me-1"></i> {{ $ranges['setelah_istirahat'] }}
+                        </div>
                     </a>
                 </div>
 
                 {{-- Baris 2 --}}
                 <div class="col">
-                    <a href="{{ route('checksheets.create', ['type' => 'akhir_shift']) }}" class="btn-dashboard">
-                        <i class="bi bi-sunset"></i>
-                        <span>Akhir Shift Sebelum
-                            Pulang<br><small class="fw-light opacity-75" style="font-size: 0.7em">Checksheet</small></span>
+                    <a href="{{ route('checksheets.create', ['type' => 'akhir_shift']) }}"
+                        class="btn-dashboard d-flex flex-column align-items-center justify-content-center">
+                        <i class="bi bi-sunset mb-0 pb-0"></i>
+                        <span>
+                            Akhir Shift Sebelum Pulang
+                            <br>
+                            <small class="fw-light opacity-75" style="font-size: 0.7em">Checksheet</small>
+                        </span>
+                        <div class="mt-3 time-badge rounded-pill px-3 py-1">
+                            <i class="bi bi-clock me-1"></i> {{ $ranges['akhir_shift'] }}
+                        </div>
                     </a>
                 </div>
 
                 <div class="col">
-                    <a href="{{ route('reports.index') }}" class="btn-dashboard">
-                        <i class="bi bi-file-earmark-bar-graph"></i>
-                        <span>Report</span>
+                    <a href="{{ route('reports.index') }}"
+                        class="btn-dashboard d-flex flex-column align-items-center justify-content-center">
+                        <i class="bi bi-file-earmark-bar-graph mb-0 pb-0"></i>
+                        <span>
+                            Report
+                            <br>
+                            <small class="fw-light opacity-0" style="font-size: 0.7em">.</small> {{-- Spacer biar tingginya rata --}}
+                        </span>
                     </a>
                 </div>
 
                 <div class="col">
-                    <a href="{{ route('listProblem.index') }}" class="btn-dashboard position-relative btn-dashboard-danger">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <span>List Problem</span>
+                    <a href="{{ route('listProblem.index') }}"
+                        class="btn-dashboard position-relative btn-dashboard-danger d-flex flex-column align-items-center justify-content-center">
+                        <i class="bi bi-exclamation-triangle mb-0 pb-0"></i>
+                        <span>
+                            List Problem
+                            <br>
+                            <small class="fw-light opacity-0" style="font-size: 0.7em">.</small>
+                        </span>
                         @if ($problemCount > 0)
                             <span
-                                class="position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill bg-danger border border-white shadow-sm">
+                                class="position-absolute top-0 end-0 mt-3 me-3 badge rounded-pill bg-danger border border-white shadow-sm fs-6">
                                 {{ $problemCount }}
                             </span>
                         @endif
