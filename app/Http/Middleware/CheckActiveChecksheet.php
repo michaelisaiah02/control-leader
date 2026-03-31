@@ -25,6 +25,7 @@ class CheckActiveChecksheet
                 'checksheets.create',
                 'checksheets.partB',
                 'checksheets.store',
+                'checksheets.cancel',
                 'logout', // Izinkan kalau dia mau nyerah dan logout
             ];
 

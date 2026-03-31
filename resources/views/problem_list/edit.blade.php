@@ -87,7 +87,8 @@
                         {{-- Kalau bukan leader, background jadi abu-abu --}}
                         <textarea name="countermeasure" id="countermeasure" rows="2"
                             class="form-control {{ !$canEditCountermeasure ? 'bg-light text-muted' : 'border-primary' }}"
-                            placeholder="Ketik tindakan perbaikan di sini..." {{ !$canEditCountermeasure ? 'readonly' : '' }}>{{ $problem->countermeasure }}</textarea>
+                            placeholder="{{ !$canEditCountermeasure ? 'Countermeasure belum diisi oleh ' . ucfirst($pageRole) : 'Ketik tindakan perbaikan di sini...' }}"
+                            {{ !$canEditCountermeasure ? 'readonly' : '' }}>{{ $problem->countermeasure }}</textarea>
 
                         @if (!$canEditCountermeasure)
                             <div class="form-text small mt-1"><i class="bi bi-lock"></i>

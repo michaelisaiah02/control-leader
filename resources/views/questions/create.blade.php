@@ -123,7 +123,7 @@
                                         <span class="input-group-text bg-white border-end-0 cursor-grab ps-3"><i
                                                 class="bi bi-grip-vertical"></i></span>
                                         <input type="text" class="form-control border-start-0 py-2 bg-light"
-                                            name="choices[]" value="OK" placeholder="Jawaban Terbaik" required>
+                                            name="choices[]" placeholder="Jawaban 1" required>
                                     </div>
 
                                     {{-- Opsi 2 --}}
@@ -131,7 +131,7 @@
                                         <span class="input-group-text bg-white border-end-0 cursor-grab ps-3"><i
                                                 class="bi bi-grip-vertical"></i></span>
                                         <input type="text" class="form-control border-start-0 py-2 bg-light"
-                                            name="choices[]" value="NG" placeholder="Jawaban Terburuk" required>
+                                            name="choices[]" placeholder="Jawaban 2" required>
                                     </div>
 
                                     {{-- Opsi 3 (Hidden by default) --}}
@@ -139,8 +139,7 @@
                                         <span class="input-group-text bg-white border-end-0 cursor-grab ps-3"><i
                                                 class="bi bi-grip-vertical"></i></span>
                                         <input type="text" class="form-control border-start-0 py-2 bg-light"
-                                            id="input-3" name="choices[]" value="Repair" placeholder="Opsi Tambahan"
-                                            disabled>
+                                            id="input-3" name="choices[]" placeholder="Jawaban 3" disabled>
                                     </div>
                                 </div>
                             </div>

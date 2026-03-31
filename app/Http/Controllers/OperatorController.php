@@ -55,7 +55,7 @@ class OperatorController extends Controller
                 'size:5',
                 Rule::unique('users', 'employeeID')->ignore($user->id),
             ],
-            'division' => [
+            'division_id' => [
                 'required',
                 'integer',
                 Rule::exists('divisions', 'id'),

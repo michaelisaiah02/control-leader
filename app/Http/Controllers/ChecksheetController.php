@@ -41,7 +41,14 @@ class ChecksheetController extends Controller
 
     private function getEmployeeId(string $uid): string
     {
-        $u = User::where('employeeID', $uid)->orWhere('id', $uid)->first();
+        // 1. Prioritaskan cari berdasarkan string employeeID yang mutlak ('00001' tidak akan jadi 1)
+        $u = User::where('employeeID', $uid)->first();
+
+        // 2. Kalau bener-bener nggak ketemu, baru kita coba cari berdasarkan Primary Key (id)
+        if (! $u && is_numeric($uid)) {
+            $u = User::find($uid);
+        }
+
         if (! $u) {
             return $uid;
         }
@@ -436,5 +443,19 @@ class ChecksheetController extends Controller
 
         // Update total score di checksheet
         $checksheet->update(['score' => $totalScore]);
+    }
+
+    public function cancel(Request $req)
+    {
+        $planId = $req->input('plan_id');
+        $phase = $req->input('phase');
+
+        // BUKA GEMBOK: Bersihkan session timer dan flag active
+        session()->forget([
+            'active_checksheet',
+            "cs_timer_{$planId}_{$phase}"
+        ]);
+
+        return response()->json(['success' => true]);
     }
 }

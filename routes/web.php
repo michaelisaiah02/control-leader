@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
             Route::prefix('operator')->as('operator.')->controller(OperatorController::class)->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::post('/store', 'store')->name('store');
-                Route::post('/update-operator/{id}', 'update')->name('update');
+                Route::put('/update-operator/{id}', 'update')->name('update');
                 Route::delete('/delete-operator/{id}', 'destroy');
                 Route::get('/search', 'search')->name('search');
             });
@@ -85,13 +85,10 @@ Route::middleware('auth')->group(function () {
             // =========================
 
             Route::prefix('checksheets')->as('checksheets.')->controller(ChecksheetController::class)->group(function () {
-                Route::get('/create', 'createPartA')->name('create'); // ?type=awal_shift
-
-                // ke Part B
+                Route::get('/create', 'createPartA')->name('create');
                 Route::get('/part-b', 'showPartB')->name('partB');
-
-                // submit final
                 Route::post('/', 'store')->name('store');
+                Route::post('/cancel', 'cancel')->name('cancel');
             });
         });
     });

@@ -58,6 +58,7 @@ class CheckConsistency extends Command
                     'inferior_id' => $cs->target,
                     'role_type' => 'supervisor',
                     'remark' => $statusWaktu,
+                    'schedule_detail_id' => $cs->schedule_detail_id,
                     // 'problem'     => "Pengisian checksheet pada " . Carbon::parse($kemarin)->format('d M Y') . " berada di luar rentang jadwal aktif (Status: {$statusWaktu}).",
                     'problem' => $statusWaktu === 'Late' ? 'Checksheet terlambat diisi' : 'Checksheet diisi lebih cepat dari schedule',
                     'status' => 'open',
@@ -78,7 +79,7 @@ class CheckConsistency extends Command
 
             if ($roleType === 'leader') {
                 // LEADER: Cek strict apakah dia ngisi di hari itu?
-                $punyaChecksheet = Checksheet::whereHas('schedulePlan', fn ($q) => $q->where('scheduler_id', $auditorId))
+                $punyaChecksheet = Checksheet::whereHas('schedulePlan', fn($q) => $q->where('scheduler_id', $auditorId))
                     ->where('target', $auditeeId)
                     ->whereDate('created_at', $mingguLalu)
                     ->exists();
@@ -107,7 +108,7 @@ class CheckConsistency extends Command
                     }
 
                     // Cek apakah ada pengisian di dalam rentang tersebut?
-                    $punyaChecksheet = Checksheet::whereHas('schedulePlan', fn ($q) => $q->where('scheduler_id', $auditorId))
+                    $punyaChecksheet = Checksheet::whereHas('schedulePlan', fn($q) => $q->where('scheduler_id', $auditorId))
                         ->where('target', $auditeeId)
                         ->whereBetween('created_at', [
                             $startOfBlock->startOfDay(),
@@ -147,7 +148,7 @@ class CheckConsistency extends Command
             ->where('target_user_id', $targetId)
             ->orderBy('scheduled_date')
             ->pluck('scheduled_date')
-            ->map(fn ($d) => Carbon::parse($d)->startOfDay())
+            ->map(fn($d) => Carbon::parse($d)->startOfDay())
             ->toArray();
 
         if (empty($jadwals)) {

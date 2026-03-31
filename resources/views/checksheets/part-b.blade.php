@@ -153,6 +153,10 @@
             style="visibility: hidden;">
             <i class="bi bi-arrow-left me-2"></i> Back
         </button>
+        <button type="button" class="btn btn-outline-danger rounded-pill px-4 fw-bold" id="cancelBtn"
+            data-bs-toggle="modal" data-bs-target="#cancelModal">
+            <i class="bi bi-x-lg me-2"></i> Batal
+        </button>
 
         <div class="fw-bold text-muted small px-3 py-1 bg-light rounded-pill border" id="pageInfo">
             {{ count($questions) ? '1 / ' . count($questions) : '0 / 0' }}
@@ -165,6 +169,31 @@
             <button type="button" class="btn btn-success rounded-pill px-5 py-2 fw-bold shadow-sm d-none" id="submitBtn">
                 <i class="bi bi-send-check me-2"></i> Submit Data
             </button>
+        </div>
+    </div>
+
+    {{-- MODAL KONFIRMASI BATAL --}}
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-bottom-0 pb-0 mt-2">
+                    <h5 class="modal-title fw-bold text-danger" id="cancelModalLabel">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Konfirmasi Batal
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary px-4 py-3">
+                    Apakah Anda yakin ingin membatalkan pengisian checksheet? <br><br>
+                    <span class="text-dark fw-bold">Semua data yang sudah diisi akan hilang dan tidak dapat
+                        dikembalikan.</span>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 pb-3 px-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Lanjut
+                        Isi</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm"
+                        id="confirmCancelBtn">Ya, Batalkan</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -344,6 +373,49 @@
                     alert('Terjadi kesalahan koneksi.');
                     $btn.prop('disabled', false).html(
                         '<i class="bi bi-send-check me-2"></i> Submit Data');
+                }
+            });
+
+            // --- LOGIC TOMBOL BATAL (VIA MODAL) ---
+            $('#confirmCancelBtn').on('click', async function() {
+                const btn = $(this);
+                const cancelText = btn.html();
+
+                // Ubah tombol jadi loading state
+                btn.prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Membatalkan...');
+
+                try {
+                    // Tembak API ke server buat buka gembok session Laravel
+                    const res = await fetch('{{ route('checksheets.cancel') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            plan_id: PLAN,
+                            phase: PHASE
+                        })
+                    });
+
+                    if (res.ok) {
+                        // Tutup modal secara programatik (opsional, tapi biar smooth)
+                        const modalEl = document.getElementById('cancelModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+
+                        // Hapus draft browser dan pulang ke Dashboard!
+                        sessionStorage.removeItem(key('partA'));
+                        window.location.href = DASHBOARD_URL;
+                    } else {
+                        alert('Gagal membatalkan. Silakan coba lagi.');
+                        btn.prop('disabled', false).html(cancelText);
+                    }
+                } catch (err) {
+                    alert('Terjadi kesalahan koneksi saat membatalkan.');
+                    btn.prop('disabled', false).html(cancelText);
                 }
             });
         });

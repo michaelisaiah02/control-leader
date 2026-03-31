@@ -11,7 +11,7 @@
                 <th scope="col">Action</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="align-middle">
             @forelse ($Problems as $problem)
                 @php
                     // 1. Cek apakah sudah lewat tenggat waktu

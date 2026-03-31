@@ -16,27 +16,27 @@
                 @endif
             </tr>
         </thead>
-        <tbody>
+        <tbody class="align-middle">
             @forelse ($Problems as $problem)
-            @php
-            // 1. Cek apakah sudah lewat tenggat waktu
-            $isOverdue = $problem->due_date <= \Carbon\Carbon::now();
+                @php
+                    // 1. Cek apakah sudah lewat tenggat waktu
+                    $isOverdue = $problem->due_date <= \Carbon\Carbon::now();
 
-            // 2. Tentukan teks dan warna default
-            $displayStatus = str_replace('_', ' ', $problem->status);
-            $badgeColor = 'bg-light text-dark';
+                    // 2. Tentukan teks dan warna default
+                    $displayStatus = str_replace('_', ' ', $problem->status);
+                    $badgeColor = 'bg-light text-dark';
 
-            // 3. Timpa teks dan warna berdasarkan kondisi status & tanggal
-            if ($problem->status === 'close') {
-                $badgeColor = 'bg-danger';
-            } elseif ($problem->status === 'open') {
-                $displayStatus = $isOverdue ? 'Delay' : 'Open';
-                $badgeColor    = $isOverdue ? 'bg-warning text-dark' : 'bg-success';
-            } elseif ($problem->status === 'follow_up_1') {
-                $displayStatus = $isOverdue ? 'Follow Up 1 Delay' : 'Follow Up 1';
-                $badgeColor    = $isOverdue ? 'bg-secondary' : 'bg-info text-dark';
-            }
-        @endphp
+                    // 3. Timpa teks dan warna berdasarkan kondisi status & tanggal
+                    if ($problem->status === 'close') {
+                        $badgeColor = 'bg-danger';
+                    } elseif ($problem->status === 'open') {
+                        $displayStatus = $isOverdue ? 'Delay' : 'Open';
+                        $badgeColor = $isOverdue ? 'bg-warning text-dark' : 'bg-success';
+                    } elseif ($problem->status === 'follow_up_1') {
+                        $displayStatus = $isOverdue ? 'Follow Up 1 Delay' : 'Follow Up 1';
+                        $badgeColor = $isOverdue ? 'bg-secondary' : 'bg-info text-dark';
+                    }
+                @endphp
                 <tr data-status="{{ strtolower($problem->status) }}">
                     <td scope="col">{{ $problem->created_at->format('d/m/Y') }}</td>
                     @if (auth()->user()->role !== 'leader')

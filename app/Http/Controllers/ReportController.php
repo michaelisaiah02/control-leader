@@ -187,7 +187,6 @@ class ReportController extends Controller
 
         $days_in_month = $date->daysInMonth;
 
-        // 🔥 PERBAIKAN FATAL: Ambil checksheet di mana Leader sebagai PENGISI/AUDITOR 🔥
         $checksheets = Checksheet::with('answers')
             ->whereHas('schedulePlan', function ($q) use ($leaderId) {
                 $q->where('scheduler_id', $leaderId)
@@ -207,29 +206,25 @@ class ReportController extends Controller
             $labels[] = $day;
             $targetData[] = 100;
 
-            if ($currentDate->isWeekend()) {
+            // 🔥 Tarik datanya duluan 🔥
+            $dayData = $checksheets->filter(fn($c) => $c->created_at->day == $day);
+
+            // 🔥 LOGIC BARU: Libur cuma aktif kalau datanya KOSONG & hari itu Weekend
+            if ($dayData->isEmpty() && $currentDate->isWeekend()) {
                 $tScoreData[] = 0;
                 $liburData[] = 100;
             } else {
-                $liburData[] = 0;
-
-                // Cari semua checksheet yang dibuat oleh Leader ini di hari tersebut
-                $dayData = $checksheets->filter(fn($c) => $c->created_at->day == $day);
+                $liburData[] = 0; // Kalo ada data atau hari kerja biasa, libur matiin
 
                 if ($dayData->isEmpty()) {
                     $tScoreData[] = 0;
                 } else {
-                    // Hitung akumulasi total poin murni dari kolom 'score' di database
                     $totalPoints = $dayData->sum('score');
-
-                    // Hitung akumulasi max poin (jumlah jawaban di tiap checksheet * 2)
                     $totalMaxPoints = $dayData->sum(function ($c) {
                         return $c->answers->count() * 2;
                     });
 
-                    // Eksekusi rumus klien: (Total Poin / Total Max Poin) * 100
                     $scorePercentage = $totalMaxPoints > 0 ? ($totalPoints / $totalMaxPoints) * 100 : 0;
-
                     $tScoreData[] = round($scorePercentage, 2);
                 }
             }
@@ -438,12 +433,10 @@ class ReportController extends Controller
 
         $days_in_month = $date->daysInMonth;
 
-        // 🔥 FIX: Hitung murni jumlah bawahan si Leader ini dari tabel User 🔥
         $totalOperators = User::where('superior_id', $leaderId)
             ->where('role', 'operator')
             ->count();
 
-        // Tarik realisasi checksheet yang diisi Leader ini
         $checksheets = Checksheet::whereHas('schedulePlan', function ($q) use ($leaderId) {
             $q->where('scheduler_id', $leaderId);
         })
@@ -454,19 +447,18 @@ class ReportController extends Controller
         $labels = range(1, $days_in_month);
         $targetData = array_fill(0, $days_in_month, 100);
 
-        // Konfigurasi warna phase
         $phases = [
             'awal_shift' => ['label' => 'Awal Shift', 'color' => '#ed7d31'],
-            'saat_bekerja'    => ['label' => 'Saat Bekerja', 'color' => '#a5a5a5'],
-            'setelah_istirahat'  => ['label' => 'Setelah Istirahat', 'color' => '#5b9bd5'],
+            'bekerja'    => ['label' => 'Saat Bekerja', 'color' => '#a5a5a5'],
+            'istirahat'  => ['label' => 'Setelah Istirahat', 'color' => '#5b9bd5'],
             'akhir_shift' => ['label' => 'Akhir Shift', 'color' => '#ffc000']
         ];
 
         $datasets = [];
         $phaseDataArrays = [
             'awal_shift' => [],
-            'saat_bekerja' => [],
-            'setelah_istirahat' => [],
+            'bekerja' => [],
+            'istirahat' => [],
             'akhir_shift' => []
         ];
         $liburData = [];
@@ -474,8 +466,11 @@ class ReportController extends Controller
         for ($day = 1; $day <= $days_in_month; $day++) {
             $currentDate = $date->copy()->day($day);
 
-            // Deteksi Weekend (Sabtu & Minggu)
-            if ($currentDate->isWeekend()) {
+            // 🔥 Tarik data hari itu duluan 🔥
+            $dayChecksheets = $checksheets->filter(fn($c) => $c->created_at->day == $day);
+
+            // 🔥 LOGIC BARU: Libur cuma aktif kalau GAK ADA isian & hari Weekend
+            if ($dayChecksheets->isEmpty() && $currentDate->isWeekend()) {
                 $liburData[] = 100;
                 foreach ($phases as $key => $config) {
                     $phaseDataArrays[$key][] = 0;
@@ -483,30 +478,23 @@ class ReportController extends Controller
             } else {
                 $liburData[] = 0;
 
-                // Kalau ternyata Leader ini belum punya bawahan sama sekali di DB
                 if ($totalOperators == 0) {
                     foreach ($phases as $key => $config) {
                         $phaseDataArrays[$key][] = 0;
                     }
                 } else {
                     foreach ($phases as $key => $config) {
-                        // Total checksheet unik per operator yang diisi di hari & phase ini
-                        $filledChecksheets = $checksheets->filter(function ($c) use ($day, $key) {
-                            return $c->created_at->day == $day && $c->phase == $key;
+                        $filledChecksheets = $dayChecksheets->filter(function ($c) use ($key) {
+                            return $c->phase == $key;
                         })->pluck('target')->unique()->count();
 
-                        // 🔥 RUMUS KLIEN: (Isi / Total Bawahan) * 25% 🔥
-                        // (dikali 25% karena 1 phase menyumbang 1/4 dari total nilai harian)
                         $score = ($filledChecksheets / $totalOperators) * 25;
-
-                        // Masukin ke array (maksimal 25% biar ga over 100% kalo ada bug form dobel)
                         $phaseDataArrays[$key][] = round(min(25, $score), 2);
                     }
                 }
             }
         }
 
-        // Susun dataset untuk 4 phase
         foreach ($phases as $key => $config) {
             $datasets[] = [
                 'type' => 'bar',
@@ -516,7 +504,6 @@ class ReportController extends Controller
             ];
         }
 
-        // Tambah dataset Libur (Merah)
         $datasets[] = [
             'type' => 'bar',
             'label' => 'Libur',
@@ -524,7 +511,6 @@ class ReportController extends Controller
             'backgroundColor' => '#ff0000',
         ];
 
-        // Tambah dataset Target (Garis Ijo)
         $datasets[] = [
             'type' => 'line',
             'label' => 'Target',
