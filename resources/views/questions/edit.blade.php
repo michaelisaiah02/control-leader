@@ -90,7 +90,7 @@
             </div>
 
             {{-- SECTION 2: BUILDER AREA --}}
-            <div class="row g-2 grow overflow-hidden">
+            <div class="row g-2 grow">
 
                 {{-- LEFT: FORM BUILDER --}}
                 <div class="col-12 col-md-8 h-100 d-flex flex-column">
