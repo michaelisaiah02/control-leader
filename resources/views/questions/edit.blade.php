@@ -139,7 +139,7 @@
                                         <span class="input-group-text bg-white border-end-0 cursor-grab ps-3"><i
                                                 class="bi bi-grip-vertical"></i></span>
                                         <input type="text" class="form-control border-start-0 py-2 bg-light"
-                                            name="choices[]" value="{{ $choices[0] ?? '' }}" placeholder="Jawaban Terbaik"
+                                            name="choices[]" value="{{ $choices[0] ?? '' }}" placeholder="Jawaban 1"
                                             required>
                                     </div>
 
@@ -148,7 +148,7 @@
                                         <span class="input-group-text bg-white border-end-0 cursor-grab ps-3"><i
                                                 class="bi bi-grip-vertical"></i></span>
                                         <input type="text" class="form-control border-start-0 py-2 bg-light"
-                                            name="choices[]" value="{{ $choices[1] ?? '' }}" placeholder="Jawaban Terburuk"
+                                            name="choices[]" value="{{ $choices[1] ?? '' }}" placeholder="Jawaban 2"
                                             required>
                                     </div>
 
@@ -159,7 +159,7 @@
                                                 class="bi bi-grip-vertical"></i></span>
                                         <input type="text" class="form-control border-start-0 py-2 bg-light"
                                             id="input-3" name="choices[]" value="{{ $choices[2] ?? '' }}"
-                                            placeholder="Opsi Tambahan" {{ $mode == 2 ? 'disabled' : '' }}>
+                                            placeholder="Jawaban 3" {{ $mode == 2 ? 'disabled' : '' }}>
                                         {{-- Disabled kalau mode 2 --}}
                                     </div>
                                 </div>

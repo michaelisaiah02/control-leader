@@ -168,7 +168,8 @@ class ReportController extends Controller
             'label' => 'Target',
             'data' => [100, 100, 100, 100],
             'borderColor' => '#33a02c',
-            'borderWidth' => 2,
+            'backgroundColor' => '#33a02c',
+            'borderWidth' => 8,
             'fill' => false,
             'pointRadius' => 0,
         ];
@@ -250,7 +251,8 @@ class ReportController extends Controller
                     'label' => 'Target',
                     'data' => $targetData,
                     'borderColor' => '#33a02c',
-                    'borderWidth' => 2,
+                    'backgroundColor' => '#33a02c',
+                    'borderWidth' => 8,
                     'fill' => false,
                     'pointRadius' => 0,
                 ]
@@ -322,8 +324,9 @@ class ReportController extends Controller
             'type' => 'line',
             'label' => 'Target',
             'data' => $targetData,
-            'borderColor' => '#33a02c', // Hijau
-            'borderWidth' => 2,
+            'borderColor' => '#33a02c',
+            'backgroundColor' => '#33a02c',
+            'borderWidth' => 8,
             'fill' => false,
             'pointRadius' => 0,
         ];
@@ -414,7 +417,8 @@ class ReportController extends Controller
             'label' => 'Target',
             'data' => [100, 100, 100, 100],
             'borderColor' => '#33a02c',
-            'borderWidth' => 2,
+            'backgroundColor' => '#33a02c',
+            'borderWidth' => 8,
             'fill' => false,
             'pointRadius' => 0,
         ];
@@ -516,7 +520,8 @@ class ReportController extends Controller
             'label' => 'Target',
             'data' => $targetData,
             'borderColor' => '#33a02c',
-            'borderWidth' => 2,
+            'backgroundColor' => '#33a02c',
+            'borderWidth' => 8,
             'fill' => false,
             'pointRadius' => 0,
         ];

@@ -6,6 +6,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     <title>Monthly Consistency {{ ucfirst($type) }} Report</title>
+    <style>
+        @media print {
+
+            /* 1. Setup kertas standar masa depan: A4 Landscape */
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+
+            /* 2. Kunci flexbox biar gak turun ke bawah */
+            .d-flex.justify-content-center {
+                flex-wrap: nowrap !important;
+                width: 100% !important;
+            }
+
+            /* 3. Kita 'tembak' semua variasi class col-8 dan col-4 biar aman sentosa */
+            .col-8,
+            .col-md-8,
+            .col-sm-8 {
+                width: 66.666667% !important;
+                flex: 0 0 auto !important;
+            }
+
+            .col-4,
+            .col-md-4,
+            .col-sm-4 {
+                width: 33.333333% !important;
+                flex: 0 0 auto !important;
+            }
+
+            /* 4. Amankan ukuran chart */
+            #chart {
+                max-height: 300px !important;
+                width: 100% !important;
+            }
+
+            /* 5. Cegah tabel terbelah dua di pergantian halaman */
+            table tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* 6. Paksa printer nampilin warna asli (terutama buat legend indikator merah/biru) */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -191,7 +240,22 @@
                                 plugins: {
                                     legend: {
                                         display: true,
-                                        position: 'bottom'
+                                        position: 'bottom',
+                                        labels: {
+                                            // Trik manipulasi icon legend biar nggak ikut menebal
+                                            generateLabels: function(chart) {
+                                                const originalLabels = Chart.defaults.plugins.legend
+                                                    .labels.generateLabels(chart);
+                                                return originalLabels.map(label => {
+                                                    if (label.text === 'Target') {
+                                                        // Paksa ketebalan garis di icon legend jadi 0
+                                                        // Biar dia balik jadi kotak solid normal kayak yang lain
+                                                        label.lineWidth = 0;
+                                                    }
+                                                    return label;
+                                                });
+                                            }
+                                        }
                                     },
                                     tooltip: {
                                         callbacks: {

@@ -6,6 +6,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     <title>Monthly Score Control {{ ucfirst($type) }} Report</title>
+    <style>
+        /* Trigger aturan khusus saat mode Print */
+        @media print {
+
+            /* 1. Ini MVP-nya: Maksa browser pakai kertas A4 dan format Landscape */
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+                /* Kasih breathing room dikit di pinggir kertas */
+            }
+
+            /* 2. Biar layout flex (col-8 & col-4) ngga turun ke bawah atau tumpang tindih */
+            .d-flex.justify-content-center {
+                flex-wrap: nowrap !important;
+                width: 100% !important;
+            }
+
+            .col-8 {
+                width: 66.666667% !important;
+            }
+
+            .col-4 {
+                width: 33.333333% !important;
+            }
+
+            /* 3. Handling Chart.js biar ukurannya tetep konsisten, nggak nge-zoom sendiri */
+            #chart {
+                max-height: 300px !important;
+                width: 100% !important;
+            }
+
+            /* 4. Anti-kepotong club: Biar baris tabel nggak kepotong setengah di pergantian halaman */
+            table tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* 5. Maksa warna background/border tetep di-render sama printer */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -193,7 +237,22 @@
                             plugins: {
                                 legend: {
                                     display: true,
-                                    position: 'bottom'
+                                    position: 'bottom',
+                                    labels: {
+                                        // Trik manipulasi icon legend biar nggak ikut menebal
+                                        generateLabels: function(chart) {
+                                            const originalLabels = Chart.defaults.plugins.legend
+                                                .labels.generateLabels(chart);
+                                            return originalLabels.map(label => {
+                                                if (label.text === 'Target') {
+                                                    // Paksa ketebalan garis di icon legend jadi 0
+                                                    // Biar dia balik jadi kotak solid normal kayak yang lain
+                                                    label.lineWidth = 0;
+                                                }
+                                                return label;
+                                            });
+                                        }
+                                    }
                                 },
                                 tooltip: {
                                     callbacks: {
