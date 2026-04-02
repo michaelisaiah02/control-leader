@@ -25,7 +25,17 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'employeeID' => ['required', 'size:5', 'unique:users,employeeID'],
+            'employeeID' => [
+                'required',
+                'size:5',
+                function ($attribute, $value, $fail) {
+                    $existingUser = User::where('employeeID', $value)->first();
+                    if ($existingUser) {
+                        $role = strtoupper($existingUser->role);
+                        $fail("ID {$value} sudah dipakai oleh {$existingUser->name} sebagai {$role}.");
+                    }
+                }
+            ],
             'department_id' => ['nullable', 'integer', Rule::exists('departments', 'id')],
             'role' => ['required', 'in:management,ypq,leader,supervisor,guest'],
             'password' => ['required', 'string', 'min:8'],
@@ -46,22 +56,29 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'employeeID' => ['required', 'size:5', Rule::unique('users', 'employeeID')->ignore($user->id)],
+            'employeeID' => [
+                'required',
+                'size:5',
+                function ($attribute, $value, $fail) use ($user) {
+                    $existingUser = User::where('employeeID', $value)->where('id', '!=', $user->id)->first();
+                    if ($existingUser) {
+                        $role = strtoupper($existingUser->role);
+                        $fail("ID {$value} bentrok dengan {$existingUser->name} yang menjabat sebagai {$role}.");
+                    }
+                }
+            ],
             'role' => 'required|in:management,ypq,leader,supervisor,guest',
             'password' => 'nullable|string|min:6',
             'department_id' => ['nullable', 'integer', Rule::exists('departments', 'id')],
             'superior_id' => ['nullable', 'string', Rule::exists('users', 'employeeID')],
         ]);
 
-        // put everything into $data for update
         $data = $validated;
 
-        // hash password if provided
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
 
-        // if password is null, remove it from $data to avoid updating it
         if (is_null($request->password)) {
             unset($data['password']);
         }

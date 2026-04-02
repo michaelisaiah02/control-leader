@@ -13,12 +13,34 @@ class OperatorController extends Controller
 {
     public function index()
     {
-        $users = User::where('role', 'operator')->with('division')->get();
-        $leaders = User::where('role', 'leader')->with('department')->get();
-        $divisions = Division::with('department')->get()->groupBy(function ($data) {
-            // Jika tidak ada department, masukkan ke grup 'Lainnya' atau 'No Department'
-            return $data->department ? $data->department->name : 'Tanpa Departemen';
-        });
+        // Ambil department_id dari user yang lagi login
+        $userDeptId = auth()->user()->department_id;
+
+        // Filter operator berdasarkan departemen login (jika ada)
+        $users = User::where('role', 'operator')
+            ->when($userDeptId, function ($query, $deptId) {
+                $query->where('department_id', $deptId);
+            })
+            ->with('division')
+            ->get();
+
+        // Filter leader biar dropdown-nya relevan sama departemennya doang
+        $leaders = User::where('role', 'leader')
+            ->when($userDeptId, function ($query, $deptId) {
+                $query->where('department_id', $deptId);
+            })
+            ->with('department')
+            ->get();
+
+        // Filter divisi, terus di-grouping
+        $divisions = Division::with('department')
+            ->when($userDeptId, function ($query, $deptId) {
+                $query->where('department_id', $deptId);
+            })
+            ->get()
+            ->groupBy(function ($data) {
+                return $data->department ? $data->department->name : 'Tanpa Departemen';
+            });
 
         return view('schedule.operator', compact('users', 'divisions', 'leaders'), [
             'title' => 'DATA OPERATOR',
@@ -29,15 +51,28 @@ class OperatorController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'employeeID' => ['required', 'size:5', Rule::unique('users', 'employeeID')],
+            'employeeID' => [
+                'required',
+                'size:5',
+                function ($attribute, $value, $fail) {
+                    $existingUser = User::where('employeeID', $value)->first();
+                    if ($existingUser) {
+                        $role = strtoupper($existingUser->role);
+                        $fail("ID {$value} sudah terdaftar atas nama {$existingUser->name} (Role: {$role}). Silakan cek di menu yang sesuai.");
+                    }
+                }
+            ],
             'division_id' => ['required', 'integer', Rule::exists('divisions', 'id')],
             'superior_id' => ['nullable', 'integer', Rule::exists('users', 'employeeID')],
         ]);
 
         $validated['name'] = Str::ucfirst($validated['name']);
-        $validated['password'] = Hash::make(Str::random(10)); // Set default password
+        $validated['password'] = Hash::make(Str::random(10));
         $validated['role'] = 'operator';
         $validated['can_login'] = false;
+
+        $division = Division::find($request->division_id);
+        $validated['department_id'] = $division->department_id;
 
         User::create($validated);
 
@@ -53,7 +88,13 @@ class OperatorController extends Controller
             'employeeID' => [
                 'required',
                 'size:5',
-                Rule::unique('users', 'employeeID')->ignore($user->id),
+                function ($attribute, $value, $fail) use ($user) {
+                    $existingUser = User::where('employeeID', $value)->where('id', '!=', $user->id)->first();
+                    if ($existingUser) {
+                        $role = strtoupper($existingUser->role);
+                        $fail("ID {$value} sudah terdaftar atas nama {$existingUser->name} (Role: {$role}).");
+                    }
+                }
             ],
             'division_id' => [
                 'required',
@@ -61,6 +102,11 @@ class OperatorController extends Controller
                 Rule::exists('divisions', 'id'),
             ],
         ]);
+
+        if ($validated['division_id'] != $user->division_id) {
+            $division = Division::find($validated['division_id']);
+            $validated['department_id'] = $division->department_id;
+        }
 
         $user->update($validated);
 
@@ -81,6 +127,9 @@ class OperatorController extends Controller
         $keyword = $request->query('keyword');
         $leaderInput = $request->query('leader');
 
+        // Ambil department_id user yang login
+        $userDeptId = auth()->user()->department_id;
+
         $leaderIds = collect($leaderInput === null ? [] : (array) $leaderInput)
             ->flatMap(fn($value) => is_array($value) ? $value : explode(',', (string) $value))
             ->map(fn($value) => trim((string) $value))
@@ -89,6 +138,10 @@ class OperatorController extends Controller
 
         $users = User::query()
             ->where('role', 'operator')
+            // Tembok pertahanan utama: kunci di department_id user yang login
+            ->when($userDeptId, function ($query, $deptId) {
+                $query->where('department_id', $deptId);
+            })
             ->when($keyword, function ($query, $keyword) {
                 $query->where(function ($q) use ($keyword) {
                     $q->where('name', 'like', "%{$keyword}%")

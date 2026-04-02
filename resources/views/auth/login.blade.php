@@ -12,8 +12,8 @@
         }
 
         /* FIX LAYOUT: Override Navbar Layout Utama khusus page ini.
-                           Kita bikin navbar melayang di atas background, jadi gak nambah tinggi halaman.
-                        */
+                                                                       Kita bikin navbar melayang di atas background, jadi gak nambah tinggi halaman.
+                                                                    */
         nav.navbar {
             position: absolute;
             top: 0;
@@ -125,10 +125,17 @@
                             </button>
                         </div>
 
-                        <div class="mt-4 text-center">
-                            <small class="text-white-50 fst-italic">
-                                Jika gagal login, hubungi IT
-                            </small>
+                        <div class="mt-4 text-center row">
+                            <div class="col-auto">
+                                <a href="https://192.168.8.6:9001/" class="btn btn-primary fw-bold shadow-lg">
+                                    <i class="bi bi-arrow-left-circle"></i> Back
+                                </a>
+                            </div>
+                            <div class="col align-self-center">
+                                <small class="text-white-50 fst-italic">
+                                    Jika gagal login, hubungi IT
+                                </small>
+                            </div>
                         </div>
                     </form>
                 </div>

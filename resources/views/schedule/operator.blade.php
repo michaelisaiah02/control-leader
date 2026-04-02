@@ -172,7 +172,9 @@
                                 @foreach ($divisions as $departmentName => $deptDivisions)
                                     <optgroup label="{{ $departmentName }}">
                                         @foreach ($deptDivisions as $division)
-                                            <option value="{{ $division->id }}">{{ $division->name }}</option>
+                                            <option value="{{ $division->id }}"
+                                                data-department="{{ $division->department_id }}">{{ $division->name }}
+                                            </option>
                                         @endforeach
                                     </optgroup>
                                 @endforeach
@@ -183,7 +185,8 @@
                             <select class="form-select form-select-sm" id="leaderModal" name="superior_id" required>
                                 <option value="" disabled selected>Select Leader</option>
                                 @foreach ($leaders as $leader)
-                                    <option value="{{ $leader->employeeID }}">{{ $leader->name }}</option>
+                                    <option value="{{ $leader->employeeID }}"
+                                        data-department="{{ $leader->department_id }}">{{ $leader->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -236,28 +239,115 @@
 
             let debounceTimer;
 
+            // --- 🚀 SMART FILTERING CACHE ---
+            // Backup HTML asli dari server biar gampang di-reset tanpa perlu AJAX
+            const originalDivisionHTML = $('#division').html();
+            const originalLeaderHTML = $('#leaderModal').html();
+
+            // Map data department biar pencarian/logika O(1) nggak lemot
+            const divisionDepts = {};
+            $('#division option[data-department]').each(function() {
+                divisionDepts[$(this).val()] = $(this).data('department');
+            });
+
+            const leaderDepts = {};
+            $('#leaderModal option[data-department]').each(function() {
+                leaderDepts[$(this).val()] = $(this).data('department');
+            });
+
+            let isSyncing = false; // Flag ajaib anti infinite-loop
+
+            // --- FUNGSI RESET & FILTER ---
+            function initDivisionSelectize() {
+                if ($('#division')[0].selectize) $('#division')[0].selectize.destroy();
+                $('#division').selectize({
+                    sortField: 'text',
+                    searchField: ['text'],
+                    placeholder: 'Select Division...'
+                });
+            }
+
+            function filterDivisions(deptId) {
+                const currentVal = $('#division').val();
+
+                // 1. Reset ke kondisi original
+                if ($('#division')[0].selectize) $('#division')[0].selectize.destroy();
+                $('#division').html(originalDivisionHTML);
+
+                // 2. Buang opsi yang bukan dari department yang sama
+                if (deptId) {
+                    $('#division option[data-department]').filter(function() {
+                        return $(this).data('department') != deptId;
+                    }).remove();
+
+                    // Buang optgroup yang kosong melompong biar bersih
+                    $('#division optgroup').filter(function() {
+                        return $(this).children('option').length === 0;
+                    }).remove();
+                }
+
+                // 3. Bangun ulang Selectize-nya
+                initDivisionSelectize();
+
+                // 4. Kalau value sebelumnya masih ada di list baru, pertahankan
+                if (currentVal && $('#division option[value="' + currentVal + '"]').length > 0) {
+                    $('#division')[0].selectize.setValue(currentVal, true); // true = silent, no re-trigger
+                }
+            }
+
+            function filterLeaders(deptId) {
+                const currentVal = $('#leaderModal').val();
+                $('#leaderModal').html(originalLeaderHTML);
+
+                if (deptId) {
+                    $('#leaderModal option[data-department]').filter(function() {
+                        return $(this).data('department') != deptId;
+                    }).remove();
+                }
+
+                if (currentVal && $('#leaderModal option[value="' + currentVal + '"]').length > 0) {
+                    $('#leaderModal').val(currentVal);
+                } else {
+                    $('#leaderModal').val('');
+                }
+            }
+
+            // --- INIT AWAL ---
+            initDivisionSelectize();
+            fetchOperators();
+
+            // --- CROSS-DEPENDENCY EVENTS ---
+            $('#leaderModal').on('change', function() {
+                if (isSyncing) return;
+                isSyncing = true;
+                const targetDept = $(this).val() ? leaderDepts[$(this).val()] : null;
+                filterDivisions(targetDept);
+                isSyncing = false;
+            });
+
+            $('#division').on('change', function() {
+                if (isSyncing) return;
+                isSyncing = true;
+                const targetDept = $(this).val() ? divisionDepts[$(this).val()] : null;
+                filterLeaders(targetDept);
+                isSyncing = false;
+            });
+
+            // --- AJAX SEARCH LIST ---
             function fetchOperators(url = ROUTES.SEARCH) {
                 $('#table-loader').removeClass('d-none');
-                const keyword = $('#search-operator').val();
-                const leader = $('#leader').val();
-
                 $.ajax({
                     url: url,
                     type: 'GET',
                     data: {
-                        keyword: keyword,
-                        leader: leader
+                        keyword: $('#search-operator').val(),
+                        leader: $('#leader').val() // filter table di atas
                     },
                     success: function(response) {
                         $('#operator-table-body').html(response.html);
                         $('#pagination-links').html(response.pagination);
-
-                        // Update Department field
                         const selectedDept = $('#leader option:selected').data('department');
                         $('#department').val(selectedDept || '-');
-                    },
-                    error: function() {
-                        alert('Error loading data.');
                     },
                     complete: function() {
                         $('#table-loader').addClass('d-none');
@@ -265,7 +355,6 @@
                 });
             }
 
-            // --- Event Listeners ---
             $('#search-operator').on('input', function() {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => fetchOperators(), 500);
@@ -280,7 +369,7 @@
                 fetchOperators($(this).attr('href'));
             });
 
-            // --- Modal Actions ---
+            // --- MODAL ACTIONS ---
             $('#btn-add-operator').click(function() {
                 $('#operatorForm')[0].reset();
                 $('#operatorForm').removeClass('was-validated');
@@ -292,24 +381,21 @@
             $(document).on('click', '.btn-edit-operator', function() {
                 const btn = $(this);
                 const id = btn.data('id');
-
-                $('#operator-id').val(id);
-                $('#employeeID').val(btn.data('employeeid'));
-                $('#name').val(btn.data('name'));
-                $('#leaderModal').val(btn.data('leader'));
-
-                // --- PERBAIKAN SELECTIZE DI SINI ---
-                // 1. Ambil ID divisi dari tombol
+                const leaderId = btn.data('leader');
                 const divisionId = btn.data('division');
 
-                // 2. Ambil instance Selectize dari elemen #division
-                const divisionSelectize = $('#division')[0].selectize;
+                $('#operator-id').val(id);
+                $('#employeeID').val(btn.data('employeeid')).attr('readonly', true);
+                $('#name').val(btn.data('name'));
 
-                // 3. Set nilainya menggunakan API Selectize
-                if (divisionSelectize) {
-                    divisionSelectize.setValue(divisionId);
+                // Trik: Set nilai Leader dulu dan .trigger('change') buat ngefilter list Divisi
+                $('#leaderModal').val(leaderId).trigger('change');
+
+                // Setelah Divisi difilter, baru kita masukkan value Divisi-nya
+                const divisionSelectize = $('#division')[0].selectize;
+                if (divisionSelectize && divisionId) {
+                    divisionSelectize.setValue(divisionId, true); // silent set
                 }
-                // -----------------------------------
 
                 $('#operatorModalLabel').text('Edit Operator');
                 $('#operatorForm').attr('action', `${ROUTES.UPDATE}/${id}`);
@@ -318,9 +404,7 @@
                     $('#operatorForm').prepend('<input type="hidden" name="_method" value="PUT">');
                 }
 
-                const myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById(
-                    'operatorModal'));
-                myModal.show();
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('operatorModal')).show();
             });
 
             $(document).on('click', '.btn-delete-operator', function() {
@@ -339,35 +423,25 @@
                 $(this).addClass('was-validated');
             });
 
-            $('#division').selectize({
-                sortField: 'text', // Mengurutkan opsi berdasarkan teks secara alfabetis (opsional)
-                searchField: ['text'], // Memastikan fitur pencarian aktif untuk teks di dalam option
-                placeholder: 'Select Division...'
-            });
-
-            // Event ini jalan otomatis tiap kali modal ditutup
             $('#operatorModal').on('hidden.bs.modal', function() {
-                // 1. Reset inputan text biasa di dalam form
                 $('#operatorForm')[0].reset();
                 $('#operator-id').val('');
 
-                // 2. Kosongkan nilai Selectize pakai API bawaannya
+                // Kembalikan ke pilihan lengkap (tanpa filter) untuk modal berikutnya
+                isSyncing = true;
+                filterDivisions(null);
+                filterLeaders(null);
+                isSyncing = false;
+
                 const divisionSelectize = $('#division')[0].selectize;
                 if (divisionSelectize) {
-                    divisionSelectize.clear(); // Ini yang bikin opsinya hilang/reset ke placeholder
+                    divisionSelectize.clear(true); // reset bersih ke placeholder
                 }
 
-                // 3. Kembalikan kondisi form untuk "Add New"
                 $('#operatorModalLabel').text('Add New Operator');
-                $('#operatorForm').attr('action', ROUTES
-                .STORE); // Pastikan ini mengarah ke route untuk Create/Store
-
-                // Hapus input hidden _method=PUT bekas dari form Edit (agar form Add pakai POST biasa)
+                $('#operatorForm').attr('action', ROUTES.STORE);
                 $('#operatorForm').find('input[name="_method"]').remove();
             });
-
-            // Initial Load
-            fetchOperators();
         });
     </script>
 @endsection

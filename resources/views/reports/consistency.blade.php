@@ -110,7 +110,8 @@
                         <th class="text-capitalize">{{ $type }}</th>
                     </tr>
                 </table>
-                <div class="d-flex p-1 gap-1 mt-5">
+                <div class="d-flex d-print-none" style="height: 200px"></div>
+                <div class="d-none d-print-flex p-1 gap-1 mt-5">
                     <table class="table table-bordered border-black mb-0 pb-0">
                         <tr>
                             <td class="py-0 my-0">Disetujui</td>
@@ -121,7 +122,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="py-1 my-0">Daniel T</td>
+                            <td class="py-1 my-0">&nbsp;</td>
                         </tr>
                     </table>
                     <table class="table table-bordered border-black mb-0 pb-0">
@@ -134,7 +135,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="py-1 my-0">Febby</td>
+                            <td class="py-1 my-0">&nbsp;</td>
                         </tr>
                     </table>
                     <table class="table table-bordered border-black mb-0 pb-0">
@@ -147,7 +148,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="py-1 my-0">Oki</td>
+                            <td class="py-1 my-0">&nbsp;</td>
                         </tr>
                     </table>
                 </div>

@@ -56,6 +56,14 @@ class ChecksheetController extends Controller
         return $u->employeeID ?: ($u->role === 'leader' ? 'LDR' . $u->id : 'OP' . $u->id);
     }
 
+    private function getEmployeeName(string $uid): string
+    {
+        // 1. Prioritaskan cari berdasarkan string employeeID yang mutlak ('00001' tidak akan jadi 1)
+        $u = User::where('employeeID', $uid)->first();
+
+        return $u->name;
+    }
+
     // ==========================================
     // 2. PAGE RENDERING (PART A & B)
     // ==========================================
@@ -100,7 +108,6 @@ class ChecksheetController extends Controller
         $grouped = $details->groupBy('target_user_id');
         $options = [];
         $targetLabel = $direction === 'supervisor_checks_leader' ? 'ID & Nama Leader' : 'ID & Nama Operator';
-
         foreach ($grouped as $userId => $userDates) {
             if ($direction === 'supervisor_checks_leader') {
                 // ==========================================
@@ -170,7 +177,7 @@ class ChecksheetController extends Controller
                         $isLate = $scheduleDate->lessThan($todayDate) ? " (Telat: $fmtDate)" : " (Hari ini)";
 
                         $options[] = [
-                            'value' => "{$d->id}::{$userId}::{$d->division}",
+                            'value' => "{$d->targetUser->id}::{$userId}::{$d->targetUser->division->name}",
                             'label' => ($targetUser->employeeID ?: "OP{$userId}") . ' - ' . $targetUser->name . $isLate,
                         ];
                     }
@@ -320,7 +327,7 @@ class ChecksheetController extends Controller
             'phase' => $phase,
             'stopwatch_duration' => $duration,
             'score' => 0,
-            'scheduled_target' => $scheduledTargetId,
+            'scheduled_target' => $scheduledTargetId . ' - ' . $this->getEmployeeName($scheduledTargetId),
             'shift' => $data['part_a']['shift'],
             'target' => $scheduledTargetId,
             'division' => $division,
@@ -340,7 +347,7 @@ class ChecksheetController extends Controller
             'phase' => $phase,
             'stopwatch_duration' => null,
             'score' => 0,
-            'scheduled_target' => $scheduledTargetId,
+            'scheduled_target' => $scheduledTargetId . ' - ' . $this->getEmployeeName($scheduledTargetId),
             'shift' => $data['part_a']['shift'],
             'target' => $scheduledTargetId,
             'division' => $division,
@@ -366,7 +373,7 @@ class ChecksheetController extends Controller
             'phase' => $phase,
             'stopwatch_duration' => null,
             'score' => 0,
-            'scheduled_target' => $scheduledTargetId,
+            'scheduled_target' => $scheduledTargetId . ' - ' . $this->getEmployeeName($scheduledTargetId),
             'shift' => $data['part_a']['shift'],
             'target' => $scheduledTargetId,
             'division' => $division,
@@ -385,7 +392,7 @@ class ChecksheetController extends Controller
             'phase' => $phase,
             'stopwatch_duration' => $duration,
             'score' => 0,
-            'scheduled_target' => $scheduledTargetId,
+            'scheduled_target' => $scheduledTargetId . ' - ' . $this->getEmployeeName($scheduledTargetId),
             'shift' => $data['part_a']['shift'],
             'target' => $penggantiTargetId,
             'division' => $division,

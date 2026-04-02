@@ -168,6 +168,7 @@ class ScheduleController extends Controller
         // 2. Ambil List Leader (Buat Dropdown Filter)
         $availableLeaders = User::where('role', 'leader')
             ->where('is_active', true)
+            ->where('superior_id', auth()->user()->employeeID)
             ->orderBy('name')
             ->get();
 

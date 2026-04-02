@@ -103,7 +103,7 @@
                         {{-- 3. Bagian --}}
                         <div class="mb-3">
                             <label class="form-label fw-bold text-secondary small text-uppercase">
-                                {{ $phase === 'leader' ? '2' : '3' }}. Bagian (Auto-fill)
+                                {{ $phase === 'leader' ? '2' : '3' }}. Bagian
                             </label>
                             <input type="text" name="bagian" class="form-control bg-light" placeholder="-" readonly>
                         </div>
@@ -351,12 +351,15 @@
                 dropdownParent: 'body'
             })[0].selectize;
 
+            let penggantiSelectize = null;
+            let originalPenggantiOptions = [];
+
             if (PHASE !== 'leader') {
                 let penggantiSelectize = $('[name="nama_pengganti"]').selectize({
                     theme: 'bootstrap5',
                     dropdownParent: 'body'
                 })[0].selectize;
-                let originalPenggantiOptions = Object.values(penggantiSelectize.options);
+                originalPenggantiOptions = Object.values(penggantiSelectize.options);
             }
 
             $('[name="target_pick"]').on('change', function() {
