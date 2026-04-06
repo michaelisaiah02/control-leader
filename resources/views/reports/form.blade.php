@@ -150,7 +150,7 @@
             </div>
 
             {{-- STICKY ACTION BAR --}}
-            <div class="action-bar d-flex justify-content-between align-items-center px-3 px-md-5 mx-0 bg-white border-top shadow-lg"
+            <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center"
                 style="z-index: 1030;">
                 <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
                     <i class="bi bi-arrow-left me-2"></i> Kembali

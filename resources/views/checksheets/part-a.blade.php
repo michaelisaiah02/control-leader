@@ -246,8 +246,7 @@
     </div>
 
     {{-- STICKY ACTION BAR (Nempel di bawah) --}}
-    <div
-        class="action-bar d-flex justify-content-between align-items-center px-3 px-md-5 bg-white border-top shadow-lg fixed-bottom">
+    <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center">
         <button type="button" class="btn btn-outline-secondary rounded-pill px-4 me-2 fw-bold d-none" id="prevBtn">
             <i class="bi bi-arrow-left me-2"></i> Kembali
         </button>
@@ -263,7 +262,7 @@
                 <i class="bi bi-check-lg me-2"></i> Submit
             </button>
         @else
-            <button type="button" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm ms-auto"
+            <button type="button" class="btn btn-outline-primary rounded-pill px-5 py-2 fw-bold shadow-sm ms-auto"
                 id="nextBtn">
                 Lanjut <i class="bi bi-arrow-right ms-2" id="nextIcon"></i>
             </button>

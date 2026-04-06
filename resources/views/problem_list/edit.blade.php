@@ -56,7 +56,7 @@
 
                 {{-- SECTION 1: REFERENCE DATA (READ-ONLY) --}}
                 <div class="card-header bg-light border-bottom-0 py-1 rounded-top-4">
-                    <h6 class="fw-bold text-secondary mb-2 text-uppercase small">
+                    <h6 class="fw-bold text-secondary mb-1 text-uppercase small">
                         <i class="bi bi-info-circle-fill me-1"></i> Detail Problem
                     </h6>
 
@@ -78,7 +78,7 @@
 
                 <div class="card-body p-3">
                     {{-- SECTION 2: LEADER ACTION (COUNTERMEASURE) --}}
-                    <div class="mb-3">
+                    <div class="mb-1">
                         <label for="countermeasure"
                             class="form-label fw-bold {{ $canEditCountermeasure ? 'text-primary' : 'text-secondary' }} small text-uppercase">
                             <i class="bi bi-wrench me-1"></i> Countermeasure
@@ -101,9 +101,9 @@
 
                     {{-- SECTION 3: SUPERVISOR ACTION (STATUS & DUE DATE) --}}
                     <div class="row g-3">
-                        <div class="col-md-6 mt-2">
+                        <div class="col-md-6 mt-1">
                             <label for="status"
-                                class="form-label fw-bold {{ $canEditStatus ? 'text-primary' : 'text-secondary' }} small text-uppercase">
+                                class="form-label fw-bold {{ $canEditStatus ? 'text-primary' : 'text-secondary' }} small text-uppercase mb-1">
                                 <i class="bi bi-tag me-1"></i> Status
                             </label>
                             {{-- FIX: name="department" diubah jadi name="status" --}}
@@ -124,9 +124,9 @@
                             @endif
                         </div>
 
-                        <div class="col-md-6 mt-2">
+                        <div class="col-md-6 mt-1">
                             <label for="due_date"
-                                class="form-label fw-bold {{ $canEditStatus ? 'text-primary' : 'text-secondary' }} small text-uppercase">
+                                class="form-label fw-bold {{ $canEditStatus ? 'text-primary' : 'text-secondary' }} small text-uppercase mb-1">
                                 <i class="bi bi-calendar-event me-1"></i> Due Date
                             </label>
 
@@ -163,7 +163,7 @@
             </div>
 
             {{-- STICKY ACTION BAR --}}
-            <div class="action-bar d-flex justify-content-between align-items-center px-3 px-md-5 py-1 mt-3 bg-white border-top shadow-lg"
+            <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center"
                 style="z-index: 1030;">
                 <a href="{{ route('listProblem.list', $type) }}"
                     class="btn btn-outline-secondary rounded-pill px-4 fw-bold">

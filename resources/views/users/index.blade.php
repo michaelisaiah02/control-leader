@@ -71,7 +71,7 @@
         </div>
 
         {{-- ACTION BAR --}}
-        <div class="action-bar-static d-flex justify-content-between align-items-center px-2 mt-2">
+        <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center">
             <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold">
                 <i class="bi bi-arrow-left me-2"></i> Back
             </a>

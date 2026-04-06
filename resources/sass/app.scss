@@ -217,7 +217,7 @@ img.icon,
 @media (min-width: 992px) {
     .dashboard-container {
         /* Tinggi layar - Tinggi Navbar (~80px) - Padding */
-        height: calc(100vh - 80px);
+        height: calc(100vh - 175px);
         padding-top: 0;
         padding-bottom: 0;
 
@@ -286,7 +286,7 @@ img.icon,
 .layout-fixed {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 165px); // Sesuaikan dengan tinggi Navbar lo
+    height: calc(100vh - 115px); // Sesuaikan dengan tinggi Navbar lo
     padding-bottom: 0 !important;
     overflow: auto; // Kunci scroll body
 

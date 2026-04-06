@@ -4,7 +4,7 @@
 
 <div class="row g-3">
     {{-- TANGGAL --}}
-    <div class="col-md-3">
+    <div class="col-md-4 mt-1">
         <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
             <i class="bi bi-calendar-event me-1"></i> Tanggal
         </label>
@@ -13,7 +13,7 @@
     </div>
 
     {{-- NAMA TARGET (Yang kena problem konsistensi) --}}
-    <div class="col-md-5">
+    <div class="col-md-4 mt-1">
         <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
             <i class="bi bi-person-badge me-1"></i> Nama ({{ ucfirst($pageRole) }})
         </label>
@@ -22,7 +22,7 @@
     </div>
 
     {{-- REMARK (Miss / Late / Advanced) --}}
-    <div class="col-md-4">
+    <div class="col-md-4 mt-1">
         <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
             <i class="bi bi-flag-fill me-1"></i> Remark
         </label>
@@ -31,7 +31,7 @@
     </div>
 
     {{-- PROBLEM --}}
-    <div class="col-12 mt-3">
+    <div class="col-12 mt-1">
         <label class="form-label small fw-bold text-danger text-uppercase mb-1">
             <i class="bi bi-exclamation-circle me-1"></i> Problem Detail
         </label>

@@ -147,27 +147,27 @@
     </div>
 
     {{-- STICKY ACTION BAR --}}
-    <div class="action-bar d-flex justify-content-between align-items-center px-3 px-md-5 bg-white border-top shadow-lg"
+    <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center"
         style="z-index: 1030;">
         <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-bold" id="prevQ"
             style="visibility: hidden;">
             <i class="bi bi-arrow-left me-2"></i> Back
         </button>
-        <button type="button" class="btn btn-outline-danger rounded-pill px-4 fw-bold" id="cancelBtn"
+        <button type="button" class="btn btn-outline-danger rounded-pill px-4 fw-bold ms-1 me-auto" id="cancelBtn"
             data-bs-toggle="modal" data-bs-target="#cancelModal">
             <i class="bi bi-x-lg me-2"></i> Batal
         </button>
 
-        <div class="fw-bold text-muted small px-3 py-1 bg-light rounded-pill border" id="pageInfo">
+        <div class="fw-bold text-muted small px-3 py-1 bg-light rounded-pill border me-auto" id="pageInfo">
             {{ count($questions) ? '1 / ' . count($questions) : '0 / 0' }}
         </div>
 
         <div>
-            <button type="button" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm" id="nextQ">
-                Next <i class="bi bi-arrow-right ms-1"></i>
+            <button type="button" class="btn btn-outline-primary rounded-pill px-5 py-2 fw-bold shadow-sm" id="nextQ">
+                Lanjut <i class="bi bi-arrow-right ms-1"></i>
             </button>
             <button type="button" class="btn btn-success rounded-pill px-5 py-2 fw-bold shadow-sm d-none" id="submitBtn">
-                <i class="bi bi-send-check me-2"></i> Submit Data
+                <i class="bi bi-send-check me-2"></i> Submit
             </button>
         </div>
     </div>
@@ -293,7 +293,7 @@
                 const $extraWrap = $card.find('.extra-fields-wrap');
 
                 if (!isAnswered) {
-                    showToast('Pilih salah satu jawaban dulu bos!');
+                    showToast('Pilih salah satu jawaban dulu!');
                     return false;
                 }
 

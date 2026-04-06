@@ -3,8 +3,8 @@
 @section('styles')
     <style>
         /* =========================================
-                                                               1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
-                                                               ========================================= */
+                                                                   1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
+                                                                   ========================================= */
         .schedule-table {
             border-collapse: separate !important;
             border-spacing: 0;
@@ -25,8 +25,8 @@
         }
 
         /* =========================================
-                                                               2. Z-INDEX & STICKY LOGIC
-                                                               ========================================= */
+                                                                   2. Z-INDEX & STICKY LOGIC
+                                                                   ========================================= */
         .schedule-table thead th {
             position: sticky;
             top: 0;
@@ -67,8 +67,8 @@
         }
 
         /* =========================================
-                                                               3. UI CELL (EXCEL MODE)
-                                                               ========================================= */
+                                                                   3. UI CELL (EXCEL MODE)
+                                                                   ========================================= */
         .shift-select {
             min-width: 45px !important;
             padding: 4px 0 !important;
@@ -110,7 +110,7 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid layout-fixed pb-2">
+    <div class="container-fluid pb-2">
 
         {{-- SECTION 1: FILTER --}}
         <div class="card border-0 shadow-sm mb-2 rounded-3 shrink-0">
@@ -244,7 +244,7 @@
         </div>
 
         {{-- SECTION 3: ACTION BAR --}}
-        <div class="action-bar-static d-flex justify-content-between align-items-center px-2 mt-2">
+        <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center">
             <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-4 fw-bold">
                 <i class="bi bi-arrow-left me-2"></i> Back
             </a>

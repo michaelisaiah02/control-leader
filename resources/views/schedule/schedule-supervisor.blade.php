@@ -127,7 +127,7 @@
         // Bikin gembok: Ambil akhir minggu dari hari ini (Default Carbon = Hari Minggu)
         $endOfCurrentWeek = \Carbon\Carbon::now()->endOfWeek();
     @endphp
-    <div class="container-fluid layout-fixed pb-2">
+    <div class="container-fluid pb-2">
 
         {{-- SECTION 1: FILTER (Compact Header) --}}
         <div class="card border-0 shadow-sm mb-2 rounded-3 shrink-0">
@@ -249,7 +249,7 @@
         </div>
 
         {{-- SECTION 3: ACTION BAR --}}
-        <div class="action-bar-static d-flex justify-content-between align-items-center px-2 mt-2">
+        <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center">
             <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-4 fw-bold">
                 <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
             </a>

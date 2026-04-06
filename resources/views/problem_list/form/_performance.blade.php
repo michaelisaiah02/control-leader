@@ -5,7 +5,7 @@
 
 <div class="row g-3">
     {{-- Tanggal --}}
-    <div class="col-md-4">
+    <div class="col-md-2 mt-1">
         <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
             <i class="bi bi-calendar-event me-1"></i> Tanggal
         </label>
@@ -14,7 +14,7 @@
     </div>
 
     {{-- Person 1 (Auditor / Yang Ngecek) --}}
-    <div class="col-md-4">
+    <div class="col-md-5 mt-1">
         <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
             <i class="bi bi-person-badge me-1"></i> Nama ({{ ucfirst($pageRole) }})
         </label>
@@ -24,7 +24,7 @@
     </div>
 
     {{-- Person 2 (Auditee / Target yang dicek) --}}
-    <div class="col-md-4">
+    <div class="col-md-5 mt-1">
         <label class="form-label small fw-bold text-secondary text-uppercase mb-1">
             <i class="bi bi-person-gear me-1"></i> Nama ({{ $pageRole === 'leader' ? 'Operator' : 'Leader' }})
         </label>
@@ -33,7 +33,7 @@
     </div>
 
     {{-- Problem Description --}}
-    <div class="col-12 mt-3">
+    <div class="col-12 mt-1">
         <label class="form-label small fw-bold text-danger text-uppercase mb-1">
             <i class="bi bi-exclamation-octagon me-1"></i> Problem
         </label>

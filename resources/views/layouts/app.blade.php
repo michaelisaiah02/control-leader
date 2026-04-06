@@ -75,7 +75,7 @@
     </nav>
 
     {{-- Content Wrapper --}}
-    <main class="pt-3">
+    <main class="pt-2">
         @yield('content')
     </main>
 

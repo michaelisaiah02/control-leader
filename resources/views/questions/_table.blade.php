@@ -67,15 +67,9 @@
                                 <i class="bi bi-pencil-square"></i>
                             </a>
 
-                            <form method="POST" action="{{ route('question.destroy', $question->id) }}"
-                                class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" onclick="return confirm('Delete this question?')"
-                                    class="btn btn-sm btn-outline-danger border-0" title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                            <button id="deleteBtn" type="button" class="btn btn-sm btn-outline-danger border-0" data-bs-toggle="modal" data-bs-target="#deleteModal" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </td>
                 </tr>

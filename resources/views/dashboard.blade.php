@@ -193,7 +193,7 @@
             {{-- ROLE: SUPERVISOR --}}
         @elseif(auth()->user()->role === 'supervisor')
             {{-- Gunakan logika row yang sama untuk supervisor --}}
-            <div id="supervisor-menu-container">
+            <div id="supervisor-menu-container" class="my-auto">
                 <div id="menu-main"
                     class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-3 g-xl-4 justify-content-center animate-fade-in"
                     style="max-width: 900px; margin: 0 auto;">
@@ -259,7 +259,7 @@
 
             {{-- ROLE: Management atau YPQ --}}
         @elseif(in_array(auth()->user()->role, ['management', 'ypq']))
-            <div class="row g-4 justify-content-center animate-fade-in">
+            <div class="row g-4 justify-content-center animate-fade-in my-auto">
                 <div id="menu-main"
                     class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-3 g-xl-4 justify-content-center animate-fade-in"
                     style="max-width: 900px; margin: 0 auto;">

@@ -99,7 +99,7 @@
         </div>
 
         {{-- SECTION 3: ACTION BAR --}}
-        <div class="action-bar-static d-flex justify-content-between align-items-center px-2 mt-2">
+        <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center">
             <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold">
                 <i class="bi bi-arrow-left me-2"></i> Back
             </a>
@@ -107,7 +107,32 @@
                 <i class="bi bi-plus-lg me-2"></i> Add Question
             </a>
         </div>
-
+    </div>
+    {{-- Modal Delete --}}
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Konfirmasi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Hapus pertanyaan ini?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-1"></i> Cancel
+                    </button>
+                    <form id="deleteForm" method="POST" action="">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
     <x-toast />
 @endsection
@@ -263,6 +288,13 @@
                     });
                 });
             }
+
+            $('#deleteModal').on('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const questionId = button.closest('tr').getAttribute('data-id');
+                const form = document.getElementById('deleteForm');
+                form.action = `{{ url('question') }}/${questionId}`;
+            });
 
             // Init First Load
             initSortable();
