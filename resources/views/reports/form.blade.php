@@ -142,7 +142,7 @@
                                 <i class="bi bi-calendar-event me-1"></i> Periode (Bulan & Tahun)
                             </label>
                             <input type="month" name="month" id="month"
-                                class="form-control border-primary shadow-sm" required />
+                                class="form-control border-primary shadow-sm" max="{{ date('Y-m') }}" required />
                         </div>
                     </div>
 
@@ -223,88 +223,136 @@
     </script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // 1. Ubah data dari Laravel ke format Javascript Array
+            // 1. Ubah SEMUA data dari Laravel ke format Javascript Array
+            // Biar kita bisa lacak silsilah keluarganya sampe ke akar 🌳
+            const allDepartments = @json($departments);
+            const allSupervisors = @json($supervisors);
             const allLeaders = @json($leaders);
             const allOperators = @json($operators);
 
-            // 2. Tangkap elemen select-nya
-            const supervisorSelect = document.getElementById('supervisor');
+            // 2. Tangkap elemen DOM
+            const deptSelect = document.getElementById('department');
+            const spvSelect = document.getElementById('supervisor');
             const leaderSelect = document.getElementById('leader');
-            const operatorSelect = document.getElementById('operator');
+            const opSelect = document.getElementById('operator');
+
+            // Flag anti-kiamat (mencegah infinite loop pas auto-fill saling trigger)
+            let isSyncing = false;
+
+            // Fungsi sakti buat nge-rebuild dropdown tanpa ngerusak UX
+            const rebuildDropdown = (selectEl, data, selectedValue, defaultText) => {
+                if (!selectEl) return;
+                selectEl.innerHTML =
+                    `<option value="" disabled ${!selectedValue ? 'selected' : ''}>${defaultText}</option>`;
+                data.forEach(item => {
+                    const isSelected = item.employeeID == selectedValue ? 'selected' : '';
+                    selectEl.innerHTML +=
+                        `<option value="${item.employeeID}" ${isSelected}>${item.employeeID} - ${item.name}</option>`;
+                });
+            };
 
             // ==========================================
-            // FILTER LEADER BERDASARKAN SUPERVISOR
+            // SCENARIO 1: BOTTOM-UP (Pilih Operator -> Auto-fill Leader, SPV, Dept)
             // ==========================================
-            if (supervisorSelect && leaderSelect) {
-                supervisorSelect.addEventListener('change', function() {
-                    const supervisorId = this.value;
+            if (opSelect) {
+                opSelect.addEventListener('change', function() {
+                    if (isSyncing) return;
+                    isSyncing = true; // Nyalain shield 🛡️
 
-                    // Reset pilihan Leader
-                    leaderSelect.innerHTML =
-                        '<option value="" selected disabled>-- Pilih Leader --</option>';
+                    const opId = this.value;
+                    const op = allOperators.find(o => o.employeeID == opId);
 
-                    // Reset pilihan Operator (kalau elemennya ada)
-                    if (operatorSelect) {
-                        operatorSelect.innerHTML =
-                            '<option value="" selected disabled>-- Pilih Operator --</option>';
-                    }
+                    if (op) {
+                        const leader = allLeaders.find(l => l.employeeID == op.superior_id);
+                        if (leader) {
+                            const spv = allSupervisors.find(s => s.employeeID == leader.superior_id);
 
-                    // Filter Leader yang 'superior_id'-nya sama dengan Supervisor yang dipilih
-                    const filteredLeaders = allLeaders.filter(l => l.superior_id === supervisorId);
+                            // 1. Set Supervisor & Department
+                            if (spv) {
+                                if (deptSelect && spv.department_id) deptSelect.value = spv.department_id;
+                                if (spvSelect) spvSelect.value = spv.employeeID;
 
-                    // Masukin hasil filter ke dropdown Leader
-                    filteredLeaders.forEach(leader => {
-                        const option = document.createElement('option');
-                        option.value = leader.employeeID;
-                        option.textContent = `${leader.employeeID} - ${leader.name}`;
+                                // 2. Rebuild Leader dropdown khusus untuk SPV ini
+                                rebuildDropdown(leaderSelect, allLeaders.filter(l => l.superior_id == spv
+                                    .employeeID), leader.employeeID, '-- Pilih Leader --');
+                            }
 
-                        // Kalau usernya lagi login sebagai Leader ini, otomatis di-select
-                        if ('{{ auth()->user()->employeeID }}' === leader.employeeID) {
-                            option.selected = true;
+                            // 3. Rebuild Operator dropdown khusus untuk Leader ini
+                            rebuildDropdown(opSelect, allOperators.filter(o => o.superior_id == leader
+                                .employeeID), opId, '-- Pilih Operator --');
                         }
-                        leaderSelect.appendChild(option);
-                    });
-
-                    // Trigger event change ke Leader biar Operator ikut ke-update kalau Leader otomatis ke-select
-                    if (leaderSelect.value) {
-                        leaderSelect.dispatchEvent(new Event('change'));
                     }
-                });
 
-                // Trigger pertama kali pas halaman beres loading (buat auto-fill kalau Supervisor udah ke-select otomatis)
-                if (supervisorSelect.value) {
-                    supervisorSelect.dispatchEvent(new Event('change'));
-                }
+                    isSyncing = false; // Matiin shield
+                });
             }
 
             // ==========================================
-            // FILTER OPERATOR BERDASARKAN LEADER
+            // SCENARIO 2: MID-WAY (Pilih Leader -> Auto-fill SPV, Dept, Reset Operator)
             // ==========================================
-            if (leaderSelect && operatorSelect) {
+            if (leaderSelect) {
                 leaderSelect.addEventListener('change', function() {
+                    if (isSyncing) return;
+                    isSyncing = true;
+
                     const leaderId = this.value;
+                    const leader = allLeaders.find(l => l.employeeID == leaderId);
 
-                    // Reset pilihan Operator
-                    operatorSelect.innerHTML =
-                        '<option value="" selected disabled>-- Pilih Operator --</option>';
+                    if (leader) {
+                        const spv = allSupervisors.find(s => s.employeeID == leader.superior_id);
 
-                    // Filter Operator yang 'superior_id'-nya sama dengan Leader yang dipilih
-                    const filteredOperators = allOperators.filter(o => o.superior_id === leaderId);
+                        if (spv) {
+                            if (deptSelect && spv.department_id) deptSelect.value = spv.department_id;
+                            if (spvSelect) spvSelect.value = spv.employeeID;
 
-                    // Masukin hasil filter ke dropdown Operator
-                    filteredOperators.forEach(operator => {
-                        const option = document.createElement('option');
-                        option.value = operator.employeeID;
-                        option.textContent = `${operator.employeeID} - ${operator.name}`;
-                        operatorSelect.appendChild(option);
-                    });
+                            rebuildDropdown(leaderSelect, allLeaders.filter(l => l.superior_id == spv
+                                .employeeID), leaderId, '-- Pilih Leader --');
+                        }
+
+                        // Reset anak (Operator)
+                        rebuildDropdown(opSelect, allOperators.filter(o => o.superior_id == leaderId), null,
+                            '-- Pilih Operator --');
+                    }
+
+                    isSyncing = false;
                 });
-
-                // Trigger auto-fill pertama kali jika dibutuhkan
-                if (leaderSelect.value) {
-                    leaderSelect.dispatchEvent(new Event('change'));
-                }
             }
+
+            // ==========================================
+            // SCENARIO 3: TOP-DOWN (Pilih SPV -> Auto-fill Dept, Reset Leader & Operator)
+            // ==========================================
+            if (spvSelect) {
+                spvSelect.addEventListener('change', function() {
+                    if (isSyncing) return;
+                    isSyncing = true;
+
+                    const spvId = this.value;
+                    const spv = allSupervisors.find(s => s.employeeID == spvId);
+
+                    if (spv) {
+                        // Set parent (Dept)
+                        if (deptSelect && spv.department_id) deptSelect.value = spv.department_id;
+
+                        // Reset anak-anaknya
+                        rebuildDropdown(leaderSelect, allLeaders.filter(l => l.superior_id == spvId), null,
+                            '-- Pilih Leader --');
+                        rebuildDropdown(opSelect, [], null, '-- Pilih Operator --');
+                    }
+
+                    isSyncing = false;
+                });
+            }
+
+            // Trigger inisial pas page load (buat nangkep auth()->user() yang otomatis selected dari server)
+            setTimeout(() => {
+                if (opSelect && opSelect.value) {
+                    opSelect.dispatchEvent(new Event('change'));
+                } else if (leaderSelect && leaderSelect.value) {
+                    leaderSelect.dispatchEvent(new Event('change'));
+                } else if (spvSelect && spvSelect.value) {
+                    spvSelect.dispatchEvent(new Event('change'));
+                }
+            }, 100); // Kasih delay dikit biar DOM render sempurna dulu
         });
     </script>
 @endsection

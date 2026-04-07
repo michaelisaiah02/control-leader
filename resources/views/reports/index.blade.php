@@ -24,14 +24,14 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid pb-5 mb-5 max-w-800 mx-auto animate-fade-in">
+    <div class="container-fluid dashboard-container max-w-800 mx-auto animate-fade-in pb-5 pb-md-0">
 
-        <div class="text-center mb-5 mt-4">
+        <div class="text-center mt-auto mb-5">
             <h4 class="fw-bold text-dark">Pilih Kategori Report</h4>
             <p class="text-muted small">Pilih level jabatan untuk melihat laporan performa</p>
         </div>
 
-        <div class="row g-4 justify-content-center">
+        <div class="row g-4 justify-content-center mb-auto">
             @if (auth()->user()->role !== 'leader')
                 {{-- KARTU SUPERVISOR --}}
                 <div class="col-12 col-md-4">

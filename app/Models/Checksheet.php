@@ -22,6 +22,7 @@ class Checksheet extends Model
         'scheduled_target',
         'phase',
         'shift',
+        'shift_date',
         'target',
         'division',
         'attendance',

@@ -28,6 +28,8 @@ return new class extends Migration
             // Kolom untuk 4 jawaban Bagian A yang tetap
             $table->integer('shift', false, true)->nullable()
                 ->comment('Shift: 1, 2, 3');
+            $table->date('shift_date')->after('shift')
+                ->comment('Tanggal logis shift berjalan, bukan tanggal form disubmit');
             $table->string('target');
             $table->foreign('target')->references('employeeID')->on('users')->cascadeOnDelete();
             $table->string('division');

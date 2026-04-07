@@ -354,7 +354,7 @@
             let originalPenggantiOptions = [];
 
             if (PHASE !== 'leader') {
-                let penggantiSelectize = $('[name="nama_pengganti"]').selectize({
+                penggantiSelectize = $('[name="nama_pengganti"]').selectize({
                     theme: 'bootstrap5',
                     dropdownParent: 'body'
                 })[0].selectize;
@@ -363,6 +363,7 @@
 
             $('[name="target_pick"]').on('change', function() {
                 const selectedValue = $(this).val();
+                console.log(selectedValue);
                 if (selectedValue) {
                     const parts = selectedValue.split('::');
                     if (parts.length >= 3) {
@@ -373,19 +374,17 @@
                 } else {
                     $('[name="bagian"]').val('');
                 }
-                if (PHASE !== 'leader') {
-                    const $pengganti = $('#nama_pengganti');
-                    const currentPenggantiVal = $pengganti.val();
-                    $pengganti.empty();
+                if (PHASE !== 'leader' && penggantiSelectize) {
+                    const currentPenggantiVal = penggantiSelectize.getValue();
+                    penggantiSelectize.clearOptions();
                     originalPenggantiOptions.forEach(opt => {
                         if (opt.value === "" || opt.value !== selectedValue) {
-                            const isSelected = (opt.value === currentPenggantiVal) ? 'selected' :
-                                '';
-                            $pengganti.append(
-                                `<option value="${opt.value}" ${isSelected}>${opt.text}</option>`
-                            );
+                            penggantiSelectize.addOption(opt);
                         }
                     });
+                    if (currentPenggantiVal && penggantiSelectize.options[currentPenggantiVal]) {
+                        penggantiSelectize.setValue(currentPenggantiVal);
+                    }
                 }
             });
 
@@ -430,13 +429,14 @@
                     $('#prevBtn').addClass('d-none');
                     $('#wizard-progress').css('width', '50%');
                     $('#nextBtn').html('Lanjut <i class="bi bi-arrow-right ms-2" id="nextIcon"></i>').removeClass(
-                        'btn-success').addClass('btn-primary');
+                        'btn-success').addClass('btn-outline-primary');
                 } else {
                     $('#page1').addClass('d-none');
                     $('#page2').removeClass('d-none');
                     $('#prevBtn').removeClass('d-none');
                     $('#wizard-progress').css('width', '100%');
-                    $('#nextBtn').html('<i class="bi bi-check-lg me-2"></i> Submit').removeClass('btn-primary')
+                    $('#nextBtn').html('<i class="bi bi-check-lg me-2"></i> Submit').removeClass(
+                            'btn-outline-primary')
                         .addClass('btn-success');
                 }
             }

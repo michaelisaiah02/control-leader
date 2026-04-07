@@ -101,6 +101,7 @@ class OperatorController extends Controller
                 'integer',
                 Rule::exists('divisions', 'id'),
             ],
+            'superior_id' => ['nullable', 'integer', Rule::exists('users', 'employeeID')],
         ]);
 
         if ($validated['division_id'] != $user->division_id) {

@@ -210,11 +210,64 @@
                 apiUrl = `/reports/api/leader-consistency?${monthParam}&leader_id={{ request('leader') }}`;
             @endif
 
+            const noDataStampPlugin = {
+                id: 'noDataStamp',
+                afterDraw: (chart) => {
+                    let hasRealData = false;
+
+                    // Cek apakah ada data selain garis "Target"
+                    chart.data.datasets.forEach(dataset => {
+                        if (dataset.label !== 'Target') {
+                            // Kalau ada setidaknya 1 angka yang lebih dari 0, berarti ada data
+                            const hasValue = dataset.data.some(val => Number(val) > 0);
+                            if (hasValue) hasRealData = true;
+                        }
+                    });
+
+                    // Kalau beneran kosong, kita gambar stempelnya
+                    if (!hasRealData) {
+                        const ctx = chart.ctx;
+                        const width = chart.width;
+                        const height = chart.height;
+
+                        ctx.save();
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.font = 'bold 36px Arial';
+                        ctx.fillStyle = 'rgba(220, 53, 69, 0.4)'; // Merah transparan (Bootstrap danger)
+
+                        // Pindahkan titik pusat ke tengah kanvas dan miringkan
+                        ctx.translate(width / 2, height / 2);
+                        ctx.rotate(-Math.PI / 8); // Miring sekitar -22.5 derajat
+
+                        const text = 'TIDAK ADA DATA';
+                        ctx.fillText(text, 0, 0);
+
+                        // Bikin kotak outline ala stempel beneran
+                        ctx.strokeStyle = 'rgba(220, 53, 69, 0.4)';
+                        ctx.lineWidth = 4;
+                        const padding = 15;
+                        const textWidth = ctx.measureText(text).width;
+
+                        // Gambar kotak mengelilingi teks
+                        ctx.strokeRect(
+                            -(textWidth / 2) - padding,
+                            -25 - padding,
+                            textWidth + (padding * 2),
+                            50 + (padding * 2)
+                        );
+
+                        ctx.restore();
+                    }
+                }
+            };
+
             if (apiUrl !== '') {
                 fetch(apiUrl)
                     .then(response => response.json())
                     .then(data => {
                         new Chart(ctx, {
+                            plugins: [noDataStampPlugin],
                             data: {
                                 labels: data.labels,
                                 datasets: data.datasets
