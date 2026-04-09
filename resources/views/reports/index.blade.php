@@ -26,7 +26,7 @@
 @section('content')
     <div class="container-fluid dashboard-container max-w-800 mx-auto animate-fade-in pb-5 pb-md-0">
 
-        <div class="text-center mt-auto mb-5">
+        <div class="text-center mt-auto mb-3">
             <h4 class="fw-bold text-dark">Pilih Kategori Report</h4>
             <p class="text-muted small">Pilih level jabatan untuk melihat laporan performa</p>
         </div>

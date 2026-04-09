@@ -1,7 +1,7 @@
 <div class="table-responsive-wrapper">
 
     <table class="table table-sm table-hover table-striped mb-0 table-sticky-header" id="sortableTable">
-        <thead class="text-secondary small text-uppercase fw-bold">
+        <thead class="text-secondary small text-uppercase fw-bold table-primary">
             <tr>
                 <th class="py-2 ps-3" width="5%">No</th>
                 <th class="py-2 text-center" width="5%">Sort</th>
@@ -67,7 +67,8 @@
                                 <i class="bi bi-pencil-square"></i>
                             </a>
 
-                            <button id="deleteBtn" type="button" class="btn btn-sm btn-outline-danger border-0" data-bs-toggle="modal" data-bs-target="#deleteModal" title="Delete">
+                            <button id="deleteBtn" type="button" class="btn btn-sm btn-outline-danger border-0"
+                                data-bs-toggle="modal" data-bs-target="#deleteModal" title="Delete">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>

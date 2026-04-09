@@ -26,10 +26,10 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid max-w-800 px-0 mx-0 animate-fade-in">
+    <div class="container-fluid dashboard-container">
 
         {{-- Form method GET biar data filter masuk ke URL (bisa di-bookmark/share) --}}
-        <form method="GET">
+        <form method="GET" class="my-auto">
 
             <div class="card border-0 shadow-sm rounded-4 mb-5">
                 <div class="card-header bg-light border-bottom-0 py-2 rounded-top-4">

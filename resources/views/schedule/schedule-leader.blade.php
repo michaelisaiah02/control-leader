@@ -3,8 +3,8 @@
 @section('styles')
     <style>
         /* =========================================
-                                                                   1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
-                                                                   ========================================= */
+                                                                                               1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
+                                                                                               ========================================= */
         .schedule-table {
             border-collapse: separate !important;
             border-spacing: 0;
@@ -25,8 +25,8 @@
         }
 
         /* =========================================
-                                                                   2. Z-INDEX & STICKY LOGIC
-                                                                   ========================================= */
+                                                                                               2. Z-INDEX & STICKY LOGIC
+                                                                                               ========================================= */
         .schedule-table thead th {
             position: sticky;
             top: 0;
@@ -67,8 +67,8 @@
         }
 
         /* =========================================
-                                                                   3. UI CELL (EXCEL MODE)
-                                                                   ========================================= */
+                                                                                               3. UI CELL (EXCEL MODE)
+                                                                                               ========================================= */
         .shift-select {
             min-width: 45px !important;
             padding: 4px 0 !important;
@@ -105,12 +105,12 @@
     <div
         class="d-inline-flex align-items-center justify-content-center px-4 py-1 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 text-white animate-fade-in subtitle">
         <i class="bi bi-calendar-check me-2 fs-6"></i>
-        <span class="fs-6 fw-bold text-uppercase">Schedule Control Operator</span>
+        <span class="fs-6 fw-bold text-uppercase text-truncate">Schedule Control Operator</span>
     </div>
 @endpush
 
 @section('content')
-    <div class="container-fluid pb-2">
+    <div class="container-fluid dashboard-container pb-2 pb-lg-3 pb-xxl-4 my-2">
 
         {{-- SECTION 1: FILTER --}}
         <div class="card border-0 shadow-sm mb-2 rounded-3 shrink-0">
@@ -118,7 +118,7 @@
                 <div class="row g-2 align-items-center justify-content-between">
                     <div class="col-auto">
                         <h6 class="fw-bold text-secondary mb-0 small text-uppercase">
-                            <i class="bi bi-calendar3 me-1"></i> Operator Shift Plan
+                            <i class="bi bi-calendar3 me-1"></i> Control Operator Plan
                         </h6>
                     </div>
                     <div class="col-auto">
@@ -249,7 +249,7 @@
                 <i class="bi bi-arrow-left me-2"></i> Back
             </a>
             <div class="small text-muted d-none d-md-block">
-                <i class="bi bi-info-circle me-1"></i> Auto-saving enabled. Max 10 Operators per day.
+                <i class="bi bi-info-circle me-1"></i> Maks 10 Operator per hari.
             </div>
         </div>
 

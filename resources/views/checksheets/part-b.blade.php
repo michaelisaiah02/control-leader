@@ -30,7 +30,7 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid max-w-800 mx-auto mb-5 pb-5">
+    <div class="container-fluid max-w-800 mx-auto mt-2 mb-5 pb-5">
 
         {{-- HEADER INFO --}}
         <div class="d-flex justify-content-between align-items-center mb-3">

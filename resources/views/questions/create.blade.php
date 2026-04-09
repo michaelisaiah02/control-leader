@@ -52,8 +52,8 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid layout-fixed pb-2">
-        <form method="POST" action="{{ route('question.store') }}" id="questionForm" class="h-100 d-flex flex-column">
+    <div class="container-fluid layout-fixed my-2 my-lg-0">
+        <form method="POST" action="{{ route('question.store') }}" id="questionForm" class="my-auto d-flex flex-column">
             @csrf
 
             {{-- SECTION 1: MAIN INFO --}}
@@ -62,8 +62,8 @@
                     <div class="row g-2">
                         <div class="col-12 col-md-8">
                             <label class="form-label small fw-bold text-secondary text-uppercase mb-1">Question Text</label>
-                            <input id="question_text" type="text" name="question_text" class="form-control fw-bold"
-                                placeholder="e.g., Apakah APD lengkap?" required autofocus>
+                            <textarea id="question_text" type="text" name="question_text" class="form-control fw-bold"
+                                placeholder="e.g., Apakah APD lengkap?" required autofocus rows="1"></textarea>
                         </div>
                         <div class="col-12 col-md-4">
                             <label class="form-label small fw-bold text-secondary text-uppercase mb-1">Category Type</label>

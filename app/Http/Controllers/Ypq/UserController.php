@@ -173,4 +173,23 @@ class UserController extends Controller
 
         return response()->json($formattedSuperiors);
     }
+
+    public function updatePassword(Request $request)
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'current_password' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/'],
+        ]);
+
+        if (! Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'Password sebelumnya tidak cocok.']);
+        }
+
+        $user->password = Hash::make($validated['new_password']);
+        $user->save();
+
+        return redirect()->route('dashboard')->with('success', 'Password updated successfully.');
+    }
 }

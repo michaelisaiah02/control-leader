@@ -28,6 +28,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::post('/update-password', [UserController::class, 'updatePassword'])->name('updatePassword');
     Route::middleware(CheckActiveChecksheet::class)->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

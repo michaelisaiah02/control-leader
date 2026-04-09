@@ -14,10 +14,10 @@
 
         {{-- Wrapper Grid --}}
         {{-- Kita pake logic grid yang sama: 1 kolom di HP, 2 kolom di Tablet+ --}}
-        <div class="row g-4 justify-content-center text-center">
+        <div class="row g-4 justify-content-center text-center my-auto pb-5 pb-md-0">
 
             {{-- SECTION 1: LEADER PROBLEMS (Muncul untuk SEMUA role) --}}
-            <div class="col-12 col-md-6 col-xl-5">
+            <div class="col-12 col-md-6 col-xl-5 my-md-auto">
                 <a href="{{ route('listProblem.list', 'leader-performance') }}" class="btn-dashboard position-relative">
                     <i class="bi bi-speedometer2 text-danger"></i>
                     <span>Leader<br><small class="text-danger">Performance Problem</small></span>
@@ -32,7 +32,7 @@
                 </a>
             </div>
 
-            <div class="col-12 col-md-6 col-xl-5">
+            <div class="col-12 col-md-6 col-xl-5 my-md-auto">
                 <a href="{{ route('listProblem.list', 'leader-consistency') }}" class="btn-dashboard position-relative">
                     <i class="bi bi-calendar-x text-warning"></i>
                     <span>Leader<br><small class="text-warning">Consistency Problem</small></span>
@@ -49,11 +49,11 @@
             {{-- SECTION 2: SUPERVISOR PROBLEMS (Hanya muncul jika BUKAN Leader) --}}
             @if (auth()->user()->role !== 'leader')
                 {{-- Divider Visual biar jelas pemisahnya --}}
-                <div class="col-12 my-0">
+                <div class="col-12 my-md-0">
                     <hr class="border-secondary opacity-25">
                 </div>
 
-                <div class="col-12 col-md-6 col-xl-5 mt-0">
+                <div class="col-12 col-md-6 col-xl-5 my-md-auto">
                     <a href="{{ route('listProblem.list', 'supervisor-performance') }}"
                         class="btn-dashboard position-relative">
                         <i class="bi bi-graph-down-arrow text-danger"></i>
@@ -68,7 +68,7 @@
                     </a>
                 </div>
 
-                <div class="col-12 col-md-6 col-xl-5 mt-0">
+                <div class="col-12 col-md-6 col-xl-5 my-md-auto pb-5 pb-md-0">
                     <a href="{{ route('listProblem.list', 'supervisor-consistency') }}"
                         class="btn-dashboard position-relative">
                         <i class="bi bi-clipboard-x text-warning"></i>

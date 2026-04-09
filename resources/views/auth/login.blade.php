@@ -12,8 +12,8 @@
         }
 
         /* FIX LAYOUT: Override Navbar Layout Utama khusus page ini.
-                                                                       Kita bikin navbar melayang di atas background, jadi gak nambah tinggi halaman.
-                                                                    */
+                                                                               Kita bikin navbar melayang di atas background, jadi gak nambah tinggi halaman.
+                                                                            */
         nav.navbar {
             position: absolute;
             top: 0;

@@ -1,5 +1,6 @@
-<div class="table-responsive">
-    <table class="mt-1 mb-0 table table-sm table-striped table-bordered text-center" id="sortableTable">
+<div class="table-responsive-wrapper">
+    <table class="table table-sm table-hover table-bordered mb-0 table-sticky-header text-center"
+        id="sortableTable">
         <thead class="table-primary">
             <tr>
                 <th scope="col">Tanggal</th>
@@ -34,9 +35,9 @@
                 @endphp
                 <tr data-status="{{ strtolower($problem->status) }}">
                     <td scope="col">{{ $problem->created_at->format('d/m/Y') }}</td>
-                    <td scope="col">{{ $problem->inferior->name }}</td>
-                    <td scope="col">{{ $problem->problem }}</td>
-                    <td scope="col">{{ $problem->countermeasure }}</td>
+                    <td scope="col" class="text-start">{{ $problem->inferior->name }}</td>
+                    <td scope="col" class="text-start">{{ $problem->problem }}</td>
+                    <td scope="col" class="text-start">{{ $problem->countermeasure }}</td>
                     <td scope="col">
                         {{ \Carbon\Carbon::parse($problem->due_date)->format('d/m/Y') }}</td>
                     <td>

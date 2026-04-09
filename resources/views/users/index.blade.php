@@ -10,7 +10,7 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid layout-fixed pb-2">
+    <div class="container-fluid dashboard-container pb-2">
 
         {{-- FILTER SECTION --}}
         <div class="card border-0 shadow-sm mb-2 rounded-3 shrink-0">
@@ -43,14 +43,10 @@
                 <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
             </div>
 
-            {{-- Wrapper Scroll (Satu pembungkus aja) --}}
-            <div class="table-responsive-wrapper table-responsive">
-
-                {{-- TABEL MENYATU (Header & Body bareng) --}}
-                {{-- Tambahin class .table-sticky-header biar CSS sticky jalan --}}
+            <div class="table-responsive-wrapper">
                 <table class="table table-sm table-hover table-striped mb-0 table-sticky-header text-nowrap"
                     id="user-table">
-                    <thead class="text-secondary small text-uppercase fw-bold text-center">
+                    <thead class="text-secondary small text-uppercase fw-bold text-center table-primary">
                         <tr>
                             <th>No</th>
                             <th>ID</th>

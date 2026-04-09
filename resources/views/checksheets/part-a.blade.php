@@ -4,7 +4,7 @@
     <div
         class="d-inline-flex align-items-center justify-content-center px-4 py-1 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 text-white animate-fade-in subtitle">
         <i class="bi bi-ui-checks-grid me-2 fs-5"></i>
-        <span class="fs-5 fw-bold text-uppercase">
+        <span class="fs-5 fw-bold text-uppercase text-truncate">
             @switch($phase)
                 @case('awal_shift')
                     AWAL SHIFT SEBELUM BEKERJA
@@ -30,7 +30,7 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid max-w-800 mx-auto mb-4 pb-5">
+    <div class="container-fluid max-w-800 mx-auto mt-2 mb-5 pb-5">
 
         {{-- HEADER INFO --}}
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -257,12 +257,11 @@
 
 
         @if ($phase === 'leader')
-            <button type="submit" class="btn btn-success rounded-pill px-5 py-2 fw-bold shadow-sm ms-auto"
-                id="nextBtn">
+            <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm ms-auto" id="nextBtn">
                 <i class="bi bi-check-lg me-2"></i> Submit
             </button>
         @else
-            <button type="button" class="btn btn-outline-primary rounded-pill px-5 py-2 fw-bold shadow-sm ms-auto"
+            <button type="button" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-sm ms-auto"
                 id="nextBtn">
                 Lanjut <i class="bi bi-arrow-right ms-2" id="nextIcon"></i>
             </button>

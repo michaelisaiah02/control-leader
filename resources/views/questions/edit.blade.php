@@ -51,9 +51,9 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid layout-fixed pb-2">
+    <div class="container-fluid layout-fixed my-2 my-lg-0">
         <form method="POST" action="{{ route('question.update', $question->id) }}" id="questionForm"
-            class="h-100 d-flex flex-column">
+            class="my-auto d-flex flex-column">
             @csrf
             @method('PUT')
 
@@ -63,8 +63,8 @@
                     <div class="row g-2">
                         <div class="col-12 col-md-8">
                             <label class="form-label small fw-bold text-secondary text-uppercase mb-1">Question Text</label>
-                            <input id="question_text" type="text" name="question_text" class="form-control fw-bold"
-                                value="{{ old('question_text', $question->question_text) }}" required autofocus>
+                            <textarea id="question_text" type="text" name="question_text" class="form-control fw-bold" required autofocus
+                                rows="1">{{ old('question_text', $question->question_text) }}</textarea>
                         </div>
                         <div class="col-12 col-md-4">
                             <label class="form-label small fw-bold text-secondary text-uppercase mb-1">Category Type</label>

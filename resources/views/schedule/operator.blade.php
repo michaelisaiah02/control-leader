@@ -39,7 +39,7 @@
 
 @section('content')
     {{-- Layout Fixed: Halaman Gak Bisa Scroll, Cuma Tabel yang Scroll --}}
-    <div class="container-fluid pb-2">
+    <div class="container-fluid dashboard-container pb-2 pb-lg-3 pb-xxl-4 my-2">
 
         {{-- SECTION 1: FILTER (Compact) --}}
         <div class="card border-0 shadow-sm mb-2 rounded-3 shrink-0">
@@ -305,10 +305,10 @@
                 if (currentVal) {
                     const selectizeInstance = $('#division')[0].selectize;
                     const optionExists = selectizeInstance.options[currentVal];
-                    
+
                     if (optionExists) {
                         // true = silent mode biar gak nge-trigger event 'change' lagi (mencegah loop)
-                        selectizeInstance.setValue(currentVal, true); 
+                        selectizeInstance.setValue(currentVal, true);
                     }
                 }
             }
@@ -317,7 +317,7 @@
             function filterLeaders(deptId) {
                 // 1. Selamatkan value Leader
                 const currentVal = $('#leaderModal').val();
-                
+
                 // 2. Balikin HTML Leader ke default
                 $('#leaderModal').html(originalLeaderHTML);
 
@@ -343,17 +343,17 @@
             fetchOperators();
 
             // --- CROSS-DEPENDENCY EVENTS ---
-            
+
             // Pas Leader diganti -> Filter list Divisi
             $('#leaderModal').on('change', function() {
                 if (isSyncing) return;
                 isSyncing = true;
-                
+
                 const selectedLeaderId = $(this).val();
                 const targetDept = selectedLeaderId ? leaderDepts[selectedLeaderId] : null;
-                
+
                 filterDivisions(targetDept);
-                
+
                 isSyncing = false;
             });
 
@@ -361,12 +361,12 @@
             $('#division').on('change', function() {
                 if (isSyncing) return;
                 isSyncing = true;
-                
+
                 const selectedDivId = $(this).val();
                 const targetDept = selectedDivId ? divisionDepts[selectedDivId] : null;
-                
+
                 filterLeaders(targetDept);
-                
+
                 isSyncing = false;
             });
 
@@ -414,7 +414,7 @@
                 $('#operatorForm').attr('action', ROUTES.STORE);
                 $('#operatorForm').find('input[name="_method"]').remove();
                 $('#employeeID').attr('readonly', false);
-                
+
                 // Reset Dropdown
                 isSyncing = true;
                 filterDivisions(null);
@@ -442,7 +442,7 @@
 
                 // 🚀 SET DATA DEPENDENT SECARA AMAN 🚀
                 isSyncing = true; // Gembok biar event 'change' gak jalan liar
-                
+
                 // 1. Balikin ke list awal biar aman
                 filterDivisions(null);
                 filterLeaders(null);
@@ -457,7 +457,7 @@
 
                 // 4. Set ulang value Leader karena barusan listnya dibongkar
                 $('#leaderModal').val(leaderId);
-                
+
                 // 5. Set value Divisi di Selectize
                 const divisionSelectize = $('#division')[0].selectize;
                 if (divisionSelectize && divisionId) {
@@ -491,7 +491,7 @@
                 $('#employeeID').attr('readonly', false);
                 $('#btn-save').prop('disabled', false).text('Save Data');
                 $('#operatorForm').removeClass('was-validated');
-                
+
                 // Kembalikan ke pilihan lengkap
                 isSyncing = true;
                 filterDivisions(null);

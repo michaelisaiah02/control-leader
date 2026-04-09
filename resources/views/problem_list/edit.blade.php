@@ -38,17 +38,18 @@
 @push('subtitle')
     <div
         class="d-inline-flex align-items-center justify-content-center px-4 py-1 mt-1 mb-0 rounded-pill bg-white bg-opacity-10 text-white animate-fade-in subtitle">
-        <i class="bi bi-pencil-square me-2 fs-5"></i>
-        <span class="fs-5 fw-bold text-uppercase">
+        <i class="bi bi-pencil-square me-2"></i>
+        <span class="fw-bold text-uppercase text-truncate">
             {{ $map[$type] ?? 'Tipe Tidak Valid' }}
         </span>
     </div>
 @endpush
 
 @section('content')
-    <div class="container-fluid max-w-800 mx-auto px-0">
+    <div class="container-fluid dashboard-container pb-2 pb-lg-4 mt-2">
 
-        <form method="POST" action="{{ route('listProblem.update', ['type' => $type, 'id' => $problem->id]) }}">
+        <form method="POST" action="{{ route('listProblem.update', ['type' => $type, 'id' => $problem->id]) }}"
+            class="my-auto">
             @csrf
             @method('PUT')
 
@@ -76,7 +77,7 @@
                     </div>
                 </div>
 
-                <div class="card-body p-3">
+                <div class="card-body bg-light px-3 py-2">
                     {{-- SECTION 2: LEADER ACTION (COUNTERMEASURE) --}}
                     <div class="mb-1">
                         <label for="countermeasure"
@@ -171,7 +172,7 @@
                 </a>
 
                 <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm" id="btn-save">
-                    <i class="bi bi-save me-2"></i> Simpan Perubahan
+                    <i class="bi bi-save me-2"></i> Simpan
                 </button>
             </div>
 

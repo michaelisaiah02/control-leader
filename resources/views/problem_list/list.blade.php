@@ -30,21 +30,21 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid pb-5">
+    <div class="container-fluid dashboard-container pb-2 pb-lg-4 mt-2">
 
         {{-- FILTER & TOOLBAR SECTION --}}
         <div class="card border-0 shadow-sm mb-2 rounded-4 overflow-hidden">
-            <div class="card-body bg-white px-3 py-1">
-                <div class="row g-3 align-items-center justify-content-between">
+            <div class="card-body bg-white p-0">
+                <div class="row align-items-center justify-content-between ms-3">
                     {{-- Kiri: Info Jumlah Data (Optional, nice to have) --}}
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-6 px-0">
                         <h5 class="m-0 fw-bold text-secondary">
                             <i class="bi bi-table me-2"></i>Data Records
                         </h5>
                     </div>
 
                     {{-- Kanan: Filter Input --}}
-                    <div class="col-12 col-md-6 col-lg-4">
+                    <div class="col-12 col-md-6 col-lg-4 px-0">
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 fw-bold text-muted" id="filter-icon">
                                 <i class="bi bi-funnel-fill"></i>
@@ -68,61 +68,56 @@
         </div>
 
         {{-- TABLE SECTION --}}
-        {{-- Gunakan .table-container dari app.scss untuk Sticky Header --}}
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-body p-0">
-                <div class="table-container p-3" style="min-height: 400px;">
-                    @if (isset($Problems) && count($Problems) > 0)
-                        {{--
+        <div class="card-fill position-relative bg-white rounded-3 shadow-sm border-0">
+            @if (isset($Problems) && count($Problems) > 0)
+                {{--
                         Refactor Note:
                         Pastikan tabel di dalam @include memiliki ID 'dataTable'
                         atau class 'table' agar script filter di bawah jalan.
                     --}}
-                        @switch($type)
-                            @case('leader-performance')
-                                @include('problem_list.table._leader-performance', [
-                                    'Problems' => $Problems,
-                                ])
-                            @break
+                @switch($type)
+                    @case('leader-performance')
+                        @include('problem_list.table._leader-performance', [
+                            'Problems' => $Problems,
+                        ])
+                    @break
 
-                            @case('leader-consistency')
-                                @include('problem_list.table._leader-consistency', [
-                                    'Problems' => $Problems,
-                                    'now' => $now,
-                                ])
-                            @break
+                    @case('leader-consistency')
+                        @include('problem_list.table._leader-consistency', [
+                            'Problems' => $Problems,
+                            'now' => $now,
+                        ])
+                    @break
 
-                            @case('supervisor-performance')
-                                @include('problem_list.table._supervisor-performance', [
-                                    'Problems' => $Problems,
-                                ])
-                            @break
+                    @case('supervisor-performance')
+                        @include('problem_list.table._supervisor-performance', [
+                            'Problems' => $Problems,
+                        ])
+                    @break
 
-                            @case('supervisor-consistency')
-                                @include('problem_list.table._supervisor-consistency', [
-                                    'Problems' => $Problems,
-                                    'now' => $now,
-                                ])
-                            @break
+                    @case('supervisor-consistency')
+                        @include('problem_list.table._supervisor-consistency', [
+                            'Problems' => $Problems,
+                            'now' => $now,
+                        ])
+                    @break
 
-                            @default
-                                <div class="text-center py-5">
-                                    <i class="bi bi-question-circle display-1 text-muted"></i>
-                                    <p class="mt-3">Invalid Category Type</p>
-                                </div>
-                        @endswitch
-                    @else
-                        {{-- Empty State --}}
-                        <div class="text-center py-5 animate-fade-in">
-                            <img src="{{ asset('image/no-data.svg') }}" alt="Empty" style="width: 150px; opacity: 0.5;"
-                                onerror="this.style.display='none'">
-                            <i class="bi bi-clipboard-x display-1 text-muted mb-3 d-block"></i>
-                            <h4 class="text-muted fw-bold">No Data Found</h4>
-                            <p class="text-secondary">There are no problem records for this category yet.</p>
+                    @default
+                        <div class="text-center py-5">
+                            <i class="bi bi-question-circle display-1 text-muted"></i>
+                            <p class="mt-3">Invalid Category Type</p>
                         </div>
-                    @endif
+                @endswitch
+            @else
+                {{-- Empty State --}}
+                <div class="text-center py-5 animate-fade-in">
+                    <img src="{{ asset('image/no-data.svg') }}" alt="Empty" style="width: 150px; opacity: 0.5;"
+                        onerror="this.style.display='none'">
+                    <i class="bi bi-clipboard-x display-1 text-muted mb-3 d-block"></i>
+                    <h4 class="text-muted fw-bold">No Data Found</h4>
+                    <p class="text-secondary">There are no problem records for this category yet.</p>
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 

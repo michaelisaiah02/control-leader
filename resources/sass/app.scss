@@ -213,11 +213,101 @@ img.icon,
     }
 }
 
+// Dashboard Container (Mobile-First)
+@media (max-width: 767.98px) {
+    .layout-fixed {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 80px); // Sesuaikan dengan tinggi Navbar lo
+        padding-bottom: 0 !important;
+        overflow: auto; // Kunci scroll body
+
+        @include media-breakpoint-down(lg) {
+            height: auto; // Di HP balik normal (scrollable)
+            overflow: visible;
+        }
+    }
+
+    .dashboard-container {
+        height: calc(100vh - 125px);
+        padding-top: 0;
+        padding-bottom: 0;
+
+        /* Center konten secara vertikal & horizontal */
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+// Tablet Mode (Layar 768px - 991px)
+@media (min-width: 768px) {
+    .layout-fixed {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 95px); // Sesuaikan dengan tinggi Navbar lo
+        padding-bottom: 0 !important;
+        overflow: auto; // Kunci scroll body
+
+        @include media-breakpoint-down(lg) {
+            height: auto; // Di HP balik normal (scrollable)
+            overflow: visible;
+        }
+    }
+
+    .dashboard-container {
+        height: calc(100vh - 145px);
+        padding-top: 0;
+        padding-bottom: 0;
+
+        /* Center konten secara vertikal & horizontal */
+        display: flex;
+        flex-direction: column;
+    }
+}
+
 /* Desktop Mode (Layar > 992px / Laptop & Monitor) */
 @media (min-width: 992px) {
+    .layout-fixed {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 110px); // Sesuaikan dengan tinggi Navbar lo
+        padding-bottom: 0 !important;
+        overflow: auto; // Kunci scroll body
+
+        @include media-breakpoint-down(lg) {
+            height: auto; // Di HP balik normal (scrollable)
+            overflow: visible;
+        }
+    }
+
     .dashboard-container {
-        /* Tinggi layar - Tinggi Navbar (~80px) - Padding */
-        height: calc(100vh - 175px);
+        height: calc(100vh - 150px);
+        padding-top: 0;
+        padding-bottom: 0;
+
+        /* Center konten secara vertikal & horizontal */
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+// Desktop Mode (Layar > 1440px / Monitor besar)
+@media (min-width: 1440px) {
+    .layout-fixed {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 130px); // Sesuaikan dengan tinggi Navbar lo
+        padding-bottom: 0 !important;
+        overflow: auto; // Kunci scroll body
+
+        @include media-breakpoint-down(lg) {
+            height: auto; // Di HP balik normal (scrollable)
+            overflow: visible;
+        }
+    }
+
+    .dashboard-container {
+        height: calc(100vh - 165px);
         padding-top: 0;
         padding-bottom: 0;
 
@@ -281,20 +371,6 @@ img.icon,
 // ==========================================
 // 6. GLOBAL WEB APP LAYOUT (The "No Scroll" System)
 // ==========================================
-
-// Class pembungkus utama halaman (pengganti container biasa)
-.layout-fixed {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 115px); // Sesuaikan dengan tinggi Navbar lo
-    padding-bottom: 0 !important;
-    overflow: auto; // Kunci scroll body
-
-    @include media-breakpoint-down(lg) {
-        height: auto; // Di HP balik normal (scrollable)
-        overflow: visible;
-    }
-}
 
 // Wrapper Card Tabel biar rakus height (Flex Grow)
 .card-fill {

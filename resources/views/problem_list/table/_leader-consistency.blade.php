@@ -3,8 +3,8 @@
     $isLeader = $loggedInRole === 'leader';
 @endphp
 
-<div class="table-responsive">
-    <table class="table table-sm table-striped table-bordered mt-1 mb-0" id="sortableTable">
+<div class="table-responsive-wrapper">
+    <table class="table table-sm table-hover table-bordered mb-0 table-sticky-header text-center" id="sortableTable">
         <thead class="table-primary text-center align-middle">
             <tr>
                 <th scope="col">Tanggal</th>
@@ -27,46 +27,47 @@
         </thead>
         <tbody class="align-middle">
             @forelse ($Problems as $problem)
-            @php
-            // 1. Cek apakah sudah lewat tenggat waktu
-            $isOverdue = $problem->due_date <= \Carbon\Carbon::now();
+                @php
+                    // 1. Cek apakah sudah lewat tenggat waktu
+                    $isOverdue = $problem->due_date <= \Carbon\Carbon::now();
 
-            // 2. Tentukan teks dan warna default
-            $displayStatus = str_replace('_', ' ', $problem->status);
-            $badgeColor = 'bg-light text-dark';
+                    // 2. Tentukan teks dan warna default
+                    $displayStatus = str_replace('_', ' ', $problem->status);
+                    $badgeColor = 'bg-light text-dark';
 
-            // 3. Timpa teks dan warna berdasarkan kondisi status & tanggal
-            if ($problem->status === 'close') {
-                $badgeColor = 'bg-danger';
-            } elseif ($problem->status === 'open') {
-                $displayStatus = $isOverdue ? 'Delay' : 'Open';
-                $badgeColor    = $isOverdue ? 'bg-warning text-dark' : 'bg-success';
-            } elseif ($problem->status === 'follow_up_1') {
-                $displayStatus = $isOverdue ? 'Follow Up 1 Delay' : 'Follow Up 1';
-                $badgeColor    = $isOverdue ? 'bg-secondary' : 'bg-info text-dark';
-            }
-        @endphp
+                    // 3. Timpa teks dan warna berdasarkan kondisi status & tanggal
+                    if ($problem->status === 'close') {
+                        $badgeColor = 'bg-danger';
+                    } elseif ($problem->status === 'open') {
+                        $displayStatus = $isOverdue ? 'Delay' : 'Open';
+                        $badgeColor = $isOverdue ? 'bg-warning text-dark' : 'bg-success';
+                    } elseif ($problem->status === 'follow_up_1') {
+                        $displayStatus = $isOverdue ? 'Follow Up 1 Delay' : 'Follow Up 1';
+                        $badgeColor = $isOverdue ? 'bg-secondary' : 'bg-info text-dark';
+                    }
+                @endphp
                 <tr data-status="{{ strtolower($problem->status) }}">
                     <td class="text-center">{{ \Carbon\Carbon::parse($problem->created_at)->format('d/m/Y') }}</td>
 
                     @if (!$isLeader)
-                        <td>{{ $problem->user->name ?? '-' }}</td>
+                        <td class="text-start">{{ $problem->user->name ?? '-' }}</td>
                     @endif
 
-                    <td>{{ $problem->inferior->employeeID ?? '' }} - {{ $problem->inferior->name ?? '-' }}</td>
-                    <td>{{ $problem->problem }}</td>
-                    <td>{{ $problem->countermeasure }}</td>
-                    <td class="text-center fw-bold text-danger">{{ $problem->remark }}</td>
-                    <td class="text-center text-danger fw-bold">
+                    <td class="text-start">{{ $problem->inferior->employeeID ?? '' }} -
+                        {{ $problem->inferior->name ?? '-' }}</td>
+                    <td class="text-start">{{ $problem->problem }}</td>
+                    <td class="text-start">{{ $problem->countermeasure }}</td>
+                    <td class="fw-bold text-danger">{{ $problem->remark }}</td>
+                    <td class="text-danger fw-bold">
                         {{ \Carbon\Carbon::parse($problem->due_date)->format('d/m/Y') }}
                     </td>
-                    <td class="text-center">
+                    <td>
                         <span class="badge {{ $badgeColor }} text-uppercase my-0">
                             {{ $displayStatus }}
                         </span>
                     </td>
                     @if (auth()->user()->role === 'leader' || auth()->user()->role === 'supervisor')
-                        <td class="text-center">
+                        <td>
                             @if ($problem->status != 'close')
                                 <a href="{{ route('listProblem.edit', ['type' => $type, 'id' => $problem->id]) }}"
                                     class="btn btn-sm btn-outline-primary rounded-circle" title="Edit">

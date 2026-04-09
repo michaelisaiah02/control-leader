@@ -47,10 +47,10 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid layout-fixed pb-2">
+    <div class="container-fluid dashboard-container pb-2 pb-xxl-4 my-2">
 
         {{-- SECTION 1: FILTER (Compact) --}}
-        <div class="card border-0 shadow-sm mb-2 rounded-3 flex-shrink-0">
+        <div class="card border-0 shadow-sm mb-2 rounded-3 shrink-0">
             <div class="card-body p-2">
                 <div class="row g-2 align-items-center justify-content-between">
                     <div class="col-auto">
@@ -92,7 +92,7 @@
 
             {{-- Wrapper ini akan di-replace oleh AJAX --}}
             {{-- Kita kasih ID biar JS tau mau inject kemana --}}
-            <div id="questionTableWrapper" class="d-flex flex-column h-100">
+            <div id="questionTableWrapper" class="d-flex flex-column">
                 @include('questions._table', ['questions' => $questions])
             </div>
 
