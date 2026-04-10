@@ -21,18 +21,44 @@ class ReportController extends Controller
 
     public function form($type)
     {
-        $departments = Department::orderBy('name')->get();
-        $supervisors = User::where('role', 'supervisor')->orderBy('name')->get();
-        $leaders = User::where('role', 'leader')->orderBy('name')->get();
-        $operators = User::where('role', 'operator')->orderBy('name')->get();
+        $user = auth()->user();
 
-        return view('reports.form', compact([
-            'type',
-            'departments',
-            'supervisors',
-            'leaders',
-            'operators',
-        ]));
+        // 1. Base Query (Default: Management/YPQ liat semua)
+        $departments = Department::orderBy('name');
+        $supervisors = User::where('role', 'supervisor')->orderBy('name');
+        $leaders     = User::where('role', 'leader')->orderBy('name');
+        $operators   = User::where('role', 'operator')->orderBy('name');
+
+        // 2. 🔥 SATPAM HIERARKI (Role-Based Access Control) 🔥
+        if ($user->role === 'supervisor') {
+
+            // SPV cuma bisa liat kandangnya sendiri
+            $departments->where('id', $user->department_id);
+            $supervisors->where('employeeID', $user->employeeID);
+            $leaders->where('superior_id', $user->employeeID);
+
+            // Filter Operator: Cuma yang leadernya ada di bawah SPV ini
+            $myLeaderIds = User::where('role', 'leader')
+                ->where('superior_id', $user->employeeID)
+                ->pluck('employeeID');
+            $operators->whereIn('superior_id', $myLeaderIds);
+        } elseif ($user->role === 'leader') {
+
+            // Leader lebih sempit lagi aksesnya
+            $departments->where('id', $user->department_id);
+            $supervisors->where('employeeID', $user->superior_id);
+            $leaders->where('employeeID', $user->employeeID);
+            $operators->where('superior_id', $user->employeeID);
+        }
+
+        // 3. Eksekusi Query
+        return view('reports.form', [
+            'type'        => $type,
+            'departments' => $departments->get(),
+            'supervisors' => $supervisors->get(),
+            'leaders'     => $leaders->get(),
+            'operators'   => $operators->get(),
+        ]);
     }
 
     public function consistency($type, Request $request)
