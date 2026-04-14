@@ -37,12 +37,13 @@ Route::middleware('auth')->group(function () {
             Route::prefix('schedule')->as('schedule.')->controller(ScheduleController::class)->group(function () {
                 // Main page (Supervisor Checks Leader)
                 Route::get('/', 'index')->name('index');
-                Route::post('/{plan}/update-cell', 'updateCell')->name('updateCell');
-                Route::post('/{plan}/update-range', 'updateRange')->name('updateRange');
+                Route::post('/{plan}/add-leader', 'addWeeklyLeader')->name('addWeeklyLeader');
+                Route::post('/{plan}/remove-leader', 'removeWeeklyLeader')->name('removeWeeklyLeader');
+
 
                 // PAGE: Leader Checks Operator
                 Route::get('/leader', 'leaderIndex')->name('leader');
-                Route::post('/{plan}/update-cell-operator', 'updateCellOperator')->name('updateCellOperator');
+                Route::post('/{plan}/update-cell', 'updateCell')->name('updateCell');
             });
 
             // Operator data view

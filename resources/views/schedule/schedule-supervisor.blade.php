@@ -3,118 +3,84 @@
 @section('styles')
     <style>
         /* ========================================= */
-        /* 1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED) */
+        /* KANBAN BOARD STYLES                       */
         /* ========================================= */
-        .schedule-table {
-            border-collapse: separate !important;
-            /* Wajib separate biar border gak nempel */
-            border-spacing: 0;
-            border-top: 1px solid #dee2e6;
-            /* Bikin border luar manual */
+        .kanban-wrapper {
+            /* Biar bisa scroll horizontal kalau di layar kecil */
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 0.5rem;
         }
 
-        /* Reset dan styling border untuk semua cell */
-        .schedule-table th,
-        .schedule-table td {
-            border: none !important;
-            /* Matikan border bawaan bootstrap */
-            border-right: 1px solid #dee2e6 !important;
-            border-bottom: 1px solid #dee2e6 !important;
-
-            /* INI OBAT UTAMANYA: Mencegah background meluber ke bawah border */
-            background-clip: padding-box !important;
+        .kanban-col {
+            min-width: 220px;
+            /* Lebar minimal tiap kolom minggu */
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        /* Border paling kiri tabel */
-        .schedule-table tr th:first-child,
-        .schedule-table tr td:first-child {
-            border-left: 1px solid #dee2e6 !important;
+        .week-header {
+            background-color: var(--bs-gray-300);
+            border: 2px solid var(--bs-gray-400);
+            border-radius: 0.5rem;
+            color: var(--bs-dark);
         }
 
-        /* ========================================= */
-        /* 2. Z-INDEX & STICKY LOGIC */
-        /* ========================================= */
+        .leader-card {
+            background-color: #fef08a;
+            /* Kuning terang sesuai mockup */
+            border: 2px solid #eab308;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+            color: var(--bs-dark);
+        }
 
-        /* Header Bulan (Atas) */
-        .schedule-table thead th {
-            position: sticky;
-            top: 0;
-            z-index: 1020;
+        .leader-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-delete-card {
+            background-color: var(--bs-gray-300);
+            border: 1px solid var(--bs-gray-400);
+            font-weight: 900;
+            line-height: 1;
+            padding: 0.15rem 0.4rem;
+            border-radius: 0.25rem;
+            color: var(--bs-dark);
+            transition: all 0.2s;
+        }
+
+        .btn-delete-card:hover {
+            background-color: var(--bs-danger);
+            color: white;
+            border-color: var(--bs-danger);
+        }
+
+        .btn-add-leader {
+            /* Pake var(--bs-primary) biar ngambil #181d3d dari SCSS lo */
             background-color: var(--bs-primary);
-            /* Wajib solid color */
+            color: white;
+            font-weight: bold;
+            border-radius: 0.5rem;
+            border: none;
+            padding: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-add-leader:hover {
+            background-color: var(--bs-secondary);
             color: white;
         }
 
-        /* Kolom Kiri (Nama Leader) */
-        .sticky-col-left {
-            position: sticky;
-            left: 0;
-            z-index: 1021;
-            /* Lebih tinggi dari header biasa */
-        }
-
-        /* Pastikan background kolom nama solid putih (biar ga transparan pas discroll) */
-        tbody .sticky-col-left {
-            background-color: #ffffff;
-        }
-
-        /* Ujung Kiri Atas (Header "Leader Name") */
-        .schedule-table thead th.sticky-col-left {
-            z-index: 1023 !important;
-            /* Paling Tinggi */
-        }
-
-        /* Footer Total (Bawah) */
-        .schedule-table tfoot td {
-            position: sticky;
-            bottom: 0;
-            z-index: 1020;
-            background-color: var(--bs-dark);
-            color: white;
-        }
-
-        /* Ujung Kiri Bawah (Label "Total Shift Masuk") */
-        .schedule-table tfoot td.sticky-col-left {
-            z-index: 1023 !important;
-        }
-
-        /* ========================================= */
-        /* 3. UI CELL (EXCEL MODE) */
-        /* ========================================= */
-        .shift-select {
-            min-width: 45px !important;
-            padding: 4px 0 !important;
-            /* Hapus padding chevron */
-            text-align: center;
-            border-radius: 0;
-            cursor: pointer;
+        /* Styling buat label info di pojok bawah */
+        .info-panel {
+            background-color: var(--bs-warning);
+            border: 2px dashed var(--bs-danger);
+            border-radius: 0.5rem;
             font-weight: 600;
-            background-color: transparent;
-
-            /* Bantai panah dropdown bawaan browser & bootstrap */
-            appearance: none !important;
-            -webkit-appearance: none !important;
-            background-image: none !important;
-        }
-
-        .shift-select:focus {
-            background-color: var(--bs-primary-bg-subtle);
-            box-shadow: inset 0 0 0 2px var(--bs-primary);
-        }
-
-        .shift-select:disabled {
-            cursor: not-allowed;
-            background-color: transparent;
-        }
-
-        /* Penanda Weekend */
-        .bg-weekend {
-            background-color: #fdfbf7 !important;
-        }
-
-        .custom-tooltip {
-            --bs-tooltip-bg: var(--bs-primary);
-            --bs-tooltip-color: var(--bs-white);
+            color: var(--bs-dark);
         }
     </style>
 @endsection
@@ -128,19 +94,15 @@
 @endpush
 
 @section('content')
-    @php
-        // Bikin gembok: Ambil akhir minggu dari hari ini (Default Carbon = Hari Minggu)
-        $endOfCurrentWeek = \Carbon\Carbon::now()->endOfWeek();
-    @endphp
-    <div class="container-fluid dashboard-container pb-2 pb-lg-3 pb-xxl-4 my-2">
+    <div class="container-fluid dashboard-container pb-2 pb-lg-3 pb-xxl-4 mt-2 d-flex flex-column gap-2">
 
-        {{-- SECTION 1: FILTER (Compact Header) --}}
-        <div class="card border-0 shadow-sm mb-2 rounded-3 shrink-0">
+        {{-- SECTION 1: FILTER HEADER --}}
+        <div class="card border-0 shadow-sm rounded-3 shrink-0">
             <div class="card-body p-2">
                 <div class="row g-2 align-items-center justify-content-between">
                     <div class="col-auto">
                         <h6 class="fw-bold text-secondary mb-0 small text-uppercase">
-                            <i class="bi bi-calendar3 me-1"></i> Control Leader Plan
+                            <i class="bi bi-kanban me-1"></i> Control Leader Plan
                         </h6>
                     </div>
                     <div class="col-auto">
@@ -158,138 +120,174 @@
             </div>
         </div>
 
-        {{-- SECTION 2: MATRIX TABLE --}}
-        <div class="card-fill position-relative bg-white rounded-3 shadow-sm border-0">
+        {{-- SECTION 2: KANBAN BOARD (Flex Fill) --}}
+        <div class="card-fill position-relative bg-white rounded-3 shadow-sm p-2">
+            <div class="kanban-wrapper h-100 d-flex gap-3">
 
-            {{-- .table-responsive-wrapper bikin body area bisa scroll X dan Y --}}
-            <div class="table-responsive-wrapper p-0">
-                <table class="table table-hover table-sm text-center align-middle text-nowrap schedule-table"
-                    id="scheduleTable">
+                @foreach ($weeksData as $weekNum => $weekData)
+                    @php
+                        // LOGIKA KUNCIAN FRONT-END
+                        $currentDay = \Carbon\Carbon::now()->day;
+                        $currentWeekLimit = ceil($currentDay / 7);
 
-                    {{-- HEADER (Sticky Top) --}}
-                    <thead class="table-primary">
-                        <tr class="text-uppercase small">
-                            <th class="sticky-col-left align-middle text-start ps-3"
-                                style="min-width: 220px; letter-spacing: 1px;">Leader Name</th>
+                        $isLocked = $isPastMonth || ($isCurrentMonth && $weekNum <= $currentWeekLimit);
 
-                            @for ($d = 1; $d <= $daysInMonth; $d++)
-                                @php
-                                    $dateObj = \Carbon\Carbon::createFromDate($plan->year, $plan->month, $d);
-                                    $isWeekend = $dateObj->isWeekend();
-                                @endphp
-                                <th style="min-width: 45px" class="{{ $isWeekend ? 'text-danger bg-warning-subtle' : '' }}">
-                                    {{ $d }}<br>
-                                    <span
-                                        style="font-size: 0.65rem; font-weight: normal;">{{ $dateObj->format('D') }}</span>
-                                </th>
-                            @endfor
-                        </tr>
-                    </thead>
+                        // Efek visual kalau dikunci
+                        $lockedClass = $isLocked ? 'opacity-75 bg-light' : '';
+                    @endphp
 
-                    {{-- BODY --}}
-                    <tbody class="small">
-                        @forelse ($targets as $target)
-                            <tr data-user="{{ $target['id'] }}">
-                                {{-- Sticky Column 1 --}}
-                                <td class="sticky-col-left text-start ps-3 fw-bold text-secondary">
-                                    {{ $target['id'] . ' - ' . $target['name'] }}
-                                </td>
+                    <div class="kanban-col flex-fill rounded-3 {{ $lockedClass }}">
+                        {{-- Week Header --}}
+                        <div class="week-header text-center p-1 mb-2 shadow-sm d-flex flex-column align-items-center">
+                            <h6 class="fw-bold mb-0 d-flex align-items-center gap-1">
+                                Week {{ $weekNum }}
+                                {{-- Kasih icon gembok merah kalau kekunci --}}
+                                @if ($isLocked)
+                                    <i class="bi bi-lock-fill text-danger fs-6"></i>
+                                @endif
+                            </h6>
+                            <small class="fw-bold text-secondary">Tanggal {{ $weekData['label'] }}</small>
+                        </div>
 
-                                {{-- Cells Tanggal --}}
-                                @for ($d = 1; $d <= $daysInMonth; $d++)
-                                    @php
-                                        $dateObj = \Carbon\Carbon::createFromDate($plan->year, $plan->month, $d);
-                                        $dateStr = $dateObj->format('Y-m-d');
-                                        $weekNum = $dateObj->weekOfYear;
-                                        $isWeekend = $dateObj->isWeekend();
+                        {{-- Cards Container --}}
+                        <div class="leader-list-container d-flex flex-column gap-2" id="week-{{ $weekNum }}">
+                            @foreach ($weekData['leaders'] as $leaderId => $leader)
+                                <div class="leader-card d-flex justify-content-between align-items-center p-2 shadow-sm">
+                                    <span class="small fw-bold">{{ $leaderId }} - {{ $leader['name'] }}</span>
 
-                                        // LOGIKA KUNCIAN: Kalau tanggal ini <= akhir minggu ini, KUNCI!
-                                        $isLocked = $dateObj->lte($endOfCurrentWeek);
+                                    {{-- Tombol X Cuma muncul kalau belum dikunci --}}
+                                    @if (!$isLocked)
+                                        <button class="btn btn-sm btn-delete-card remove-leader-btn"
+                                            data-user="{{ $leaderId }}" data-week="{{ $weekNum }}"
+                                            data-name="{{ $leader['name'] }}">
+                                            X
+                                        </button>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
 
-                                        $isSelected =
-                                            isset($target['dates'][$dateStr]) && $target['dates'][$dateStr] === 'Y';
-                                        $bgClass = $isWeekend ? 'bg-weekend' : '';
-                                        $activeClass = $isSelected ? 'bg-primary text-white' : '';
+                        {{-- Tombol Add Cuma muncul kalau belum dikunci DAN isinya kurang dari 3 --}}
+                        @if (!$isLocked && count($weekData['leaders']) < 3)
+                            <button class="btn btn-add-leader w-100 mt-2 shadow-sm add-leader-btn" data-bs-toggle="modal"
+                                data-bs-target="#addLeaderModal" data-week="{{ $weekNum }}">
+                                + Add Leader
+                            </button>
+                        @endif
+                    </div>
+                @endforeach
 
-                                        // Kasih efek visual redup dikit kalau kekunci biar user paham
-                                        $lockedOpacity = $isLocked ? 'opacity: 0.6;' : '';
-                                        $cursorStyle = $isLocked ? 'cursor: not-allowed;' : 'cursor: pointer;';
-                                    @endphp
-
-                                    <td class="p-0 {{ $bgClass }} position-relative border-right border-bottom">
-                                        <div class="schedule-cell w-100 h-100 d-flex align-items-center justify-content-center {{ $activeClass }}"
-                                            data-user="{{ $target['id'] }}" data-date="{{ $dateStr }}"
-                                            data-day="{{ $d }}" data-week="{{ $weekNum }}"
-                                            data-locked="{{ $isLocked ? 'true' : 'false' }}" {{-- TEMPEL STATUS GEMBOK DISINI --}}
-                                            style="min-height: 35px; {{ $cursorStyle }} {{ $lockedOpacity }}">
-                                            {!! $isSelected ? '<i class="bi bi-check-lg"></i>' : '' !!}
-                                        </div>
-                                    </td>
-                                @endfor
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="{{ $daysInMonth + 1 }}" class="text-center py-5 text-muted">
-                                    <i class="bi bi-calendar-x fs-1 d-block mb-2 opacity-50"></i>
-                                    Tidak ada data Leader yang ditemukan bulan ini.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-
-                    {{-- FOOTER TOTALS (Sticky Bottom) --}}
-                    <tfoot>
-                        <tr class="bg-dark text-white small">
-                            <td class="sticky-col-left bg-dark text-white text-end pe-3 fw-bold text-uppercase"
-                                style="letter-spacing: 1px;">
-                                Total Shift Masuk
-                            </td>
-                            @for ($d = 1; $d <= $daysInMonth; $d++)
-                                <td class="total-day fw-bold align-middle" data-day="{{ $d }}">0</td>
-                            @endfor
-                        </tr>
-                    </tfoot>
-                </table>
             </div>
         </div>
 
-        {{-- SECTION 3: ACTION BAR --}}
-        <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center">
-            <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-4 fw-bold">
-                <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
-            </a>
-            <div class="small text-muted d-none d-md-block">
-                <button type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="left"
-                    data-bs-custom-class="custom-tooltip"
-                    data-bs-title="Klik tgl awal & tgl akhir untuk rentang.
-                Klik 2x tgl yg sama untuk 1 hari. Maks 3 leader per minggu.">
-                    <i class="bi bi-info-circle me-1"></i>Hint
-                </button>
+        {{-- SECTION 3: BOTTOM AREA (Totals & Info) --}}
+        <div class="row g-2 shrink-0">
+            {{-- Totals --}}
+            <div class="col-12 col-xl-8">
+                <div class="card border-0 rounded-3 shadow-sm h-100">
+                    <div class="card-body p-2">
+                        <div
+                            class="d-inline-flex align-items-center bg-secondary text-white px-2 py-1 rounded-3 fw-bold mb-2">
+                            Total
+                        </div>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 small">
+                            @foreach ($leaderTotals as $id => $data)
+                                <div class="col d-flex justify-content-between align-items-center border-bottom pb-1">
+                                    <span class="text-dark fw-bold">{{ $id }} - {{ $data['name'] }}</span>
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold me-2">=</span>
+                                        <span class="badge bg-secondary fs-6 rounded-2 px-3">{{ $data['count'] }}</span>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            {{-- Info Panel --}}
+            <div class="col-12 col-xl-4">
+                <div class="info-panel p-3 h-100 d-flex flex-column justify-content-center shadow-sm">
+                    <ul class="mb-0 ps-2">
+                        <li>Standar pengecekan leader <span class="text-danger">hanya seminggu sekali</span>.</li>
+                        <li>Maximal pengecekan <span class="text-danger">3 leader/minggu</span>.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {{-- ACTION BAR (Footer) --}}
+        <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center">
+            <a href="{{ route('dashboard') }}" class="btn btn-sm btn-dark rounded-pill px-4 fw-bold">
+                Back
+            </a>
+            <button type="button" class="btn btn-sm btn-dark rounded-pill px-4 fw-bold disabled">
+                Save
+            </button>
         </div>
 
     </div>
 
-    {{-- MODAL KONFIRMASI HAPUS JADWAL --}}
-    <div class="modal fade" id="deleteScheduleModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    {{-- ========================================= --}}
+    {{-- MODALS                                    --}}
+    {{-- ========================================= --}}
+
+    {{-- MODAL ADD LEADER --}}
+    <div class="modal fade" id="addLeaderModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-bottom-0 pb-0 mt-2">
+                    <h5 class="modal-title fw-bold text-primary">
+                        <i class="bi bi-person-plus-fill me-2"></i>Add Leader <span id="modalWeekTitle"
+                            class="badge bg-primary ms-2">Week X</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary px-4 py-3">
+                    <form id="formAddLeader">
+                        <input type="hidden" id="selectedWeek" name="week">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Pilih Leader</label>
+                            <select class="form-select border-2 shadow-sm" id="selectLeader" name="user_id">
+                                <option value="">-- Silahkan Pilih Leader --</option>
+                                @foreach ($leaders as $leader)
+                                    <option value="{{ $leader->employeeID }}">{{ $leader->employeeID }} -
+                                        {{ $leader->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 pb-3 px-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold"
+                        data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+                        id="saveLeaderBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- MODAL DELETE CONFIRMATION --}}
+    <div class="modal fade" id="deleteScheduleModal" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow-lg">
                 <div class="modal-header border-bottom-0 pb-0 mt-2">
                     <h5 class="modal-title fw-bold text-danger">
                         <i class="bi bi-trash-fill me-2"></i>Hapus Jadwal
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-secondary px-4 py-3">
-                    Apakah Anda yakin ingin menghapus jadwal pengecekan untuk <b class="text-dark"
-                        id="deleteRangeText">tanggal ini</b>?<br><br>
-                    <span class="text-dark fw-bold">Jadwal pada hari tersebut akan dikosongkan.</span>
+                    Apakah Anda yakin ingin menghapus jadwal <b class="text-dark" id="deleteLeaderName">Nama</b> di <b
+                        class="text-dark" id="deleteWeekNum">Week X</b>?<br><br>
+                    <span class="text-dark fw-bold">Data akan langsung dihapus dari sistem.</span>
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pb-3 px-4">
                     <button type="button" class="btn btn-light rounded-pill px-4 fw-bold"
                         data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm"
-                        id="confirmDeleteScheduleBtn">Ya, Hapus</button>
+                        id="confirmDeleteBtn">Ya, Hapus</button>
                 </div>
             </div>
         </div>
@@ -312,10 +310,10 @@
             const toastHtml = `
             <div class="toast align-items-center text-bg-${type} border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
-                    <div class="toast-body fw-bold text-primary">
+                    <div class="toast-body fw-bold text-white">
                         <i class="bi ${icon} me-2"></i> ${message}
                     </div>
-                    <button type="button" class="btn-close btn-close-primary me-2 m-auto" data-bs-dismiss="toast"></button>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
                 </div>
             </div>`;
 
@@ -335,215 +333,155 @@
             $toast.on('hidden.bs.toast', () => $toast.remove());
         }
 
-        // ---------------- HITUNG TOTAL ----------------
-        function calculateTotals() {
-            const totals = {};
-            document.querySelectorAll('.schedule-cell').forEach(cell => {
-                const day = parseInt(cell.dataset.day);
-                if (cell.classList.contains('bg-primary')) {
-                    totals[day] = (totals[day] || 0) + 1;
-                }
-            });
+        // ---------------- KANBAN LOGIC ----------------
+        let targetDelete = null;
 
-            document.querySelectorAll('.total-day').forEach(td => {
-                const day = parseInt(td.dataset.day);
-                td.textContent = totals[day] || 0;
-            });
-        }
+        $(document).ready(function() {
 
-        // ---------------- LOGIC UI SELECTION ----------------
-        let startSelection = null;
-        let deleteTarget = null; // Nyimpen data buat Modal
+            // 1. BUKA MODAL ADD LEADER & FILTER DROPDOWN
+            $('.add-leader-btn').on('click', function() {
+                const week = $(this).data('week');
+                $('#selectedWeek').val(week);
+                $('#modalWeekTitle').text('Week ' + week);
+                $('#selectLeader').val(''); // Reset pilihan ke default
 
-        // Fungsi buat ngereset warna biru muda (Klik 1) kalau batal
-        function resetSelection() {
-            if (startSelection) {
-                startSelection.cell.classList.remove('bg-info', 'text-white');
-                if (startSelection.isOriginallyActive) {
-                    startSelection.cell.classList.add('bg-primary', 'text-white');
-                } else {
-                    startSelection.cell.innerHTML = '';
-                }
-                startSelection = null;
-            }
-        }
-
-        document.querySelectorAll('.schedule-cell').forEach(cell => {
-            cell.addEventListener('click', function() {
-
-                // 1. CEK GEMBOK
-                if (this.dataset.locked === 'true') {
-                    showToast('warning', 'Jadwal untuk minggu ini sudah <b>terkunci</b>.');
-                    resetSelection();
-                    return;
-                }
-
-                const userId = this.dataset.user;
-                const currentDay = parseInt(this.dataset.day);
-                const currentWeek = this.dataset.week;
-                const row = this.closest('tr');
-
-                // 2. KONDISI: KLIK 1 (Start Range)
-                if (!startSelection || startSelection.userId !== userId) {
-                    resetSelection();
-
-                    // Catat apakah kotak ini aslinya udah biru atau kosong
-                    const isOriginallyActive = this.classList.contains('bg-primary');
-
-                    startSelection = {
-                        userId,
-                        day: currentDay,
-                        week: currentWeek,
-                        cell: this,
-                        isOriginallyActive
-                    };
-
-                    // Kasih warna biru muda sbg penanda
-                    this.classList.remove('bg-primary');
-                    this.classList.add('bg-info', 'text-white');
-                    return;
-                }
-
-                // 3. KONDISI: KLIK 2 (End Range)
-                if (startSelection.week !== currentWeek) {
-                    showToast('warning', 'Rentang waktu harus di dalam minggu yang sama!');
-                    resetSelection();
-                    return;
-                }
-
-                const minDay = Math.min(startSelection.day, currentDay);
-                const maxDay = Math.max(startSelection.day, currentDay);
-
-                // --- CABANG LOGIKA: ADD atau DELETE? ---
-
-                if (startSelection.isOriginallyActive) {
-                    // Kalau klik 1 di tempat BIRU -> Berarti mau HAPUS! Panggil Modal.
-                    deleteTarget = {
-                        userId,
-                        row,
-                        minDay,
-                        maxDay,
-                        week: currentWeek
-                    };
-
-                    const dayText = minDay === maxDay ? `tanggal ${minDay}` :
-                        `tanggal ${minDay} sampai ${maxDay}`;
-                    document.getElementById('deleteRangeText').innerText = dayText;
-
-                    bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteScheduleModal'))
-                        .show();
-                } else {
-                    // Kalau klik 1 di tempat KOSONG -> Berarti mau NAMBAH!
-
-                    // Validasi Sakti: Maksimal 3 Leader
-                    const allRows = document.querySelectorAll("#scheduleTable tbody tr[data-user]");
-                    const leadersWithSchedule = new Set();
-                    allRows.forEach(r => {
-                        const hasSchedule = r.querySelector(
-                            `.schedule-cell.bg-primary[data-week="${currentWeek}"]`);
-                        if (hasSchedule) leadersWithSchedule.add(r.dataset.user);
-                    });
-
-                    if (!leadersWithSchedule.has(userId) && leadersWithSchedule.size >= 3) {
-                        showToast('warning',
-                            'Maksimal pengecekan 3 Leader berbeda per minggu sudah tercapai!');
-                        resetSelection();
-                        return;
-                    }
-
-                    // Terapkan penambahan (Nggak menghapus data di luar range)
-                    row.querySelectorAll(`.schedule-cell[data-week="${currentWeek}"]`).forEach(c => {
-                        const cellDay = parseInt(c.dataset.day);
-                        if (cellDay >= minDay && cellDay <= maxDay) {
-                            c.classList.remove('bg-info');
-                            c.classList.add('bg-primary', 'text-white');
-                            c.innerHTML = '<i class="bi bi-check-lg"></i>';
-                        }
-                    });
-
-                    startSelection = null;
-                    kirimKeDatabase(userId, row);
-                }
-            });
-        });
-
-        // ---------------- MODAL HAPUS JADWAL ----------------
-        $('#confirmDeleteScheduleBtn').on('click', function() {
-            if (!deleteTarget) return;
-
-            const btn = $(this);
-            const originalText = btn.html();
-            btn.prop('disabled', true).html(
-                '<span class="spinner-border spinner-border-sm me-2"></span>Menghapus...');
-
-            // Sapu bersih jadwal di range yang dipilih aja
-            deleteTarget.row.querySelectorAll(`.schedule-cell[data-week="${deleteTarget.week}"]`).forEach(c => {
-                const cellDay = parseInt(c.dataset.day);
-                if (cellDay >= deleteTarget.minDay && cellDay <= deleteTarget.maxDay) {
-                    c.classList.remove('bg-primary', 'bg-info', 'text-white');
-                    c.innerHTML = '';
-                }
-            });
-
-            kirimKeDatabase(deleteTarget.userId, deleteTarget.row);
-
-            // Bersihin State
-            startSelection = null;
-            bootstrap.Modal.getInstance(document.getElementById('deleteScheduleModal')).hide();
-
-            btn.prop('disabled', false).html(originalText);
-            deleteTarget = null;
-        });
-
-        // Reset Klik 1 (Biru muda) kalau Modal Cancel ditutup
-        document.getElementById('deleteScheduleModal').addEventListener('hidden.bs.modal', function() {
-            resetSelection();
-            deleteTarget = null;
-        });
-
-        // ---------------- AJAX SUBMIT ----------------
-        function kirimKeDatabase(userId, row) {
-            const datesToSave = [];
-            row.querySelectorAll('.schedule-cell.bg-primary').forEach(c => {
-                datesToSave.push(c.dataset.date);
-            });
-
-            saveRangeToDatabase(userId, datesToSave);
-            calculateTotals();
-        }
-
-        async function saveRangeToDatabase(userId, dates) {
-            try {
-                document.body.style.cursor = 'wait';
-                const res = await fetch("{{ route('schedule.updateRange', $plan->id ?? 0) }}", {
-                    method: "POST",
-                    headers: {
-                        "X-CSRF-TOKEN": csrfToken,
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        dates: dates
-                    })
+                // --- [ LOGIC BARU: Filter Opsi Leader ] ---
+                // Kumpulin ID leader yang udah ada di dalem minggu ini
+                const existingLeaders = [];
+                $(`#week-${week} .remove-leader-btn`).each(function() {
+                    existingLeaders.push($(this).data('user').toString());
                 });
 
-                const data = await res.json();
-                if (!data.success) showToast('danger', 'Gagal menyimpan ke database!');
+                // Looping semua opsi di dropdown
+                $('#selectLeader option').each(function() {
+                    const optionVal = $(this).val();
 
-            } catch (err) {
-                console.error(err);
-                showToast('danger', 'Terjadi kesalahan koneksi server.');
-            } finally {
-                document.body.style.cursor = 'default';
-            }
-        }
+                    if (!optionVal) return; // Skip opsi pertama ("-- Silahkan Pilih --")
 
-        // ---------------- INIT ----------------
-        document.addEventListener("DOMContentLoaded", () => {
-            calculateTotals();
-            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(
-                tooltipTriggerEl))
+                    // Kalau ID ada di daftar existingLeaders, sembunyiin opsinya!
+                    if (existingLeaders.includes(optionVal)) {
+                        $(this).prop('disabled', true).hide();
+                    } else {
+                        $(this).prop('disabled', false).show();
+                    }
+                });
+            });
+
+            // 2. SAVE LEADER (AJAX POST)
+            $('#saveLeaderBtn').on('click', async function() {
+                const userId = $('#selectLeader').val();
+                const week = $('#selectedWeek').val();
+
+                if (!userId) {
+                    showToast('warning', 'Pilih leader terlebih dahulu!');
+                    return;
+                }
+
+                // Cek UI: Validasi Max 3 Leader per Minggu
+                const currentLeadersInWeek = $(`#week-${week} .leader-card`).length;
+
+                // Cek UI: Apakah leader udah ada di minggu ini?
+                const isLeaderExist = $(`#week-${week} .remove-leader-btn[data-user="${userId}"]`)
+                    .length > 0;
+
+                if (isLeaderExist) {
+                    showToast('warning', 'Leader ini sudah dijadwalkan di minggu tersebut!');
+                    return;
+                }
+
+                if (currentLeadersInWeek >= 3) {
+                    showToast('danger', 'Maksimal 3 Leader per minggu sudah tercapai!');
+                    return;
+                }
+
+                const btn = $(this);
+                const originalText = btn.html();
+                btn.prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...');
+
+                try {
+                    // Pastikan route diarahkan ke endpoint API lo yang baru
+                    const res = await fetch(
+                        "{{ route('schedule.addWeeklyLeader', $plan->id ?? 0) }}", {
+                            method: "POST",
+                            headers: {
+                                "X-CSRF-TOKEN": csrfToken,
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                user_id: userId,
+                                week: parseInt(week)
+                            })
+                        });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        // Kalau sukses, mending reload buat mastiin UI & DB sinkron 100% (terutama bagian Total bawah)
+                        // Karena ini dashboard internal, reload lebih aman dari bug state UI.
+                        window.location.reload();
+                    } else {
+                        showToast('danger', 'Gagal menyimpan: ' + (data.message || 'Error Database'));
+                        btn.prop('disabled', false).html(originalText);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast('danger', 'Koneksi terputus. Coba lagi.');
+                    btn.prop('disabled', false).html(originalText);
+                }
+            });
+
+            // 3. BUKA MODAL HAPUS
+            $(document).on('click', '.remove-leader-btn', function() {
+                targetDelete = {
+                    userId: $(this).data('user'),
+                    week: $(this).data('week'),
+                    name: $(this).data('name')
+                };
+
+                $('#deleteLeaderName').text(targetDelete.name);
+                $('#deleteWeekNum').text('Week ' + targetDelete.week);
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteScheduleModal')).show();
+            });
+
+            // 4. KONFIRMASI HAPUS (AJAX POST)
+            $('#confirmDeleteBtn').on('click', async function() {
+                if (!targetDelete) return;
+
+                const btn = $(this);
+                const originalText = btn.html();
+                btn.prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Menghapus...');
+
+                try {
+                    // Pastikan route diarahkan ke endpoint API lo yang baru
+                    const res = await fetch(
+                        "{{ route('schedule.removeWeeklyLeader', $plan->id ?? 0) }}", {
+                            method: "POST",
+                            headers: {
+                                "X-CSRF-TOKEN": csrfToken,
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                user_id: targetDelete.userId,
+                                week: targetDelete.week
+                            })
+                        });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        showToast('danger', 'Gagal menghapus jadwal.');
+                        btn.prop('disabled', false).html(originalText);
+                    }
+                } catch (err) {
+                    showToast('danger', 'Koneksi terputus.');
+                    btn.prop('disabled', false).html(originalText);
+                }
+            });
+
         });
     </script>
 @endsection
