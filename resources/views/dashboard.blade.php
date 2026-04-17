@@ -307,6 +307,12 @@
                                 @endif
                             </a>
                         </div>
+                        <div class="col my-2">
+                            <a class="btn-dashboard" href="{{ route('targets.index') }}">
+                                <i class="bi bi-bullseye"></i>
+                                <span>Target</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 

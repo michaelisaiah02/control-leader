@@ -44,7 +44,7 @@
             </div>
         </div>
 
-        {{-- PROGRESS WIZARD --}}
+        {{-- PROGRESS WIZARD (Cuma buat Operator) --}}
         @if ($phase !== 'leader')
             <div class="progress mb-2" style="height: 4px;">
                 <div class="progress-bar bg-primary transition-all" id="wizard-progress" role="progressbar"
@@ -67,7 +67,7 @@
                     </div>
                     <div class="card-body p-3">
 
-                        {{-- 1. Shift --}}
+                        {{-- 1. Shift (Khusus Operator) --}}
                         @if ($phase !== 'leader')
                             <div class="mb-3">
                                 <label class="form-label fw-bold text-secondary small text-uppercase">1. Shift Kerja</label>
@@ -87,26 +87,62 @@
                             </div>
                         @endif
 
-                        {{-- 2. Target Pick --}}
+                        {{-- 2. ID Pick --}}
                         <div class="mb-3">
                             <label class="form-label fw-bold text-secondary small text-uppercase">
-                                {{ $phase === 'leader' ? '1' : '2' }}. {{ $targetLabel }}
+                                {{ $phase === 'leader' ? '1' : '2' }}. ID {{ $phase === 'leader' ? 'Leader' : 'Operator' }}
                             </label>
-                            <select id="target_pick" name="target_pick" placeholder="Pilih {{ $targetLabel }}..." required>
-                                <option value="">Pilih {{ $targetLabel }}...</option>
+                            <select id="target_pick" name="target_pick" placeholder="Pilih ID..." required>
+                                <option value="">Pilih ID...</option>
                                 @foreach ($options as $option)
                                     <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
                                 @endforeach
                             </select>
                         </div>
 
-                        {{-- 3. Bagian --}}
+                        {{-- 3. Nama --}}
                         <div class="mb-3">
                             <label class="form-label fw-bold text-secondary small text-uppercase">
-                                {{ $phase === 'leader' ? '2' : '3' }}. Bagian
+                                {{ $phase === 'leader' ? '2' : '3' }}. Nama
+                                {{ $phase === 'leader' ? 'Leader' : 'Operator' }}
                             </label>
-                            <input type="text" name="bagian" class="form-control bg-light" placeholder="-" readonly>
+                            <input type="text" name="nama_target" class="form-control bg-light text-dark fw-bold"
+                                placeholder="Otomatis terisi..." readonly>
                         </div>
+
+                        {{-- 4. Bagian --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">
+                                {{ $phase === 'leader' ? '3' : '4' }}. Bagian
+                            </label>
+                            <input type="text" name="bagian" class="form-control bg-light text-dark fw-bold"
+                                placeholder="Otomatis terisi..." readonly>
+                        </div>
+
+                        {{-- 5. Kondisi Leader (Hanya muncul di Form SPV) --}}
+                        @if ($phase === 'leader')
+                            <div class="mb-2 mt-4 p-3 bg-light rounded-3 border">
+                                <label class="form-label fw-bold text-dark mb-2">4. Kondisi Leader saat ini:</label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="kondisi_leader" id="kl_sehat"
+                                            value="Sehat">
+                                        <label class="form-check-label text-success fw-bold" for="kl_sehat">Sehat</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="kondisi_leader" id="kl_kurang"
+                                            value="Kurang Sehat">
+                                        <label class="form-check-label text-warning fw-bold" for="kl_kurang"
+                                            style="color: #d97706 !important;">Kurang Sehat</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="kondisi_leader" id="kl_sakit"
+                                            value="Sakit">
+                                        <label class="form-check-label text-danger fw-bold" for="kl_sakit">Sakit</label>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
                     </div>
                 </div>
@@ -114,7 +150,7 @@
 
 
             {{-- =====================================
-             PAGE 2: KEHADIRAN
+             PAGE 2: KEHADIRAN (Khusus Operator)
              ===================================== --}}
             @if ($phase !== 'leader')
                 <div id="page2" class="d-none animate-fade-in">
@@ -124,12 +160,9 @@
                         </div>
 
                         <div class="card-body p-3">
-
-                            {{-- 4. Check Kehadiran --}}
+                            {{-- Check Kehadiran --}}
                             <div class="mb-3">
                                 <label class="form-label fw-bold text-dark fs-5 mb-3">Apakah operator hadir?</label>
-
-                                {{-- Hint Box --}}
                                 <div class="alert alert-warning border-warning-subtle small py-2 mb-3">
                                     <strong><i class="bi bi-exclamation-triangle-fill me-1"></i>Jika Absen:</strong>
                                     <ul class="mb-0 ps-3 mt-1 text-muted">
@@ -139,19 +172,20 @@
                                     </ul>
                                 </div>
 
-                                {{-- Custom Radio Buttons as Blocks --}}
                                 <div class="row g-2">
                                     <div class="col-6">
                                         <input type="radio" class="btn-check" name="attendance" id="att_hadir"
                                             value="1">
-                                        <label class="btn btn-outline-success w-100 py-2 fw-bold rounded-3" for="att_hadir">
+                                        <label class="btn btn-outline-success w-100 py-2 fw-bold rounded-3"
+                                            for="att_hadir">
                                             <i class="bi bi-person-check fs-4 d-block mb-1"></i> Hadir
                                         </label>
                                     </div>
                                     <div class="col-6">
                                         <input type="radio" class="btn-check" name="attendance" id="att_absen"
                                             value="0">
-                                        <label class="btn btn-outline-danger w-100 py-2 fw-bold rounded-3" for="att_absen">
+                                        <label class="btn btn-outline-danger w-100 py-2 fw-bold rounded-3"
+                                            for="att_absen">
                                             <i class="bi bi-person-x fs-4 d-block mb-1"></i> Absen
                                         </label>
                                     </div>
@@ -196,7 +230,7 @@
                                 </div>
                             </div>
 
-                            {{-- === FORM PENGGANTI (Muncul jika ada pengganti) === --}}
+                            {{-- === FORM PENGGANTI === --}}
                             <div id="absenWrap" class="d-none bg-light p-3 rounded-3 border animate-fade-in">
                                 <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">Data Operator Pengganti</h6>
 
@@ -245,8 +279,8 @@
         </form>
     </div>
 
-    {{-- STICKY ACTION BAR (Nempel di bawah) --}}
-    <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center">
+    {{-- STICKY ACTION BAR --}}
+    <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-2 d-flex justify-content-between align-items-center">
         <button type="button" class="btn btn-outline-secondary rounded-pill px-4 me-2 fw-bold d-none" id="prevBtn">
             <i class="bi bi-arrow-left me-2"></i> Kembali
         </button>
@@ -258,7 +292,7 @@
 
         @if ($phase === 'leader')
             <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm ms-auto" id="nextBtn">
-                <i class="bi bi-check-lg me-2"></i> Submit
+                <i class="bi bi-check-lg me-2"></i> Lanjut Ke Ceklist
             </button>
         @else
             <button type="button" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-sm ms-auto"
@@ -305,7 +339,6 @@
             const PARTB_URL = @json(route('checksheets.partB'));
             const key = (k) => `cl:plan:${PLAN}:phase:${PHASE}:${k}`;
 
-            // Toast Helper
             function showToast(message, type = 'info') {
                 const toastHTML = `
                 <div class="toast position-fixed top-0 start-50 translate-middle-x mt-3 align-items-center text-white bg-${type === 'error' ? 'danger' : type} border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 9999;">
@@ -313,8 +346,7 @@
                         <div class="toast-body fw-bold">${message}</div>
                         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
                     </div>
-                </div>
-            `;
+                </div>`;
                 let toastContainer = document.getElementById('toastContainer');
                 if (!toastContainer) {
                     toastContainer = document.createElement('div');
@@ -331,7 +363,7 @@
                 });
             }
 
-            // --- 1. TIMER MURNI DARI DATA BLADE ---
+            // --- 1. TIMER MURNI ---
             const started = parseInt($('#stopwatch').data('start'), 10);
 
             function tick() {
@@ -360,19 +392,28 @@
                 originalPenggantiOptions = Object.values(penggantiSelectize.options);
             }
 
+            // EVENT: Saat Target ID Berubah (Otomatis ngisi Nama & Bagian)
             $('[name="target_pick"]').on('change', function() {
                 const selectedValue = $(this).val();
-                console.log(selectedValue);
+
                 if (selectedValue) {
                     const parts = selectedValue.split('::');
-                    if (parts.length >= 3) {
-                        $('[name="bagian"]').val(parts[2]);
-                    } else {
-                        $('[name="bagian"]').val('');
-                    }
+
+                    // Ambil teks label option, contoh: "00001 - Steven (Telat: 02 Apr)"
+                    const labelText = targetSelectize.options[selectedValue].text;
+
+                    // Ekstrak nama (pecah by ' - ' ambil yg index 1, lalu buang kurung)
+                    let namaExtracted = labelText.split(' - ')[1] || '';
+                    namaExtracted = namaExtracted.split(' (')[0].trim();
+
+                    $('[name="nama_target"]').val(namaExtracted);
+                    $('[name="bagian"]').val(parts.length >= 3 ? parts[2] : '');
+
                 } else {
+                    $('[name="nama_target"]').val('');
                     $('[name="bagian"]').val('');
                 }
+
                 if (PHASE !== 'leader' && penggantiSelectize) {
                     const currentPenggantiVal = penggantiSelectize.getValue();
                     penggantiSelectize.clearOptions();
@@ -412,7 +453,7 @@
                 const v = $(this).val();
                 $('#absenWrap').toggleClass('d-none', v !== '1');
                 if (v !== '1') {
-                    $('#nama_pengganti').val('').trigger('change');
+                    if (penggantiSelectize) penggantiSelectize.clear();
                     $('input[name="bagian_pengganti"]').val('');
                     $('input[name="kondisi_pengganti"]').prop('checked', false);
                 }
@@ -435,8 +476,7 @@
                     $('#prevBtn').removeClass('d-none');
                     $('#wizard-progress').css('width', '100%');
                     $('#nextBtn').html('<i class="bi bi-check-lg me-2"></i> Submit').removeClass(
-                            'btn-outline-primary')
-                        .addClass('btn-success');
+                        'btn-outline-primary').addClass('btn-success');
                 }
             }
 
@@ -444,13 +484,10 @@
             $('#confirmCancelBtn').on('click', async function() {
                 const btn = $(this);
                 const cancelText = btn.html();
-
-                // Ubah tombol jadi loading state
                 btn.prop('disabled', true).html(
                     '<span class="spinner-border spinner-border-sm me-2"></span>Membatalkan...');
 
                 try {
-                    // Tembak API ke server buat buka gembok session Laravel
                     const res = await fetch('{{ route('checksheets.cancel') }}', {
                         method: 'POST',
                         headers: {
@@ -465,20 +502,18 @@
                     });
 
                     if (res.ok) {
-                        // Tutup modal secara programatik (opsional, tapi biar smooth)
                         const modalEl = document.getElementById('cancelModal');
                         const modal = bootstrap.Modal.getInstance(modalEl);
                         if (modal) modal.hide();
 
-                        // Hapus draft browser dan pulang ke Dashboard!
                         sessionStorage.removeItem(key('partA'));
                         window.location.href = DASHBOARD_URL;
                     } else {
-                        alert('Gagal membatalkan. Silakan coba lagi.');
+                        showToast('Gagal membatalkan. Silakan coba lagi.', 'error');
                         btn.prop('disabled', false).html(cancelText);
                     }
                 } catch (err) {
-                    alert('Terjadi kesalahan koneksi saat membatalkan.');
+                    showToast('Terjadi kesalahan koneksi saat membatalkan.', 'error');
                     btn.prop('disabled', false).html(cancelText);
                 }
             });
@@ -494,26 +529,27 @@
                 const target = $('[name="target_pick"]').val();
                 const bagian = $('[name="bagian"]').val();
 
-                if (!target) return showToast('Silakan pilih target terlebih dahulu.', 'warning');
+                if (!target) return showToast('Silakan pilih ID target terlebih dahulu.', 'warning');
 
-                // === LOGIC UNTUK LEADER (SUPERVISOR NGECEK) ===
+                // === LOGIC UNTUK SPV NGECEK LEADER ===
                 if (PHASE === 'leader') {
-                    // Simpan data target ke session aja, gausah langsung tembak API
+                    const kondisiLeader = $('input[name="kondisi_leader"]:checked').val();
+                    if (!kondisiLeader) return showToast('Silakan pilih Kondisi Leader.', 'warning');
+
                     const payload = {
                         shift: null,
                         target: target,
                         bagian: bagian,
-                        attendance: '1', // Hardcode hadir
-                        has_replacement: '0'
+                        attendance: '1',
+                        has_replacement: '0',
+                        kondisi: kondisiLeader
                     };
                     sessionStorage.setItem(key('partA'), JSON.stringify(payload));
-
-                    // Langsung lempar ke Part B biar bisa ngisi jawaban!
                     window.location.href = `${PARTB_URL}?type=${encodeURIComponent(PHASE)}&plan=${PLAN}`;
                     return;
                 }
 
-                // === LOGIKA WIZARD (SELAIN LEADER) ===
+                // === LOGIKA WIZARD (OPERATOR) ===
                 if (page === 1) {
                     page = 2;
                     updateWizardUI();
@@ -592,11 +628,17 @@
             try {
                 const earlier = JSON.parse(sessionStorage.getItem(key('partA')) || 'null');
                 if (earlier) {
-                    page = 2;
-                    updateWizardUI();
+                    if (PHASE !== 'leader') {
+                        page = 2;
+                        updateWizardUI();
+                    }
 
-                    $('[name="target_pick"]').val(earlier.target).trigger('change');
+                    targetSelectize.setValue(earlier.target, false);
                     $('[name="bagian"]').val(earlier.bagian);
+
+                    if (PHASE === 'leader' && earlier.kondisi) {
+                        $(`input[name="kondisi_leader"][value="${earlier.kondisi}"]`).prop('checked', true);
+                    }
 
                     $(`input[name="attendance"][value="${earlier.attendance}"]`).prop('checked', true).trigger(
                         'change');
@@ -606,14 +648,14 @@
                             .prop('checked', true).trigger('change');
                     }
 
-                    if (earlier.nama_pengganti) $('[name="nama_pengganti"]').val(earlier.nama_pengganti).trigger(
-                        'change');
+                    if (earlier.nama_pengganti && penggantiSelectize) penggantiSelectize.setValue(earlier
+                        .nama_pengganti, false);
                     if (earlier.bagian_pengganti) $('input[name="bagian_pengganti"]').val(earlier.bagian_pengganti);
                     if (earlier.kondisi_pengganti) $(
                         `input[name="kondisi_pengganti"][value="${earlier.kondisi_pengganti}"]`).prop('checked',
                         true);
-                    if (earlier.kondisi) $(`input[name="kondisi"][value="${earlier.kondisi}"]`).prop('checked',
-                        true);
+                    if (earlier.kondisi && PHASE !== 'leader') $(
+                        `input[name="kondisi"][value="${earlier.kondisi}"]`).prop('checked', true);
                 }
             } catch (e) {
                 console.error('Restore session failed:', e)

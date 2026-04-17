@@ -260,71 +260,116 @@
                 }
             };
 
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    new Chart(ctx, {
-                        plugins: [noDataStampPlugin],
-                        data: {
-                            labels: data.labels,
-                            datasets: data.datasets // Datanya udah dirakit mateng dari Controller
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                // 🔥 LOGIC DINAMIS: Cuma Leader & Operator yang ditumpuk (Stacked) 🔥
-                                x: {
-                                    stacked: {{ in_array($type, ['leader', 'operator']) ? 'true' : 'false' }}
+            if (apiUrl !== '') {
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+
+                        // ==========================================
+                        // 1. MANIPULASI DATASET SEBELUM RENDER
+                        // ==========================================
+                        data.datasets.forEach(dataset => {
+                            if (dataset.type === 'line') {
+                                dataset.pointStyle = 'line';
+                                dataset.borderWidth = 2;
+                                dataset.borderColor = '#33a02c';
+                                dataset.showLine =
+                                    false; // 🔥 MAGIC: Sembunyiin garis bawaan yang bantet!
+                                dataset.pointRadius = 0;
+                            } else {
+                                dataset.pointStyle = 'rect';
+                                dataset.order = 1;
+                            }
+                        });
+
+                        new Chart(ctx, {
+                            data: {
+                                labels: data.labels,
+                                datasets: data.datasets
+                            },
+
+                            // ==========================================
+                            // 2. INLINE PLUGIN: Nggambar Garis Full Width
+                            // ==========================================
+                            plugins: [{
+                                id: 'fullWidthTargetLine',
+                                afterDatasetsDraw: function(chart) {
+                                    const targetDs = chart.data.datasets.find(d => d
+                                        .label === 'Target');
+                                    // Cek kalau ada data targetnya
+                                    if (targetDs && targetDs.data.length > 0) {
+                                        const yVal = targetDs.data[
+                                            0]; // Ambil nilai 100 / 95 (dari database lo)
+                                        const yPos = chart.scales.y.getPixelForValue(
+                                            yVal); // Konversi nilai ke posisi Y di layar
+                                        const ctx = chart.ctx;
+
+                                        ctx.save();
+                                        ctx.beginPath();
+                                        // Tarik garis lurus dari ujung kiri area chart sampai ujung kanan
+                                        ctx.moveTo(chart.chartArea.left, yPos);
+                                        ctx.lineTo(chart.chartArea.right, yPos);
+                                        ctx.lineWidth = 2;
+                                        ctx.strokeStyle = '#33a02c'; // Warna hijau Target
+
+                                        // (Opsional) Kalau mau garisnya putus-putus, nyalain kode di bawah ini:
+                                        // ctx.setLineDash([5, 5]);
+
+                                        ctx.stroke();
+                                        ctx.restore();
+                                    }
+                                }
+                            }],
+
+                            // ==========================================
+                            // 3. OPTIONS TETAP SAMA KAYA SEBELUMNYA
+                            // ==========================================
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    // 🔥 Pastiin logik stacked dinamis lo masih ada di sini 🔥
+                                    x: {
+                                        stacked: {{ in_array($type, ['leader', 'operator']) ? 'true' : 'false' }}
+                                    },
+                                    y: {
+                                        stacked: {{ in_array($type, ['leader', 'operator']) ? 'true' : 'false' }},
+                                        beginAtZero: true,
+                                        max: 100,
+                                        ticks: {
+                                            callback: function(value) {
+                                                return value + '%';
+                                            }
+                                        }
+                                    }
                                 },
-                                y: {
-                                    stacked: {{ in_array($type, ['leader', 'operator']) ? 'true' : 'false' }},
-                                    beginAtZero: true,
-                                    max: 100,
-                                    ticks: {
-                                        callback: function(value) {
-                                            return value + '%';
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'bottom',
+                                        labels: {
+                                            usePointStyle: true,
+                                            boxWidth: 30, // Bikin legend garis ijonya lebih panjang
+                                        }
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return context.dataset.label + ': ' + context.parsed
+                                                    .y + '%';
+                                            }
                                         }
                                     }
                                 }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: true,
-                                    position: 'bottom',
-                                    labels: {
-                                        // Trik manipulasi icon legend biar nggak ikut menebal
-                                        generateLabels: function(chart) {
-                                            const originalLabels = Chart.defaults.plugins.legend
-                                                .labels.generateLabels(chart);
-                                            return originalLabels.map(label => {
-                                                if (label.text === 'Target') {
-                                                    // Paksa ketebalan garis di icon legend jadi 0
-                                                    // Biar dia balik jadi kotak solid normal kayak yang lain
-                                                    label.lineWidth = 0;
-                                                }
-                                                return label;
-                                            });
-                                        }
-                                    }
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            return context.dataset.label + ': ' + context.parsed.y +
-                                                '%';
-                                        }
-                                    }
-                                },
                             }
-                        }
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Gagal load data chart:", error);
+                        ctx.parentElement.innerHTML =
+                            '<p class="text-center text-danger mt-5">Gagal memuat grafik</p>';
                     });
-                })
-                .catch(error => {
-                    console.error("Gagal load data chart:", error);
-                    ctx.parentElement.innerHTML =
-                        '<p class="text-center text-danger mt-5">Gagal memuat grafik</p>';
-                });
+            }
         });
     </script>
 </body>

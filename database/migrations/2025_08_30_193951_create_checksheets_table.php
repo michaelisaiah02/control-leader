@@ -18,7 +18,8 @@ return new class extends Migration
             $table->foreignId('schedule_detail_id')->nullable()->constrained('schedule_details')->nullOnDelete();
             $table->unsignedInteger('stopwatch_duration')->comment('Durasi dalam detik')->nullable();
             $table->string('phase')->default('awal_shift')
-                ->comment('Fase checksheet: awal_shift, bekerja, istirahat, akhir_shift, leader');
+                ->comment('Fase checksheet: awal_shift, saat_bekerja, setelah_istirahat, akhir_shift, leader');
+            $table->foreign('phase')->references('phase')->on('targets')->cascadeOnDelete();
             $table->integer('score')->unsigned()->comment('Skor checksheet (jumlah poin benar)')->default(0);
 
             // opsional: simpan juga 'scheduled_target' biar report makin jelas

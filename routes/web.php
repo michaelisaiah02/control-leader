@@ -8,6 +8,7 @@ use App\Http\Controllers\ProblemListController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\Ypq\QuestionController;
+use App\Http\Controllers\Ypq\TargetController;
 use App\Http\Controllers\Ypq\UserController;
 use App\Http\Middleware\CheckActiveChecksheet;
 use App\Http\Middleware\CheckRole;
@@ -123,5 +124,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/{type}', 'form')->name('form');
         Route::get('/{type}/consistency', 'consistency')->name('consistency');
         Route::get('/{type}/score', 'score')->name('score'); // Nama method gue sesuaikan jadi 'score'
+    });
+
+    Route::prefix('targets')->as('targets.')->controller(TargetController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/update', 'update')->name('update');
     });
 });

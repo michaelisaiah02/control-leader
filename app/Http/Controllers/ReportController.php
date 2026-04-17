@@ -8,6 +8,7 @@ use App\Models\Department;
 use App\Models\Problem;
 use App\Models\ScheduleDetail;
 use App\Models\SchedulePlan;
+use App\Models\Target;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -105,6 +106,12 @@ class ReportController extends Controller
         return view('reports.score', compact('type', 'problems', 'member', 'department', 'date'));
     }
 
+    private function getTargetValue($reportName)
+    {
+        // Cari di tabel targets, kalau gak ada balikin default 100
+        return Target::where('report', $reportName)->value('value') ?? 100;
+    }
+
     // ==========================================
     // AREA API UNTUK CHART / AJAX
     // ==========================================
@@ -114,6 +121,7 @@ class ReportController extends Controller
         $monthInput = $request->month ?? now()->format('Y-m');
         $date = Carbon::createFromFormat('Y-m', $monthInput);
         $supervisorId = $request->supervisor_id;
+        $targetValue = $this->getTargetValue('score_supervisor');
 
         // 🔥 Ganti created_at jadi shift_date
         $checksheets = Checksheet::with(['answers', 'targetUser'])
@@ -173,10 +181,10 @@ class ReportController extends Controller
         $datasets[] = [
             'type' => 'line',
             'label' => 'Target',
-            'data' => [100, 100, 100, 100],
+            'data' => array_fill(0, 4, $targetValue),
             'borderColor' => '#33a02c',
             'backgroundColor' => '#33a02c',
-            'borderWidth' => 8,
+            'borderWidth' => 1,
             'fill' => false,
             'pointRadius' => 0,
         ];
@@ -192,6 +200,7 @@ class ReportController extends Controller
         $monthInput = $request->month ?? now()->format('Y-m');
         $date = Carbon::createFromFormat('Y-m', $monthInput);
         $leaderId = $request->leader_id;
+        $targetValue = $this->getTargetValue('score_leader');
 
         $days_in_month = $date->daysInMonth;
 
@@ -213,7 +222,7 @@ class ReportController extends Controller
         for ($day = 1; $day <= $days_in_month; $day++) {
             $currentDate = $date->copy()->day($day);
             $labels[] = $day;
-            $targetData[] = 100;
+            $targetData[] = $targetValue;
 
             // 🔥 Filter berdasarkan shift_date
             $dayData = $checksheets->filter(fn($c) => Carbon::parse($c->shift_date)->day == $day);
@@ -259,7 +268,7 @@ class ReportController extends Controller
                     'data' => $targetData,
                     'borderColor' => '#33a02c',
                     'backgroundColor' => '#33a02c',
-                    'borderWidth' => 8,
+                    'borderWidth' => 1,
                     'fill' => false,
                     'pointRadius' => 0,
                 ]
@@ -272,6 +281,7 @@ class ReportController extends Controller
         $monthInput = $request->month ?? now()->format('Y-m');
         $date = Carbon::createFromFormat('Y-m', $monthInput);
         $operatorId = $request->operator_id;
+        $targetValue = $this->getTargetValue('score_operator');
 
         $days_in_month = $date->daysInMonth;
 
@@ -283,7 +293,7 @@ class ReportController extends Controller
             ->get();
 
         $labels = range(1, $days_in_month);
-        $targetData = array_fill(0, $days_in_month, 100);
+        $targetData = array_fill(0, $days_in_month, $targetValue);
 
         $phases = [
             'awal_shift' => ['label' => 'Awal Shift', 'color' => '#f47920'],
@@ -328,7 +338,7 @@ class ReportController extends Controller
             'data' => $targetData,
             'borderColor' => '#33a02c',
             'backgroundColor' => '#33a02c',
-            'borderWidth' => 8,
+            'borderWidth' => 1,
             'fill' => false,
             'pointRadius' => 0,
         ];
@@ -344,6 +354,7 @@ class ReportController extends Controller
         $monthInput = $request->month ?? now()->format('Y-m');
         $date = Carbon::createFromFormat('Y-m', $monthInput);
         $supervisorId = $request->supervisor_id;
+        $targetValue = $this->getTargetValue('consistency_supervisor');
 
         $plans = SchedulePlan::where('scheduler_id', $supervisorId)
             ->where('type', 'supervisor_checks_leader')
@@ -410,10 +421,10 @@ class ReportController extends Controller
         $datasets[] = [
             'type' => 'line',
             'label' => 'Target',
-            'data' => [100, 100, 100, 100],
+            'data' => array_fill(0, 4, $targetValue),
             'borderColor' => '#33a02c',
             'backgroundColor' => '#33a02c',
-            'borderWidth' => 8,
+            'borderWidth' => 1,
             'fill' => false,
             'pointRadius' => 0,
         ];
@@ -429,6 +440,7 @@ class ReportController extends Controller
         $monthInput = $request->month ?? now()->format('Y-m');
         $date = Carbon::createFromFormat('Y-m', $monthInput);
         $leaderId = $request->leader_id;
+        $targetValue = $this->getTargetValue('consistency_leader');
 
         $days_in_month = $date->daysInMonth;
 
@@ -445,7 +457,7 @@ class ReportController extends Controller
             ->get();
 
         $labels = range(1, $days_in_month);
-        $targetData = array_fill(0, $days_in_month, 100);
+        $targetData = array_fill(0, $days_in_month, $targetValue);
 
         $phases = [
             'awal_shift' => ['label' => 'Awal Shift', 'color' => '#ed7d31'],
@@ -516,7 +528,7 @@ class ReportController extends Controller
             'data' => $targetData,
             'borderColor' => '#33a02c',
             'backgroundColor' => '#33a02c',
-            'borderWidth' => 8,
+            'borderWidth' => 1,
             'fill' => false,
             'pointRadius' => 0,
         ];

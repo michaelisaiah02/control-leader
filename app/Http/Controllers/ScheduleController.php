@@ -104,9 +104,9 @@ class ScheduleController extends Controller
 
         return view('schedule.schedule-supervisor', compact(
             'plan',
-            'leaders',      // Buat pilihan di dropdown modal
-            'weeksData',    // Data utama 5 minggu
-            'leaderTotals', // Data buat footer
+            'leaders',
+            'weeksData',
+            'leaderTotals',
             'daysInMonth',
             'isPastMonth',
             'isCurrentMonth'

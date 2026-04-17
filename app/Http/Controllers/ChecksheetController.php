@@ -39,17 +39,6 @@ class ChecksheetController extends Controller
         return $me->role === 'supervisor' ? 'supervisor_checks_leader' : 'leader_checks_operator';
     }
 
-    private function getEmployeeId(string $uid): string
-    {
-        $u = User::where('employeeID', $uid)->first();
-        if (!$u && is_numeric($uid)) {
-            $u = User::find($uid);
-        }
-        if (!$u) return $uid;
-
-        return $u->employeeID ?: ($u->role === 'leader' ? 'LDR' . $u->id : 'OP' . $u->id);
-    }
-
     // ==========================================
     // 2. PAGE RENDERING (PART A & B)
     // ==========================================
@@ -81,16 +70,27 @@ class ChecksheetController extends Controller
 
         $currentShift = session('shift') ?? 1;
 
-        $details = ScheduleDetail::where('schedule_plan_id', $plan->id)
-            ->where('shift', $currentShift)
+        // Bikin base query-nya dulu
+        $detailsQuery = ScheduleDetail::where('schedule_plan_id', $plan->id)
             ->whereNotNull('target_user_id')
             ->whereHas('targetUser', function ($query) use ($me) {
                 $query->where('superior_id', $me->employeeID);
             })
             ->with('targetUser.division') // 🔥 Eager load division biar ga kosong
             ->orderBy('target_user_id')
-            ->orderBy('scheduled_date')
-            ->get();
+            ->orderBy('scheduled_date');
+
+        // 🔥 MAGIC FIX: Pisahin logic pencarian Shift!
+        if ($direction === 'leader_checks_operator') {
+            // Leader wajib sesuai shift yang dipilih
+            $detailsQuery->where('shift', $currentShift);
+        } else {
+            // Supervisor shift-nya null, jadi filter khusus null
+            $detailsQuery->whereNull('shift');
+        }
+
+        // Baru dieksekusi get()
+        $details = $detailsQuery->get();
 
         $grouped = $details->groupBy('target_user_id');
         $options = [];
@@ -98,43 +98,49 @@ class ChecksheetController extends Controller
 
         foreach ($grouped as $userId => $userDates) {
             if ($direction === 'supervisor_checks_leader') {
-                $blocks = [];
-                $currentBlock = [];
+                $weeklyBlocks = [];
 
+                // 1. KELOMPOKKAN BERDASARKAN MINGGU (1-5)
                 foreach ($userDates as $d) {
-                    if (empty($currentBlock)) {
-                        $currentBlock[] = $d;
-                    } else {
-                        $lastIdx = count($currentBlock) - 1;
-                        $lastDate = Carbon::parse($currentBlock[$lastIdx]->scheduled_date)->startOfDay();
-                        $currDate = Carbon::parse($d->scheduled_date)->startOfDay();
+                    $day = Carbon::parse($d->scheduled_date)->day;
+                    $weekNum = (int) ceil($day / 7);
+                    if ($weekNum > 5) $weekNum = 5; // Jaga-jaga tgl 29-31 masuk week 5
 
-                        if ($lastDate->diffInDays($currDate) == 1) {
-                            $currentBlock[] = $d;
-                        } else {
-                            $blocks[] = $currentBlock;
-                            $currentBlock = [$d];
+                    $weeklyBlocks[$weekNum][] = $d;
+                }
+
+                // 2. FORMAT TIAP MINGGU JADI OPSI DROPDOWN
+                foreach ($weeklyBlocks as $weekNum => $block) {
+                    $firstDetailId = $block[0]->id;
+                    $firstDate = Carbon::parse($block[0]->scheduled_date);
+                    $startDate = $firstDate->copy()->startOfDay();
+
+                    // Cek apakah checksheet minggu ini udah pernah dikerjain
+                    $isCompleted = false;
+                    foreach ($block as $b) {
+                        if (in_array($b->id, $completedDetailIds)) {
+                            $isCompleted = true;
+                            break;
                         }
                     }
-                }
-                if (!empty($currentBlock)) {
-                    $blocks[] = $currentBlock;
-                }
 
-                foreach ($blocks as $block) {
-                    $firstDetailId = $block[0]->id;
-                    $startDate = Carbon::parse($block[0]->scheduled_date)->startOfDay();
-
-                    if (!in_array($firstDetailId, $completedDetailIds) && $startDate->lte($todayDate)) {
-                        $endDate = $block[count($block) - 1]->scheduled_date;
+                    // Syarat: Belum dikerjain & minggunya udah mulai (<= hari ini)
+                    if (!$isCompleted && $startDate->lte($todayDate)) {
                         $targetUser = $block[0]->targetUser;
-
-                        // 🔥 Ambil nama divisi dari relasi
                         $div = $targetUser?->division?->name ?? 'Tanpa Divisi';
 
-                        $startFmt = Carbon::parse($block[0]->scheduled_date)->format('d M');
-                        $endFmt = Carbon::parse($endDate)->format('d M');
-                        $rangeLabel = $startFmt === $endFmt ? "($startFmt)" : "($startFmt - $endFmt)";
+                        $monthStr = $firstDate->format('M'); // cth: Apr
+                        $daysInMonth = $firstDate->daysInMonth;
+
+                        // Bikin label teks paten sesuai Kanban Board
+                        $rangeLabel = match ($weekNum) {
+                            1 => "(01 $monthStr - 07 $monthStr)",
+                            2 => "(08 $monthStr - 14 $monthStr)",
+                            3 => "(15 $monthStr - 21 $monthStr)",
+                            4 => "(22 $monthStr - 28 $monthStr)",
+                            5 => "(29 $monthStr - " . str_pad($daysInMonth, 2, '0', STR_PAD_LEFT) . " $monthStr)",
+                            default => ""
+                        };
 
                         $options[] = [
                             'value' => "{$firstDetailId}::{$userId}::{$div}",
