@@ -196,8 +196,7 @@
             {{-- Gunakan logika row yang sama untuk supervisor --}}
             <div id="supervisor-menu-container" class="my-auto pb-5 pb-md-0">
                 <div id="menu-main"
-                    class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-3 g-xl-4 justify-content-center animate-fade-in"
-                    style="max-width: 900px; margin: 0 auto;">
+                    class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-3 g-xl-4 justify-content-center animate-fade-in">
                     {{-- Grid 2x2 untuk Supervisor biar pas di tengah --}}
                     <div class="col my-2">
                         <a href="{{ route('checksheets.create', ['type' => 'leader']) }}" class="btn-dashboard h-100">
@@ -272,49 +271,51 @@
 
                 {{-- ROLE: Management atau YPQ --}}
             @elseif(in_array(auth()->user()->role, ['management', 'ypq']))
-                <div class="row g-4 justify-content-center animate-fade-in my-auto pb-5 pb-md-0">
-                    <div id="menu-main"
-                        class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-3 g-xl-4 justify-content-center animate-fade-in"
-                        style="max-width: 900px; margin: 0 auto;">
-                        <div class="col my-2">
-                            <a href="{{ route('question.index') }}" class="btn-dashboard">
-                                <i class="bi bi-question-circle"></i>
-                                <span>Question List</span>
-                            </a>
-                        </div>
-                        <div class="col my-2">
-                            <a href="{{ route('users.index') }}" class="btn-dashboard">
-                                <i class="bi bi-person-gear"></i>
-                                <span>Users List</span>
-                            </a>
-                        </div>
-                        <div class="col my-2">
-                            <a class="btn-dashboard" href="{{ route('reports.index') }}">
-                                <i class="bi bi-file-text"></i>
-                                <span>Report<br><small>Activity</small></span>
-                            </a>
-                        </div>
-                        <div class="col my-2">
-                            <a class="btn-dashboard position-relative btn-dashboard-danger"
-                                href="{{ route('listProblem.index') }}">
-                                <i class="bi bi-exclamation-octagon"></i>
-                                <span>List Problem</span>
-                                @if ($problemCount > 0)
-                                    <span
-                                        class="position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill bg-danger border border-white shadow-sm">
-                                        {{ $problemCount }}
-                                    </span>
-                                @endif
-                            </a>
-                        </div>
-                        <div class="col my-2">
-                            <a class="btn-dashboard" href="{{ route('targets.index') }}">
-                                <i class="bi bi-bullseye"></i>
-                                <span>Target</span>
-                            </a>
-                        </div>
+                <div
+                    class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-xl-4 justify-content-center text-center my-auto pb-5 pb-md-0">
+                    <div class="col my-2">
+                        <a href="{{ route('question.index') }}"
+                            class="btn-dashboard d-flex flex-column align-items-center justify-content-center">
+                            <i class="bi bi-question-circle"></i>
+                            <span>Question List</span>
+                        </a>
+                    </div>
+                    <div class="col my-2">
+                        <a href="{{ route('users.index') }}"
+                            class="btn-dashboard d-flex flex-column align-items-center justify-content-center">
+                            <i class="bi bi-person-gear"></i>
+                            <span>Users List</span>
+                        </a>
+                    </div>
+                    <div class="col my-2">
+                        <a class="btn-dashboard d-flex flex-column align-items-center justify-content-center"
+                            href="{{ route('reports.index') }}">
+                            <i class="bi bi-file-text"></i>
+                            <span>Report<br><small>Activity</small></span>
+                        </a>
+                    </div>
+                    <div class="col my-2">
+                        <a class="btn-dashboard position-relative btn-dashboard-danger d-flex flex-column align-items-center justify-content-center"
+                            href="{{ route('listProblem.index') }}">
+                            <i class="bi bi-exclamation-octagon"></i>
+                            <span>List Problem</span>
+                            @if ($problemCount > 0)
+                                <span
+                                    class="position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill bg-danger border border-white shadow-sm">
+                                    {{ $problemCount }}
+                                </span>
+                            @endif
+                        </a>
+                    </div>
+                    <div class="col my-2">
+                        <a class="btn-dashboard d-flex flex-column align-items-center justify-content-center"
+                            href="{{ route('targets.index') }}">
+                            <i class="bi bi-bullseye"></i>
+                            <span>Target</span>
+                        </a>
                     </div>
                 </div>
+
 
                 {{-- DEFAULT: NO ACCESS --}}
             @else
