@@ -262,7 +262,7 @@ class ChecksheetController extends Controller
         $shiftDate = $detail ? Carbon::parse($detail->scheduled_date)->format('Y-m-d') : now()->format('Y-m-d');
 
         // 🔥 SMART LOGIC 2: Ambil Identitas & Divisi Target Murni Dari Database
-        $scheduledUser = User::with('division')->where('employeeID', $uid)->orWhere('id', $uid)->first();
+        $scheduledUser = User::with('division')->where('employeeID', $uid)->first();
         $scheduledTargetId = $scheduledUser ? $scheduledUser->employeeID : $uid;
         $scheduledTargetName = $scheduledUser ? $scheduledUser->name : 'Unknown';
 
@@ -358,7 +358,7 @@ class ChecksheetController extends Controller
         $penggantiParts = array_pad(explode('::', $data['part_a']['nama_pengganti']), 3, null);
         $penggantiUid = $penggantiParts[1] ?? $data['part_a']['nama_pengganti'];
 
-        $penggantiUser = User::with('division')->where('employeeID', $penggantiUid)->orWhere('id', $penggantiUid)->first();
+        $penggantiUser = User::with('division')->where('employeeID', $penggantiUid)->first();
         $penggantiTargetId = $penggantiUser ? $penggantiUser->employeeID : $penggantiUid;
         $penggantiName = $penggantiUser ? $penggantiUser->name : $penggantiUid;
         $penggantiDivision = $penggantiUser?->division?->name ?? 'Tanpa Divisi';
