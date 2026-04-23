@@ -121,12 +121,12 @@ class ReportController extends Controller
         $monthInput = $request->month ?? now()->format('Y-m');
         $date = Carbon::createFromFormat('Y-m', $monthInput);
         $supervisorId = $request->supervisor_id;
-        $targetValue = $this->getTargetValue('score_supervisor');
 
-        // 🔥 Ganti created_at jadi shift_date
-        $checksheets = Checksheet::with(['answers', 'targetUser'])
-            ->whereMonth('shift_date', $date->month)
-            ->whereYear('shift_date', $date->year)
+        $targetValue = $this->getTargetValue('score_supervisor'); // Panggil target dari DB
+
+        $checksheets = Checksheet::with(['checksheet_answers', 'targetUser'])
+            ->whereMonth('created_at', $date->month)
+            ->whereYear('created_at', $date->year)
             ->whereHas('schedulePlan', function ($q) use ($supervisorId) {
                 $q->where('scheduler_id', $supervisorId)
                     ->where('type', 'supervisor_checks_leader');
@@ -134,38 +134,47 @@ class ReportController extends Controller
             ->get();
 
         $leaders = $checksheets->pluck('targetUser')->filter()->unique('employeeID');
+
+        // 🔥 LOGIC BARU: GENERATE MINGGU DINAMIS 🔥
+        $days_in_month = $date->daysInMonth;
+        $weeks = [];
+        $startDay = 1;
+        $weekCount = 1;
+
+        while ($startDay <= $days_in_month) {
+            $weeks[] = [
+                'name' => 'W' . $weekCount,
+                'start' => $startDay,
+                'end' => min($startDay + 6, $days_in_month) // Set max ke akhir bulan
+            ];
+            $startDay += 7;
+            $weekCount++;
+        }
+
         $datasets = [];
         $colors = ['#2171b5', '#6baed6', '#fd8d3c', '#74c476', '#9e9ac8'];
-
         $colorIndex = 0;
+
         foreach ($leaders as $leader) {
             $leaderData = [];
             $leaderChecksheets = $checksheets->where('target', $leader->employeeID);
 
-            $weeks = [
-                ['start' => 1, 'end' => 7],
-                ['start' => 8, 'end' => 14],
-                ['start' => 15, 'end' => 21],
-                ['start' => 22, 'end' => 31],
-            ];
-
             foreach ($weeks as $week) {
                 $weekData = $leaderChecksheets->filter(function ($c) use ($week) {
-                    // 🔥 Parse shift_date ke Carbon
-                    $day = Carbon::parse($c->shift_date)->day;
+                    $day = $c->created_at->day;
                     return $day >= $week['start'] && $day <= $week['end'];
                 });
 
                 if ($weekData->isEmpty()) {
                     $leaderData[] = 0;
                 } else {
-                    $avgPercentage = $weekData->map(function ($c) {
-                        $totalPoints = $c->score;
-                        $maxPoints = $c->answers->count() * 2;
-                        return $maxPoints > 0 ? ($totalPoints / $maxPoints) * 100 : 0;
-                    })->avg();
+                    $totalPoints = $weekData->sum('score');
+                    $totalMaxPoints = $weekData->sum(function ($c) {
+                        return $c->checksheet_answers->count() * 2;
+                    });
 
-                    $leaderData[] = round($avgPercentage, 2);
+                    $scorePercentage = $totalMaxPoints > 0 ? ($totalPoints / $totalMaxPoints) * 100 : 0;
+                    $leaderData[] = round($scorePercentage, 2);
                 }
             }
 
@@ -181,16 +190,16 @@ class ReportController extends Controller
         $datasets[] = [
             'type' => 'line',
             'label' => 'Target',
-            'data' => array_fill(0, 4, $targetValue),
+            // Dinamis sesuai jumlah minggu
+            'data' => array_fill(0, count($weeks), $targetValue),
             'borderColor' => '#33a02c',
-            'backgroundColor' => '#33a02c',
-            'borderWidth' => 1,
+            'borderWidth' => 2,
             'fill' => false,
             'pointRadius' => 0,
         ];
 
         return response()->json([
-            'labels' => ['W1', 'W2', 'W3', 'W4'],
+            'labels' => array_column($weeks, 'name'), // Dinamis ngeluarin ['W1', 'W2', 'W3', 'W4', 'W5']
             'datasets' => $datasets
         ]);
     }
@@ -354,8 +363,10 @@ class ReportController extends Controller
         $monthInput = $request->month ?? now()->format('Y-m');
         $date = Carbon::createFromFormat('Y-m', $monthInput);
         $supervisorId = $request->supervisor_id;
+
         $targetValue = $this->getTargetValue('consistency_supervisor');
 
+        // 1. Tarik jadwal resmi dari database
         $plans = SchedulePlan::where('scheduler_id', $supervisorId)
             ->where('type', 'supervisor_checks_leader')
             ->pluck('id');
@@ -365,8 +376,8 @@ class ReportController extends Controller
             ->whereYear('scheduled_date', $date->year)
             ->get();
 
-        $problems = ConsistencyProblem::where('user_id', $supervisorId)
-            ->where('role_type', 'supervisor')
+        // 🔥 LOGIC PESIMIS: Tarik form yang BENERAN UDAH DIISI 🔥
+        $checksheets = Checksheet::whereIn('schedule_plan_id', $plans)
             ->whereMonth('created_at', $date->month)
             ->whereYear('created_at', $date->year)
             ->get();
@@ -374,23 +385,33 @@ class ReportController extends Controller
         $leaderIds = $schedules->pluck('target_user_id')->unique();
         $leaders = User::whereIn('employeeID', $leaderIds)->get();
 
+        // Bikin minggu dinamis (W1 - W4/W5)
+        $days_in_month = $date->daysInMonth;
+        $weeks = [];
+        $startDay = 1;
+        $weekCount = 1;
+
+        while ($startDay <= $days_in_month) {
+            $weeks[] = [
+                'name' => 'W' . $weekCount,
+                'start' => $startDay,
+                'end' => min($startDay + 6, $days_in_month)
+            ];
+            $startDay += 7;
+            $weekCount++;
+        }
+
         $datasets = [];
         $colors = ['#2171b5', '#6baed6', '#fd8d3c', '#74c476', '#9e9ac8'];
         $colorIndex = 0;
 
-        $weeks = [
-            ['start' => 1, 'end' => 7],
-            ['start' => 8, 'end' => 14],
-            ['start' => 15, 'end' => 21],
-            ['start' => 22, 'end' => 31],
-        ];
-
         foreach ($leaders as $leader) {
             $leaderData = [];
             $leaderSchedules = $schedules->where('target_user_id', $leader->employeeID);
-            $leaderProblems = $problems->where('inferior_id', $leader->employeeID);
+            $leaderChecksheets = $checksheets->where('target', $leader->employeeID);
 
             foreach ($weeks as $week) {
+                // Berapa jadwal yang HARUS dikerjain minggu ini?
                 $weekSchedules = $leaderSchedules->filter(function ($s) use ($week) {
                     $day = Carbon::parse($s->scheduled_date)->day;
                     return $day >= $week['start'] && $day <= $week['end'];
@@ -399,13 +420,18 @@ class ReportController extends Controller
                 if ($weekSchedules == 0) {
                     $leaderData[] = 0;
                 } else {
-                    $weekProblemsCount = $leaderProblems->filter(function ($p) use ($week) {
-                        $day = $p->created_at->day;
+                    // Berapa jadwal yang UDAH DIKERJAIN minggu ini?
+                    // Kita hitung berdasarkan 'schedule_detail_id' unik biar nggak dobel kalau ada revisi
+                    $weekCompleted = $leaderChecksheets->filter(function ($c) use ($week) {
+                        $day = $c->created_at->day;
                         return $day >= $week['start'] && $day <= $week['end'];
-                    })->count();
+                    })->pluck('schedule_detail_id')->filter()->unique()->count();
 
-                    $score = (($weekSchedules - $weekProblemsCount) / $weekSchedules) * 100;
-                    $leaderData[] = round(max(0, $score), 2);
+                    // RUMUS PESIMIS KLIEN: (Dikerjain / Target Jadwal) * 100
+                    $score = ($weekCompleted / $weekSchedules) * 100;
+
+                    // min(100) buat proteksi aja kalau-kalau ada bug submit dobel dari frontend
+                    $leaderData[] = round(min(100, $score), 2);
                 }
             }
 
@@ -421,25 +447,26 @@ class ReportController extends Controller
         $datasets[] = [
             'type' => 'line',
             'label' => 'Target',
-            'data' => array_fill(0, 4, $targetValue),
+            'data' => array_fill(0, count($weeks), $targetValue),
             'borderColor' => '#33a02c',
-            'backgroundColor' => '#33a02c',
-            'borderWidth' => 1,
+            'borderWidth' => 2,
             'fill' => false,
             'pointRadius' => 0,
         ];
 
         return response()->json([
-            'labels' => ['W1', 'W2', 'W3', 'W4'],
+            'labels' => array_column($weeks, 'name'),
             'datasets' => $datasets
         ]);
     }
 
     public function apiLeaderConsistency(Request $request)
     {
-        $monthInput = $request->month ?? now()->format('Y-m');
+        $monthInput = $request->request->month ?? now()->format('Y-m');
         $date = Carbon::createFromFormat('Y-m', $monthInput);
         $leaderId = $request->leader_id;
+
+        // Jangan lupa panggil fungsi target dinamisnya
         $targetValue = $this->getTargetValue('consistency_leader');
 
         $days_in_month = $date->daysInMonth;
@@ -448,15 +475,16 @@ class ReportController extends Controller
             ->where('role', 'operator')
             ->count();
 
-        // 🔥 Ganti created_at jadi shift_date
         $checksheets = Checksheet::whereHas('schedulePlan', function ($q) use ($leaderId) {
             $q->where('scheduler_id', $leaderId);
         })
-            ->whereMonth('shift_date', $date->month)
-            ->whereYear('shift_date', $date->year)
+            ->whereMonth('created_at', $date->month)
+            ->whereYear('created_at', $date->year)
             ->get();
 
         $labels = range(1, $days_in_month);
+
+        // Garis target hijau dinamis dari DB
         $targetData = array_fill(0, $days_in_month, $targetValue);
 
         $phases = [
@@ -475,12 +503,23 @@ class ReportController extends Controller
         ];
         $liburData = [];
 
+        $today = now()->startOfDay();
+
         for ($day = 1; $day <= $days_in_month; $day++) {
             $currentDate = $date->copy()->day($day);
 
-            // 🔥 Filter berdasarkan shift_date
-            $dayChecksheets = $checksheets->filter(fn($c) => Carbon::parse($c->shift_date)->day == $day);
+            // 🔥 BLOCK MASA DEPAN: Kalau harinya belum kejadian, PAKSA JADI 0 SEMUA 🔥
+            if ($currentDate->greaterThan($today)) {
+                $liburData[] = 0;
+                foreach ($phases as $key => $config) {
+                    $phaseDataArrays[$key][] = 0;
+                }
+                continue; // Langsung lompat ke hari berikutnya
+            }
 
+            $dayChecksheets = $checksheets->filter(fn($c) => $c->created_at->day == $day);
+
+            // Libur cuma aktif kalau GAK ADA isian, hari Weekend, DAN harinya UDAH LEWAT/HARI INI
             if ($dayChecksheets->isEmpty() && $currentDate->isWeekend()) {
                 $liburData[] = 100;
                 foreach ($phases as $key => $config) {
@@ -527,8 +566,7 @@ class ReportController extends Controller
             'label' => 'Target',
             'data' => $targetData,
             'borderColor' => '#33a02c',
-            'backgroundColor' => '#33a02c',
-            'borderWidth' => 1,
+            'borderWidth' => 2,
             'fill' => false,
             'pointRadius' => 0,
         ];

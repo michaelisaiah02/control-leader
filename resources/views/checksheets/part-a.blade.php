@@ -240,7 +240,7 @@
                                     <select id="nama_pengganti" name="nama_pengganti"
                                         placeholder="Cari Nama Operator...">
                                         <option value="">Cari Nama Operator...</option>
-                                        @foreach ($options as $opt)
+                                        @foreach ($penggantiOptions as $opt)
                                             <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
                                         @endforeach
                                     </select>
@@ -396,8 +396,12 @@
             $('[name="target_pick"]').on('change', function() {
                 const selectedValue = $(this).val();
 
+                // Variabel buat nangkep ID asli karyawan yang lagi diabsen
+                let selectedEmpId = '';
+
                 if (selectedValue) {
                     const parts = selectedValue.split('::');
+                    selectedEmpId = parts[1]; // Ekstrak ID karyawan dari value (index 1)
 
                     // Ambil teks label option, contoh: "00001 - Steven (Telat: 02 Apr)"
                     const labelText = targetSelectize.options[selectedValue].text;
@@ -414,14 +418,21 @@
                     $('[name="bagian"]').val('');
                 }
 
+                // LOGIC FILTER PENGGANTI (Biar ga bisa pilih diri sendiri)
                 if (PHASE !== 'leader' && penggantiSelectize) {
                     const currentPenggantiVal = penggantiSelectize.getValue();
                     penggantiSelectize.clearOptions();
+
                     originalPenggantiOptions.forEach(opt => {
-                        if (opt.value === "" || opt.value !== selectedValue) {
+                        // Ekstrak ID dari opsi pengganti
+                        const optEmpId = opt.value ? opt.value.split('::')[1] : '';
+
+                        // Kalau opsi kosong, ATAU ID pengganti beda sama ID target yang lagi diabsen -> Tampilkan
+                        if (opt.value === "" || optEmpId !== selectedEmpId) {
                             penggantiSelectize.addOption(opt);
                         }
                     });
+
                     if (currentPenggantiVal && penggantiSelectize.options[currentPenggantiVal]) {
                         penggantiSelectize.setValue(currentPenggantiVal);
                     }

@@ -173,7 +173,7 @@ class ChecksheetController extends Controller
         }
 
         if (empty($options)) {
-            return back()->with('info', 'Semua jadwal Anda untuk saat ini sudah dikerjakan. Mantap! 🎉');
+            return back()->with('info', 'Semua jadwal Anda untuk saat ini sudah dikerjakan! 🎉');
         }
 
         $sessionKey = "cs_timer_{$plan->id}_{$phase}";
@@ -186,12 +186,36 @@ class ChecksheetController extends Controller
         }
         $startedAtSeconds = session()->get($sessionKey);
 
+        // AMBIL DAFTAR PENGGANTI (Bebas jadwal, 1 Supervisor) 🔥
+        $penggantiOptions = [];
+        if ($phase !== 'leader') {
+            // 1. Cari semua Leader sejawat (Atasan SPV-nya sama)
+            $siblingLeaderIds = User::where('superior_id', $me->superior_id)->pluck('employeeID');
+
+            // 2. Tarik semua operator di bawah naungan leader-leader tersebut
+            $penggantiUsers = User::with('division')
+                ->whereIn('superior_id', $siblingLeaderIds)
+                ->where('role', 'operator')
+                ->orderBy('name')
+                ->get();
+
+            // 3. Format datanya biar selaras sama Javascript Frontend
+            foreach ($penggantiUsers as $pu) {
+                $div = $pu->division ? $pu->division->name : '-';
+                $penggantiOptions[] = [
+                    'value' => "{$pu->employeeID}::{$pu->employeeID}::{$div}",
+                    'label' => "{$pu->employeeID} - {$pu->name}"
+                ];
+            }
+        }
+
         return view('checksheets.part-a', [
             'phase' => $phase,
             'plan' => $plan,
             'startedAtMs' => $startedAtSeconds * 1000,
             'targetLabel' => $targetLabel,
             'options' => $options,
+            'penggantiOptions' => $penggantiOptions,
         ]);
     }
 
@@ -376,6 +400,7 @@ class ChecksheetController extends Controller
             'division' => $division,
             'attendance' => '0',
             'condition' => null,
+            'has_replacement' => true,
             'replacement' => false,
             'replacement_of_id' => null,
             'replacement_name' => $penggantiName,
