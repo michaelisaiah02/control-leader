@@ -124,8 +124,8 @@ class ChecksheetController extends Controller
                         }
                     }
 
-                    // Syarat: Belum dikerjain & minggunya udah mulai (<= hari ini)
-                    if (!$isCompleted && $startDate->lte($todayDate)) {
+                    // Syarat cuma "Belum dikerjain", Bebas waktu (Bisa Advance) khusus Supervisor!
+                    if (!$isCompleted) {
                         $targetUser = $block[0]->targetUser;
                         $div = $targetUser?->division?->name ?? 'Tanpa Divisi';
 
@@ -152,6 +152,7 @@ class ChecksheetController extends Controller
                 foreach ($userDates as $d) {
                     $scheduleDate = Carbon::parse($d->scheduled_date)->startOfDay();
 
+                    // Syarat buat Leader: Belum dikerjain & HARUS HARI INI ATAU TELAT (Gak boleh Advance)
                     if (!in_array($d->id, $completedDetailIds) && $scheduleDate->lte($todayDate)) {
                         $targetUser = $d->targetUser;
                         if (!$targetUser) continue;
@@ -196,7 +197,7 @@ class ChecksheetController extends Controller
             $penggantiUsers = User::with('division')
                 ->whereIn('superior_id', $siblingLeaderIds)
                 ->where('role', 'operator')
-                ->orderBy('name')
+                ->orderBy('employeeID')
                 ->get();
 
             // 3. Format datanya biar selaras sama Javascript Frontend

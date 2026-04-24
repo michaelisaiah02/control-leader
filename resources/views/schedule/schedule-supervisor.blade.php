@@ -274,7 +274,7 @@
     </div>
 
     {{-- ACTION BAR (Footer) --}}
-    <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-2 d-flex justify-content-between align-items-center"
+    <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center"
         style="z-index: 1030;">
         <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold shadow-sm">
             <i class="bi bi-arrow-left me-1"></i> <span class="d-none d-sm-inline">Back</span>

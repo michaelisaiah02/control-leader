@@ -280,9 +280,9 @@
     </div>
 
     {{-- STICKY ACTION BAR --}}
-    <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-2 d-flex justify-content-between align-items-center">
+    <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center">
         <button type="button" class="btn btn-outline-secondary rounded-pill px-4 me-2 fw-bold d-none" id="prevBtn">
-            <i class="bi bi-arrow-left me-2"></i> Kembali
+            <i class="bi bi-arrow-left me-2"></i> Back
         </button>
         <button type="button" class="btn btn-outline-danger rounded-pill px-4 fw-bold" id="cancelBtn"
             data-bs-toggle="modal" data-bs-target="#cancelModal">

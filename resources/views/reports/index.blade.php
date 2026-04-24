@@ -83,7 +83,7 @@
     <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center"
         style="z-index: 1030;">
         <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
-            <i class="bi bi-arrow-left me-2"></i> Kembali ke Dashboard
+            <i class="bi bi-arrow-left me-2"></i> Back
         </a>
     </div>
 @endsection

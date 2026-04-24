@@ -88,9 +88,9 @@
     </div>
 
     {{-- Sticky Back Button --}}
-    <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-center" style="z-index: 1030;">
-        <a href="{{ route('dashboard') }}" class="btn btn-secondary px-5 rounded-pill fw-bold">
-            <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
+    <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-start" style="z-index: 1030;">
+        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary px-4 rounded-pill fw-bold">
+            <i class="bi bi-arrow-left me-2"></i> Back
         </a>
     </div>
 

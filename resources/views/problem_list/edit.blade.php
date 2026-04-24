@@ -167,8 +167,8 @@
             <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center"
                 style="z-index: 1030;">
                 <a href="{{ route('listProblem.list', $type) }}"
-                    class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
-                    <i class="bi bi-arrow-left me-2"></i> Kembali
+                    class="btn btn-outline-secondary rounded-pill px-4 me-2 fw-bold">
+                    <i class="bi bi-arrow-left me-2"></i> Back
                 </a>
 
                 <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm" id="btn-save">

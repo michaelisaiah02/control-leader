@@ -257,7 +257,7 @@ class ScheduleController extends Controller
         $availableLeaders = User::where('role', 'leader')
             ->where('is_active', true)
             ->where('superior_id', auth()->user()->employeeID)
-            ->orderBy('name')
+            ->orderBy('employeeID')
             ->get();
 
         // 3. Tentukan Leader Terpilih
@@ -282,7 +282,7 @@ class ScheduleController extends Controller
                 ->where('role', 'operator')
                 ->where('is_active', true)
                 ->with('division') // Eager load relasi division master
-                ->orderBy('name')
+                ->orderBy('employeeID')
                 ->get();
 
             // C. Ambil Jadwal Existing

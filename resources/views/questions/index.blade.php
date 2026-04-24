@@ -100,7 +100,7 @@
 
         {{-- SECTION 3: ACTION BAR --}}
         <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center">
-            <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold">
+            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4 me-2 fw-bold">
                 <i class="bi bi-arrow-left me-2"></i> Back
             </a>
             <a href="{{ route('question.create') }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm">

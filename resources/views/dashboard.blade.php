@@ -234,37 +234,24 @@
 
                 {{-- Menu Database (Hidden by default) --}}
                 <div id="menu-database" class="row g-3 d-none">
+                    <!-- KOLOM MENU -->
 
-                    <!-- KOLOM BACK -->
-                    <div class="col-md-3 d-flex align-items-center justify-content-center my-2 pt-3 pt-md-0">
-                        <button class="btn btn-sm btn-outline-secondary" id="btn-back-menu">
-                            <i class="bi bi-arrow-left me-1"></i> Back
-                        </button>
+                    <div class="col my-2">
+                        <a href="{{ route('operator.index') }}" class="btn-dashboard">
+                            <i class="bi bi-people"></i><span>Data Operator</span>
+                        </a>
                     </div>
 
-                    <!-- KOLOM MENU -->
-                    <div class="col-md-9 my-2">
-                        <div class="row row-cols-1 row-cols-md-2 g-3 my-auto">
+                    <div class="col my-2">
+                        <a href="{{ route('schedule.leader') }}" class="btn-dashboard">
+                            <i class="bi bi-calendar-check"></i><span>Schedule Ops</span>
+                        </a>
+                    </div>
 
-                            <div class="col my-2">
-                                <a href="{{ route('operator.index') }}" class="btn-dashboard">
-                                    <i class="bi bi-people"></i><span>Data Operator</span>
-                                </a>
-                            </div>
-
-                            <div class="col my-2">
-                                <a href="{{ route('schedule.leader') }}" class="btn-dashboard">
-                                    <i class="bi bi-calendar-check"></i><span>Schedule Ops</span>
-                                </a>
-                            </div>
-
-                            <div class="col my-2">
-                                <a href="{{ route('schedule.index') }}" class="btn-dashboard">
-                                    <i class="bi bi-calendar-range"></i><span>Schedule Leader</span>
-                                </a>
-                            </div>
-
-                        </div>
+                    <div class="col my-2">
+                        <a href="{{ route('schedule.index') }}" class="btn-dashboard">
+                            <i class="bi bi-calendar-range"></i><span>Schedule Leader</span>
+                        </a>
                     </div>
 
                 </div>
@@ -330,6 +317,12 @@
         {{-- Footer Logout (Sticky Bottom) --}}
         <div class="fixed-bottom bg-white border-top shadow-lg px-3 py-1 d-flex justify-content-between align-items-center"
             style="z-index: 1030;">
+            <!-- KOLOM BACK -->
+            <div class="d-none me-3" id="btn-database">
+                <button class="btn btn-outline-secondary rounded-pill px-4 me-2 fw-bold" id="btn-back-menu">
+                    <i class="bi bi-arrow-left me-1"></i> Back
+                </button>
+            </div>
             <div class="d-none d-md-block lh-sm">
                 <small class="text-muted text-uppercase fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">Current
                     Session:</small>
@@ -402,15 +395,18 @@
         $(document).ready(function() {
             const mainGrid = $('#menu-main');
             const dbGrid = $('#menu-database');
+            const btnDb = $('#btn-database');
 
             $('#btn-show-database').on('click', function() {
                 mainGrid.addClass('d-none');
                 dbGrid.removeClass('d-none').hide().fadeIn(200);
+                btnDb.removeClass('d-none').hide().fadeIn(200);
             });
 
             $('#btn-back-menu').on('click', function() {
                 dbGrid.addClass('d-none');
                 mainGrid.removeClass('d-none').hide().fadeIn(200);
+                btnDb.addClass('d-none');
             });
 
             // Efek Loading

@@ -366,26 +366,19 @@ class ReportController extends Controller
 
         $targetValue = $this->getTargetValue('consistency_supervisor');
 
-        // 1. Tarik jadwal resmi dari database
+        // 1. Tarik plan & jadwal
         $plans = SchedulePlan::where('scheduler_id', $supervisorId)
             ->where('type', 'supervisor_checks_leader')
+            ->where('month', $date->month)
+            ->where('year', $date->year)
             ->pluck('id');
 
-        $schedules = ScheduleDetail::whereIn('schedule_plan_id', $plans)
-            ->whereMonth('scheduled_date', $date->month)
-            ->whereYear('scheduled_date', $date->year)
-            ->get();
-
-        // 🔥 LOGIC PESIMIS: Tarik form yang BENERAN UDAH DIISI 🔥
-        $checksheets = Checksheet::whereIn('schedule_plan_id', $plans)
-            ->whereMonth('created_at', $date->month)
-            ->whereYear('created_at', $date->year)
-            ->get();
+        $schedules = ScheduleDetail::whereIn('schedule_plan_id', $plans)->get();
+        $checksheets = Checksheet::whereIn('schedule_plan_id', $plans)->get();
 
         $leaderIds = $schedules->pluck('target_user_id')->unique();
         $leaders = User::whereIn('employeeID', $leaderIds)->get();
 
-        // Bikin minggu dinamis (W1 - W4/W5)
         $days_in_month = $date->daysInMonth;
         $weeks = [];
         $startDay = 1;
@@ -404,6 +397,7 @@ class ReportController extends Controller
         $datasets = [];
         $colors = ['#2171b5', '#6baed6', '#fd8d3c', '#74c476', '#9e9ac8'];
         $colorIndex = 0;
+        $today = now()->startOfDay();
 
         foreach ($leaders as $leader) {
             $leaderData = [];
@@ -411,27 +405,33 @@ class ReportController extends Controller
             $leaderChecksheets = $checksheets->where('target', $leader->employeeID);
 
             foreach ($weeks as $week) {
-                // Berapa jadwal yang HARUS dikerjain minggu ini?
-                $weekSchedules = $leaderSchedules->filter(function ($s) use ($week) {
+                // Tarik jadwal minggu ini
+                $detailIdsThisWeek = $leaderSchedules->filter(function ($s) use ($week) {
                     $day = Carbon::parse($s->scheduled_date)->day;
                     return $day >= $week['start'] && $day <= $week['end'];
-                })->count();
+                })->pluck('id');
 
-                if ($weekSchedules == 0) {
+                $weekStartDate = $date->copy()->day($week['start'])->startOfDay();
+
+                // Kalau minggu ini belum dimulai sama sekali (Masa Depan) -> 0
+                if ($weekStartDate->greaterThan($today)) {
+                    $leaderData[] = 0;
+                }
+                // Kalau emang ga ada jadwal buat leader ini di minggu ini -> 0
+                elseif ($detailIdsThisWeek->isEmpty()) {
                     $leaderData[] = 0;
                 } else {
-                    // Berapa jadwal yang UDAH DIKERJAIN minggu ini?
-                    // Kita hitung berdasarkan 'schedule_detail_id' unik biar nggak dobel kalau ada revisi
-                    $weekCompleted = $leaderChecksheets->filter(function ($c) use ($week) {
-                        $day = $c->created_at->day;
-                        return $day >= $week['start'] && $day <= $week['end'];
-                    })->pluck('schedule_detail_id')->filter()->unique()->count();
+                    // 🔥 STRICT MILITARY LOGIC: Form HARUS diisi MAKSIMAL di hari terakhir minggu tersebut 🔥
+                    $isCompletedOnTime = $leaderChecksheets->whereIn('schedule_detail_id', $detailIdsThisWeek)
+                        ->filter(function ($c) use ($week) {
+                            // Cek tanggal berapa form ini beneran disubmit ke database
+                            $dayFilled = $c->created_at->day;
 
-                    // RUMUS PESIMIS KLIEN: (Dikerjain / Target Jadwal) * 100
-                    $score = ($weekCompleted / $weekSchedules) * 100;
+                            // Harus selesai KAPANPUN asalkan tidak lebih dari akhir minggu jadwalnya
+                            return $dayFilled <= $week['end'];
+                        })->isNotEmpty();
 
-                    // min(100) buat proteksi aja kalau-kalau ada bug submit dobel dari frontend
-                    $leaderData[] = round(min(100, $score), 2);
+                    $leaderData[] = $isCompletedOnTime ? 100 : 0;
                 }
             }
 
