@@ -80,13 +80,11 @@ class ChecksheetController extends Controller
             ->orderBy('target_user_id')
             ->orderBy('scheduled_date');
 
-        // 🔥 MAGIC FIX: Pisahin logic pencarian Shift!
+        // 🔥 FIX SAKTI: HAPUS `whereNull('shift')` 🔥
+        // Karena SPV bebas shift, kita gausah peduliin kolom shift di database isinya apa
         if ($direction === 'leader_checks_operator') {
             // Leader wajib sesuai shift yang dipilih
             $detailsQuery->where('shift', $currentShift);
-        } else {
-            // Supervisor shift-nya null, jadi filter khusus null
-            $detailsQuery->whereNull('shift');
         }
 
         // Baru dieksekusi get()
@@ -113,7 +111,6 @@ class ChecksheetController extends Controller
                 foreach ($weeklyBlocks as $weekNum => $block) {
                     $firstDetailId = $block[0]->id;
                     $firstDate = Carbon::parse($block[0]->scheduled_date);
-                    $startDate = $firstDate->copy()->startOfDay();
 
                     // Cek apakah checksheet minggu ini udah pernah dikerjain
                     $isCompleted = false;
@@ -124,7 +121,7 @@ class ChecksheetController extends Controller
                         }
                     }
 
-                    // Syarat cuma "Belum dikerjain", Bebas waktu (Bisa Advance) khusus Supervisor!
+                    // Syarat cuma "Belum dikerjain" (Bebas waktu/Advance)
                     if (!$isCompleted) {
                         $targetUser = $block[0]->targetUser;
                         $div = $targetUser?->division?->name ?? 'Tanpa Divisi';
@@ -152,7 +149,6 @@ class ChecksheetController extends Controller
                 foreach ($userDates as $d) {
                     $scheduleDate = Carbon::parse($d->scheduled_date)->startOfDay();
 
-                    // Syarat buat Leader: Belum dikerjain & HARUS HARI INI ATAU TELAT (Gak boleh Advance)
                     if (!in_array($d->id, $completedDetailIds) && $scheduleDate->lte($todayDate)) {
                         $targetUser = $d->targetUser;
                         if (!$targetUser) continue;
@@ -160,11 +156,10 @@ class ChecksheetController extends Controller
                         $fmtDate = $scheduleDate->format('d M');
                         $isLate = $scheduleDate->lessThan($todayDate) ? " (Telat: $fmtDate)" : " (Hari ini)";
 
-                        // 🔥 Ambil nama divisi dari relasi
+                        // Ambil nama divisi dari relasi
                         $div = $targetUser?->division?->name ?? 'Tanpa Divisi';
 
                         $options[] = [
-                            // 🔥 FIX: Pake $d->id (Schedule Detail ID), bukan $targetUser->id
                             'value' => "{$d->id}::{$userId}::{$div}",
                             'label' => ($targetUser->employeeID ?: "OP{$userId}") . ' - ' . $targetUser->name . $isLate,
                         ];
@@ -187,20 +182,19 @@ class ChecksheetController extends Controller
         }
         $startedAtSeconds = session()->get($sessionKey);
 
-        // AMBIL DAFTAR PENGGANTI (Bebas jadwal, 1 Supervisor) 🔥
+        // AMBIL DAFTAR PENGGANTI (Bebas jadwal, 1 Supervisor)
         $penggantiOptions = [];
         if ($phase !== 'leader') {
-            // 1. Cari semua Leader sejawat (Atasan SPV-nya sama)
+            // Cari semua Leader sejawat (Atasan SPV-nya sama)
             $siblingLeaderIds = User::where('superior_id', $me->superior_id)->pluck('employeeID');
 
-            // 2. Tarik semua operator di bawah naungan leader-leader tersebut
+            // Tarik semua operator di bawah naungan leader-leader tersebut
             $penggantiUsers = User::with('division')
                 ->whereIn('superior_id', $siblingLeaderIds)
                 ->where('role', 'operator')
                 ->orderBy('employeeID')
                 ->get();
 
-            // 3. Format datanya biar selaras sama Javascript Frontend
             foreach ($penggantiUsers as $pu) {
                 $div = $pu->division ? $pu->division->name : '-';
                 $penggantiOptions[] = [

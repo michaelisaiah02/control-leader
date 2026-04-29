@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreign('target_user_id')
                 ->references('employeeID')
                 ->on('users')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->unique(['target_user_id', 'scheduled_date'], 'sd_user_date_unique');
+            $table->unique(['schedule_plan_id', 'target_user_id', 'scheduled_date'], 'sd_user_date_unique');
             $table->index(['schedule_plan_id', 'scheduled_date'], 'sd_plan_date_idx');
         });
     }
