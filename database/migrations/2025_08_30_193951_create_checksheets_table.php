@@ -19,7 +19,6 @@ return new class extends Migration
             $table->unsignedInteger('stopwatch_duration')->comment('Durasi dalam detik')->nullable();
             $table->string('phase')->default('awal_shift')
                 ->comment('Fase checksheet: awal_shift, saat_bekerja, setelah_istirahat, akhir_shift, leader');
-            $table->foreign('phase')->references('phase')->on('targets')->cascadeOnDelete();
             $table->integer('score')->unsigned()->comment('Skor checksheet (jumlah poin benar)')->default(0);
 
             // opsional: simpan juga 'scheduled_target' biar report makin jelas
@@ -29,7 +28,7 @@ return new class extends Migration
             // Kolom untuk 4 jawaban Bagian A yang tetap
             $table->integer('shift', false, true)->nullable()
                 ->comment('Shift: 1, 2, 3');
-            $table->date('shift_date')->after('shift')
+            $table->date('shift_date')
                 ->comment('Tanggal logis shift berjalan, bukan tanggal form disubmit');
             $table->string('target');
             $table->foreign('target')->references('employeeID')->on('users')->cascadeOnDelete();
