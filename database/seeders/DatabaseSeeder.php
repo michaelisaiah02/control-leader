@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             QuestionSeeder::class,
             ScheduleSeeder::class,
+            TargetSeeder::class,
         ]);
     }
 }
