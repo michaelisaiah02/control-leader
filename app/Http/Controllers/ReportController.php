@@ -124,7 +124,7 @@ class ReportController extends Controller
 
         $targetValue = $this->getTargetValue('score_supervisor'); // Panggil target dari DB
 
-        $checksheets = Checksheet::with(['checksheet_answers', 'targetUser'])
+        $checksheets = Checksheet::with(['answers', 'targetUser'])
             ->whereMonth('created_at', $date->month)
             ->whereYear('created_at', $date->year)
             ->whereHas('schedulePlan', function ($q) use ($supervisorId) {
@@ -170,7 +170,7 @@ class ReportController extends Controller
                 } else {
                     $totalPoints = $weekData->sum('score');
                     $totalMaxPoints = $weekData->sum(function ($c) {
-                        return $c->checksheet_answers->count() * 2;
+                        return $c->answers->count() * 2;
                     });
 
                     $scorePercentage = $totalMaxPoints > 0 ? ($totalPoints / $totalMaxPoints) * 100 : 0;
