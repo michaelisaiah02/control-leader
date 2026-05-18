@@ -75,9 +75,11 @@
         <div class="col-12 col-md-6 col-lg-4">
             <div class="card login-card rounded-4">
                 <div class="card-body p-4 p-md-5">
-                    <form action="{{ route('login') }}" method="POST" id="loginForm">
+                    <form action="{{ route('login') }}" method="POST" id="loginForm" autocomplete="off">
                         @csrf
-
+                        <!-- Dummy anti-autofill -->
+                        <input type="text" name="fake_username" style="display:none">
+                        <input type="password" name="fake_password" style="display:none">
                         {{-- Employee ID --}}
                         <div class="form-floating mb-3">
                             {{-- UX Hack: inputmode="numeric" biar keyboard HP angka yang muncul --}}
@@ -90,7 +92,7 @@
                         <div class="input-group mb-4">
                             <div class="form-floating grow">
                                 <input type="password" class="form-control" placeholder="Password" id="password"
-                                    name="password" required autocomplete="current-password"
+                                    name="password" required autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
                                     style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
                                 <label for="password" class="text-secondary">Password</label>
                             </div>
