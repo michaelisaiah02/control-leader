@@ -7,6 +7,7 @@ use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\ProblemListController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\Ypq\DivisionController;
 use App\Http\Controllers\Ypq\QuestionController;
 use App\Http\Controllers\Ypq\TargetController;
 use App\Http\Controllers\Ypq\UserController;
@@ -80,6 +81,16 @@ Route::middleware('auth')->group(function () {
                     Route::delete('/delete-user/{id}', 'destroy');
                     Route::get('/search', 'search')->name('search');
                     Route::get('/get-superiors', 'getSuperiors')->name('getSuperiors');
+                });
+
+                // =========================
+                // DIVISIONS CRUD
+                // =========================
+                Route::prefix('divisions')->as('divisions.')->controller(DivisionController::class)->group(function () {
+                    Route::get('/', 'index')->name('index');
+                    Route::post('/store', 'store')->name('store');
+                    Route::put('/update/{id}', 'update')->name('update');
+                    Route::get('/search', 'search')->name('search');
                 });
             });
 

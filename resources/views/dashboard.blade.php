@@ -268,6 +268,13 @@
                         </a>
                     </div>
                     <div class="col my-2">
+                        <a href="{{ route('divisions.index') }}"
+                            class="btn-dashboard d-flex flex-column align-items-center justify-content-center">
+                            <i class="bi bi-diagram-3"></i>
+                            <span>Divisions List</span>
+                        </a>
+                    </div>
+                    <div class="col my-2">
                         <a href="{{ route('users.index') }}"
                             class="btn-dashboard d-flex flex-column align-items-center justify-content-center">
                             <i class="bi bi-person-gear"></i>
