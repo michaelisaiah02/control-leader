@@ -3,8 +3,8 @@
 @section('styles')
     <style>
         /* =========================================
-                                                                                               1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
-                                                                                               ========================================= */
+                                                                                                       1. MAGIC FIX "ANTI TUSUK SATE" (BORDER BLEED)
+                                                                                                       ========================================= */
         .schedule-table {
             border-collapse: separate !important;
             border-spacing: 0;
@@ -25,8 +25,8 @@
         }
 
         /* =========================================
-                                                                                               2. Z-INDEX & STICKY LOGIC
-                                                                                               ========================================= */
+                                                                                                       2. Z-INDEX & STICKY LOGIC
+                                                                                                       ========================================= */
         .schedule-table thead th {
             position: sticky;
             top: 0;
@@ -67,8 +67,8 @@
         }
 
         /* =========================================
-                                                                                               3. UI CELL (EXCEL MODE)
-                                                                                               ========================================= */
+                                                                                                       3. UI CELL (EXCEL MODE)
+                                                                                                       ========================================= */
         .shift-select {
             min-width: 45px !important;
             padding: 4px 0 !important;
@@ -205,7 +205,8 @@
 
                                     <td class="p-0 {{ $bgClass }} position-relative">
                                         <select class="form-select form-select-sm shift-select {{ $colorClass }}"
-                                            data-date="{{ $dateStr }}" {{ $disabled }}>
+                                            data-date="{{ $dateStr }}" {{ $disabled }}
+                                            {{ auth()->user()->role !== 'supervisor' ? 'disabled' : '' }}>
                                             <option value=""></option>
                                             @foreach (['1', '2', '3', 'L'] as $opt)
                                                 <option value="{{ $opt }}"

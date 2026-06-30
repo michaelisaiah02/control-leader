@@ -357,8 +357,23 @@
                                     tooltip: {
                                         callbacks: {
                                             label: function(context) {
-                                                return context.dataset.label + ': ' + context.parsed
-                                                    .y + '%';
+                                                const dsLabel = context.dataset.label;
+                                                const yValue = context.parsed.y;
+                                                let tooltipText = `${dsLabel}: ${yValue}%`;
+
+                                                // 🔥 Cek apakah dataset ini punya info custom operator 🔥
+                                                if (context.dataset.customFilled && context.dataset
+                                                    .customTotal) {
+                                                    const filled = context.dataset.customFilled[
+                                                        context.dataIndex];
+                                                    const total = context.dataset.customTotal[
+                                                        context.dataIndex];
+
+                                                    // Tambahin info (X/Y) di belakang teks tooltip
+                                                    tooltipText += ` (${filled}/${total})`;
+                                                }
+
+                                                return tooltipText;
                                             }
                                         }
                                     }

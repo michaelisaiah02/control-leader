@@ -16,6 +16,7 @@ class ScheduleController extends Controller
     public function index(Request $request)
     {
         // 1. Setup Date
+        $supervisorInput = $request->input('supervisor', auth()->user()->role === 'supervisor' ? auth()->user()->employeeID : auth()->user()->inferiors()->where('role', 'supervisor')->first()->employeeID ?? null);
         $monthInput = $request->input('month', now()->format('Y-m'));
         try {
             $date = Carbon::createFromFormat('Y-m', $monthInput);
@@ -33,7 +34,7 @@ class ScheduleController extends Controller
         // 2. Get/Create Plan (Khusus Supervisor)
         $plan = SchedulePlan::firstOrCreate(
             [
-                'scheduler_id' => auth()->user()->employeeID,
+                'scheduler_id' => $supervisorInput,
                 'month' => $month,
                 'year' => $year,
                 'type' => 'supervisor_checks_leader',
@@ -42,7 +43,7 @@ class ScheduleController extends Controller
 
         // 3. Ambil Semua Leader Aktif (Untuk Dropdown Modal & Mapping Total)
         $leaders = User::where('role', 'leader')
-            ->where('superior_id', auth()->user()->employeeID)
+            ->where('superior_id', $supervisorInput)
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
@@ -102,6 +103,11 @@ class ScheduleController extends Controller
         }
         // --- [ END KANBAN LOGIC ] ---
 
+        $availableSupervisors = User::where('role', 'supervisor')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
         return view('schedule.schedule-supervisor', compact(
             'plan',
             'leaders',
@@ -109,7 +115,8 @@ class ScheduleController extends Controller
             'leaderTotals',
             'daysInMonth',
             'isPastMonth',
-            'isCurrentMonth'
+            'isCurrentMonth',
+            'availableSupervisors'
         ));
     }
 
@@ -256,8 +263,12 @@ class ScheduleController extends Controller
         // 2. Ambil List Leader (Buat Dropdown Filter)
         $availableLeaders = User::where('role', 'leader')
             ->where('is_active', true)
-            ->where('superior_id', auth()->user()->employeeID)
+            // Kalau role user sekarang Supervisor, kita filter leader yang dia supervise aja
+            ->when(auth()->user()->role === 'supervisor', function ($query) {
+                $query->where('superior_id', auth()->user()->employeeID);
+            })
             ->orderBy('employeeID')
+            ->orderBy('name')
             ->get();
 
         // 3. Tentukan Leader Terpilih

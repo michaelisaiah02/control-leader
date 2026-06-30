@@ -64,14 +64,19 @@ class DivisionController extends Controller
         $query = $request->input('query');
 
         $divisions = Division::with('department')
-            ->where('name', 'like', "%{$query}%")
-            ->orWhereHas('department', function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%");
+            ->when($query, function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                    ->orWhereHas('department', function ($q) use ($query) {
+                        $q->where('name', 'like', "%{$query}%");
+                    });
             })
+            ->orderBy(Department::select('name')->whereColumn('departments.id', 'divisions.department_id'))
+            ->orderBy('name')
             ->get();
 
         return response()->json([
             'html' => view('divisions.partials.table_rows', compact('divisions'))->render(),
+
         ]);
     }
 }

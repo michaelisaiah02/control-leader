@@ -355,8 +355,35 @@
                                     tooltip: {
                                         callbacks: {
                                             label: function(context) {
-                                                return context.dataset.label + ': ' + context.parsed
-                                                    .y + '%';
+                                                const dsLabel = context.dataset.label;
+                                                const yValue = context.parsed.y;
+                                                let tooltipText = `${dsLabel}: ${yValue}%`;
+
+                                                // Logic buat Chart Consistency (Data Custom: customFilled & customTotal)
+                                                if (context.dataset.customFilled !== undefined &&
+                                                    context.dataset.customTotal !== undefined) {
+                                                    const filled = context.dataset.customFilled[
+                                                        context.dataIndex];
+                                                    const total = context.dataset.customTotal[
+                                                        context.dataIndex];
+                                                    tooltipText += ` (${filled}/${total})`;
+                                                }
+
+                                                // 🔥 Logic baru buat Chart Score (Data Custom: customPoints & customMax) 🔥
+                                                if (context.dataset.customPoints !== undefined &&
+                                                    context.dataset.customMax !== undefined) {
+                                                    const points = context.dataset.customPoints[
+                                                        context.dataIndex];
+                                                    const max = context.dataset.customMax[context
+                                                        .dataIndex];
+
+                                                    // Biar pas hari libur / 0 poin nggak aneh muncul (0/0)
+                                                    if (max > 0) {
+                                                        tooltipText += ` (${points}/${max})`;
+                                                    }
+                                                }
+
+                                                return tooltipText;
                                             }
                                         }
                                     }

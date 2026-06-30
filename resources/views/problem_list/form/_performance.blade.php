@@ -33,10 +33,17 @@
     </div>
 
     {{-- Problem Description --}}
-    <div class="col-12 mt-1">
+    <div class="col-6 mt-1">
         <label class="form-label small fw-bold text-danger text-uppercase mb-1">
             <i class="bi bi-exclamation-octagon me-1"></i> Problem
         </label>
         <textarea class="form-control bg-light text-dark border-0 shadow-sm" rows="2" readonly>{{ $problem->problem }}</textarea>
+    </div>
+    <div class="col-6 mt-1">
+        <label class="form-label small fw-bold text-info text-uppercase mb-1">
+            <i class="bi bi-question-circle me-1"></i> Pertanyaan (Checksheet)
+        </label>
+        <input type="text" class="form-control bg-light text-muted border-0"
+            value="{{ $problem->checksheetAnswer->question_text }}" readonly>
     </div>
 </div>

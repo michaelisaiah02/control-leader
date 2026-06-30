@@ -38,12 +38,14 @@ class ProblemListController extends Controller
     {
         $roleFilter = explode('-', $type)[0]; // 'leader' atau 'supervisor'
         $isPerformance = str_contains($type, 'performance');
+        $loggedInDepartment = auth()->user()->department_id;
 
         // Tarik data beda tabel tergantung tipe
         if ($isPerformance) {
             $Problems = Problem::with(['user', 'inferior'])
                 ->whereHas('user', function ($query) use ($roleFilter) {
-                    $query->where('role', $roleFilter);
+                    $query->where('role', $roleFilter)
+                        ->where('department_id', auth()->user()->department_id);
                 })
                 ->latest()
                 ->get();
@@ -51,6 +53,9 @@ class ProblemListController extends Controller
             // Consistency
             $Problems = ConsistencyProblem::with(['user', 'inferior'])
                 ->where('role_type', $roleFilter)
+                ->whereHas('user', function ($query) use ($loggedInDepartment) {
+                    $query->where('department_id', $loggedInDepartment);
+                })
                 ->latest()
                 ->get();
         }

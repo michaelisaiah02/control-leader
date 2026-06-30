@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Checksheet;
 use App\Models\ConsistencyProblem;
 use App\Models\ScheduleDetail;
+use App\Models\User; // 🔥 Jangan lupa import model User
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -37,33 +38,39 @@ class CheckConsistency extends Command
         // ==========================================
         // 1. CEK LATE/ADVANCED SUPERVISOR (RENTANG TANGGAL)
         // ==========================================
-        // Ambil checksheet Supervisor yang disubmit kemarin
         $checksheetsKemarin = Checksheet::with('schedulePlan')->whereDate('created_at', $kemarin)->get();
 
         foreach ($checksheetsKemarin as $cs) {
             $plan = $cs->schedulePlan;
             $roleType = $plan->type === 'leader_checks_operator' ? 'leader' : 'supervisor';
 
-            // Leader di-skip karena udah dihukum real-time kemaren pas ngisi form
             if ($roleType === 'leader') {
                 continue;
             }
 
-            // ⚡ Logic Rentang Tanggal Supervisor ⚡
             $statusWaktu = $this->cekStatusSupervisor($kemarin, $plan->id, $cs->target);
 
             if ($statusWaktu === 'Late' || $statusWaktu === 'Advanced') {
-                ConsistencyProblem::create([
-                    'user_id' => $plan->scheduler_id,
-                    'inferior_id' => $cs->target,
-                    'role_type' => 'supervisor',
-                    'remark' => $statusWaktu,
-                    'schedule_detail_id' => $cs->schedule_detail_id,
-                    // 'problem'     => "Pengisian checksheet pada " . Carbon::parse($kemarin)->format('d M Y') . " berada di luar rentang jadwal aktif (Status: {$statusWaktu}).",
-                    'problem' => $statusWaktu === 'Late' ? 'Checksheet terlambat diisi' : 'Checksheet diisi lebih cepat dari schedule',
-                    'status' => 'open',
-                    'due_date' => Carbon::today()->addDays(2), // Otomatis H+2
-                ]);
+                // 🔥 Tarik data target buat ngambil nama
+                $targetUser = User::where('employeeID', $cs->target)->first();
+                $targetName = $targetUser ? $targetUser->name : 'Unknown';
+
+                $baseProblem = $statusWaktu === 'Late' ? 'Checksheet terlambat diisi' : 'Checksheet diisi lebih cepat dari schedule';
+
+                ConsistencyProblem::updateOrCreate(
+                    [
+                        'schedule_detail_id' => $cs->schedule_detail_id,
+                    ],
+                    [
+                        'user_id' => $plan->scheduler_id,
+                        'inferior_id' => $cs->target,
+                        'role_type' => 'supervisor',
+                        'remark' => $statusWaktu,
+                        'problem' => "{$baseProblem} - {$cs->target} - {$targetName}",
+                        'status' => 'open', // Bakal mereset status ke open kalo ditimpa
+                        'due_date' => Carbon::today()->addDays(2),
+                    ]
+                );
             }
         }
 
@@ -78,18 +85,15 @@ class CheckConsistency extends Command
             $auditeeId = $sd->target_user_id;
 
             if ($roleType === 'leader') {
-                // LEADER: Cek strict apakah dia ngisi di hari itu?
                 $punyaChecksheet = Checksheet::whereHas('schedulePlan', fn($q) => $q->where('scheduler_id', $auditorId))
                     ->where('target', $auditeeId)
                     ->whereDate('created_at', $mingguLalu)
                     ->exists();
 
                 if (! $punyaChecksheet) {
-                    $this->buatProblemMiss($sd, $roleType, $auditorId, $auditeeId, 'Tidak mengisi checksheet');
+                    $this->buatProblemMiss($sd, $roleType, $auditorId, $auditeeId, 'Checksheet tidak diisi');
                 }
             } else {
-                // SUPERVISOR: Cek per Rentang (Block)
-                // Pastikan H-7 ini adalah HARI TERAKHIR dari rentang jadwalnya (biar nggak di-generate dobel tiap hari)
                 $besok = Carbon::parse($mingguLalu)->addDay()->format('Y-m-d');
                 $isEndOfBlock = ! ScheduleDetail::where('schedule_plan_id', $sd->schedule_plan_id)
                     ->where('target_user_id', $auditeeId)
@@ -97,7 +101,6 @@ class CheckConsistency extends Command
                     ->exists();
 
                 if ($isEndOfBlock) {
-                    // Tarik mundur tanggalnya buat nyari awal rentang
                     $startOfBlock = Carbon::parse($mingguLalu);
                     while (ScheduleDetail::where('schedule_plan_id', $sd->schedule_plan_id)
                         ->where('target_user_id', $auditeeId)
@@ -107,7 +110,6 @@ class CheckConsistency extends Command
                         $startOfBlock->subDay();
                     }
 
-                    // Cek apakah ada pengisian di dalam rentang tersebut?
                     $punyaChecksheet = Checksheet::whereHas('schedulePlan', fn($q) => $q->where('scheduler_id', $auditorId))
                         ->where('target', $auditeeId)
                         ->whereBetween('created_at', [
@@ -116,7 +118,7 @@ class CheckConsistency extends Command
                         ])->exists();
 
                     if (! $punyaChecksheet) {
-                        $this->buatProblemMiss($sd, $roleType, $auditorId, $auditeeId, 'Tidak mengisi checksheet');
+                        $this->buatProblemMiss($sd, $roleType, $auditorId, $auditeeId, 'Checksheet tidak diisi');
                     }
                 }
             }
@@ -125,25 +127,32 @@ class CheckConsistency extends Command
         $this->info('Pengecekan konsistensi selesai! ✨');
     }
 
-    // Helper nembak ke DB biar kode di atas rapi
+    // Helper nembak ke DB
     private function buatProblemMiss($sd, $roleType, $auditorId, $auditeeId, $pesanProblem)
     {
-        ConsistencyProblem::create([
-            'user_id' => $auditorId,
-            'inferior_id' => $auditeeId,
-            'role_type' => $roleType,
-            'remark' => 'Miss',
-            'schedule_detail_id' => $sd->id,
-            'problem' => $pesanProblem,
-            'status' => 'open',
-            'due_date' => Carbon::today()->addDays(2),
-        ]);
+        // 🔥 Tarik data target buat ngambil nama
+        $targetUser = User::where('employeeID', $auditeeId)->first();
+        $targetName = $targetUser ? $targetUser->name : 'Unknown';
+
+        ConsistencyProblem::updateOrCreate(
+            [
+                'schedule_detail_id' => $sd->id,
+            ],
+            [
+                'user_id' => $auditorId,
+                'inferior_id' => $auditeeId,
+                'role_type' => $roleType,
+                'remark' => 'Miss',
+                'problem' => "{$pesanProblem} - {$auditeeId} - {$targetName}",
+                'status' => 'open',
+                'due_date' => Carbon::today()->addDays(2),
+            ]
+        );
     }
 
-    // 🧠 OTAK UTAMA: Algoritma Pencari Rentang (Block) Tanggal
+    // Algoritma Pencari Rentang (Block) Tanggal
     private function cekStatusSupervisor($tanggalIsi, $planId, $targetId)
     {
-        // 1. Ambil semua jadwal untuk plan & target ini
         $jadwals = ScheduleDetail::where('schedule_plan_id', $planId)
             ->where('target_user_id', $targetId)
             ->orderBy('scheduled_date')
@@ -155,7 +164,6 @@ class CheckConsistency extends Command
             return 'Normal';
         }
 
-        // 2. Kelompokkan jadwal beruntun jadi "Block" (Misal: 1-4 dan 6-10 dipisah)
         $blocks = [];
         $currentBlock = [];
 
@@ -164,9 +172,9 @@ class CheckConsistency extends Command
                 $currentBlock[] = $date;
             } else {
                 $lastDate = end($currentBlock);
-                if ($date->diffInDays($lastDate) == 1) { // Kalau harinya nyambung
+                if ($date->diffInDays($lastDate) == 1) {
                     $currentBlock[] = $date;
-                } else { // Kalau ada jeda / gap
+                } else {
                     $blocks[] = $currentBlock;
                     $currentBlock = [$date];
                 }
@@ -176,7 +184,6 @@ class CheckConsistency extends Command
             $blocks[] = $currentBlock;
         }
 
-        // 3. Tentukan tanggal isi masuk ke block mana
         $isiDate = Carbon::parse($tanggalIsi)->startOfDay();
         $minDistance = PHP_INT_MAX;
         $status = 'Normal';
@@ -185,12 +192,10 @@ class CheckConsistency extends Command
             $start = $block[0];
             $end = end($block);
 
-            // Kalau ngisi tepat di dalam rentang = Normal
             if ($isiDate->between($start, $end)) {
                 return 'Normal';
             }
 
-            // Hitung mana block yang paling deket (biar sistem tau ini late dari jadwal sebelumnya, atau advanced dari jadwal berikutnya)
             $distStart = $isiDate->diffInDays($start);
             $distEnd = $isiDate->diffInDays($end);
             $dist = min($distStart, $distEnd);
@@ -198,9 +203,9 @@ class CheckConsistency extends Command
             if ($dist < $minDistance) {
                 $minDistance = $dist;
                 if ($isiDate->lessThan($start)) {
-                    $status = 'Advanced'; // Ngisi sebelum jadwal terdekat mulai
+                    $status = 'Advanced';
                 } elseif ($isiDate->greaterThan($end)) {
-                    $status = 'Late'; // Ngisi setelah jadwal terdekat lewat
+                    $status = 'Late';
                 }
             }
         }

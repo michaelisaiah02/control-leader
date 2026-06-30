@@ -255,11 +255,13 @@
                     </div>
 
                 </div>
+            </div>
 
-                {{-- ROLE: Management atau YPQ --}}
-            @elseif(in_array(auth()->user()->role, ['management', 'ypq']))
-                <div
-                    class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-xl-4 justify-content-center text-center my-auto pb-5 pb-md-0">
+            {{-- ROLE: Management atau YPQ --}}
+        @elseif(in_array(auth()->user()->role, ['management', 'ypq']))
+            <div id="ypq-menu-container" class="my-auto pb-5 pb-md-0">
+                <div id="menu-main"
+                    class="row row-cols-1 row-cols-md-2 {{ auth()->user()->role === 'ypq' ? 'row-cols-lg-4' : 'row-cols-lg-3' }} g-3 g-xl-4 justify-content-center text-center my-auto pb-5 pb-md-0">
                     <div class="col my-2">
                         <a href="{{ route('question.index') }}"
                             class="btn-dashboard d-flex flex-column align-items-center justify-content-center">
@@ -308,16 +310,43 @@
                             <span>Target</span>
                         </a>
                     </div>
+                    @if (auth()->user()->role === 'ypq')
+                        <div class="col my-2">
+                            <button type="button" class="btn-dashboard w-100 h-100" id="btn-show-database">
+                                <i class="bi bi-database-gear"></i>
+                                <span>Schedule</small></span>
+                            </button>
+                        </div>
+                    @endif
                 </div>
 
+                @if (auth()->user()->role === 'ypq')
+                    <div id="menu-database" class="row g-3 d-none">
+                        <!-- KOLOM MENU -->
 
-                {{-- DEFAULT: NO ACCESS --}}
-            @else
-                <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh;">
-                    <i class="bi bi-shield-lock display-1 text-secondary mb-3"></i>
-                    <h2 class="text-danger fw-bold">PERMISSION DENIED</h2>
-                    <p class="text-muted">You do not have access to this page.</p>
-                </div>
+                        <div class="col my-2">
+                            <a href="{{ route('schedule.leader') }}" class="btn-dashboard">
+                                <i class="bi bi-calendar-check"></i><span>Schedule Ops</span>
+                            </a>
+                        </div>
+
+                        <div class="col my-2">
+                            <a href="{{ route('schedule.index') }}" class="btn-dashboard">
+                                <i class="bi bi-calendar-range"></i><span>Schedule Leader</span>
+                            </a>
+                        </div>
+
+                    </div>
+                @endif
+            </div>
+
+            {{-- DEFAULT: NO ACCESS --}}
+        @else
+            <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh;">
+                <i class="bi bi-shield-lock display-1 text-secondary mb-3"></i>
+                <h2 class="text-danger fw-bold">PERMISSION DENIED</h2>
+                <p class="text-muted">You do not have access to this page.</p>
+            </div>
         @endif
 
 

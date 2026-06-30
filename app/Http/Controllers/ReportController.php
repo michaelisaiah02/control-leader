@@ -157,6 +157,10 @@ class ReportController extends Controller
 
         foreach ($leaders as $leader) {
             $leaderData = [];
+            // 🔥 ARRAY BARU BUAT NYIMPEN POIN MENTAH 🔥
+            $customPoints = [];
+            $customMax = [];
+
             $leaderChecksheets = $checksheets->where('target', $leader->employeeID);
 
             foreach ($weeks as $week) {
@@ -167,6 +171,8 @@ class ReportController extends Controller
 
                 if ($weekData->isEmpty()) {
                     $leaderData[] = 0;
+                    $customPoints[] = 0;
+                    $customMax[] = 0;
                 } else {
                     $totalPoints = $weekData->sum('score');
                     $totalMaxPoints = $weekData->sum(function ($c) {
@@ -175,6 +181,10 @@ class ReportController extends Controller
 
                     $scorePercentage = $totalMaxPoints > 0 ? ($totalPoints / $totalMaxPoints) * 100 : 0;
                     $leaderData[] = round($scorePercentage, 2);
+
+                    // 🔥 SIMPAN TOTAL POIN & POIN MAKSIMAL 🔥
+                    $customPoints[] = $totalPoints;
+                    $customMax[] = $totalMaxPoints;
                 }
             }
 
@@ -183,6 +193,9 @@ class ReportController extends Controller
                 'label' => $leader->name,
                 'data' => $leaderData,
                 'backgroundColor' => $colors[$colorIndex % count($colors)],
+                // 🔥 LEMPAR KE FRONTEND BIAR DIBACA SAMA JS 🔥
+                'customPoints' => $customPoints,
+                'customMax' => $customMax,
             ];
             $colorIndex++;
         }
@@ -213,7 +226,6 @@ class ReportController extends Controller
 
         $days_in_month = $date->daysInMonth;
 
-        // 🔥 Ganti created_at jadi shift_date
         $checksheets = Checksheet::with('answers')
             ->whereHas('schedulePlan', function ($q) use ($leaderId) {
                 $q->where('scheduler_id', $leaderId)
@@ -228,22 +240,29 @@ class ReportController extends Controller
         $targetData = [];
         $labels = [];
 
+        // 🔥 ARRAY BARU BUAT NYIMPEN POIN 🔥
+        $customPointsData = [];
+        $customMaxData = [];
+
         for ($day = 1; $day <= $days_in_month; $day++) {
             $currentDate = $date->copy()->day($day);
             $labels[] = $day;
             $targetData[] = $targetValue;
 
-            // 🔥 Filter berdasarkan shift_date
             $dayData = $checksheets->filter(fn($c) => Carbon::parse($c->shift_date)->day == $day);
 
             if ($dayData->isEmpty() && $currentDate->isWeekend()) {
                 $tScoreData[] = 0;
                 $liburData[] = 100;
+                $customPointsData[] = 0;
+                $customMaxData[] = 0;
             } else {
                 $liburData[] = 0;
 
                 if ($dayData->isEmpty()) {
                     $tScoreData[] = 0;
+                    $customPointsData[] = 0;
+                    $customMaxData[] = 0;
                 } else {
                     $totalPoints = $dayData->sum('score');
                     $totalMaxPoints = $dayData->sum(function ($c) {
@@ -252,6 +271,10 @@ class ReportController extends Controller
 
                     $scorePercentage = $totalMaxPoints > 0 ? ($totalPoints / $totalMaxPoints) * 100 : 0;
                     $tScoreData[] = round($scorePercentage, 2);
+
+                    // 🔥 SIMPAN POIN KE ARRAY 🔥
+                    $customPointsData[] = $totalPoints;
+                    $customMaxData[] = $totalMaxPoints;
                 }
             }
         }
@@ -264,6 +287,9 @@ class ReportController extends Controller
                     'label' => 'T. Score',
                     'data' => $tScoreData,
                     'backgroundColor' => '#2171b5',
+                    // 🔥 Lempar data mentahnya ke frontend 🔥
+                    'customPoints' => $customPointsData,
+                    'customMax' => $customMaxData,
                 ],
                 [
                     'type' => 'bar',
@@ -315,6 +341,9 @@ class ReportController extends Controller
 
         foreach ($phases as $key => $config) {
             $phaseDataArray = [];
+            // 🔥 ARRAY BARU BUAT NYIMPEN POIN MENTAH 🔥
+            $customPointsData = [];
+            $customMaxData = [];
 
             for ($day = 1; $day <= $days_in_month; $day++) {
                 // 🔥 Filter berdasarkan shift_date
@@ -322,6 +351,8 @@ class ReportController extends Controller
 
                 if ($dayData->isEmpty()) {
                     $phaseDataArray[] = 0;
+                    $customPointsData[] = 0;
+                    $customMaxData[] = 0;
                 } else {
                     $avgPercentage = $dayData->map(function ($c) {
                         $totalPoints = $c->score;
@@ -330,6 +361,15 @@ class ReportController extends Controller
                     })->avg();
 
                     $phaseDataArray[] = round($avgPercentage / 4, 2);
+
+                    // 🔥 HITUNG TOTAL POIN & MAKSIMAL POIN MENTAH 🔥
+                    $sumPoints = $dayData->sum('score');
+                    $sumMax = $dayData->sum(function ($c) {
+                        return $c->answers->count() * 2;
+                    });
+
+                    $customPointsData[] = $sumPoints;
+                    $customMaxData[] = $sumMax;
                 }
             }
 
@@ -338,6 +378,9 @@ class ReportController extends Controller
                 'label' => $config['label'],
                 'data' => $phaseDataArray,
                 'backgroundColor' => $config['color'],
+                // 🔥 LEMPAR DATA CUSTOM KE FRONTEND 🔥
+                'customPoints' => $customPointsData,
+                'customMax' => $customMaxData,
             ];
         }
 
@@ -401,6 +444,10 @@ class ReportController extends Controller
 
         foreach ($leaders as $leader) {
             $leaderData = [];
+            // 🔥 ARRAY BARU BUAT NYIMPEN JUMLAH LEADER 🔥
+            $customFilled = [];
+            $customTotal = [];
+
             $leaderSchedules = $schedules->where('target_user_id', $leader->employeeID);
             $leaderChecksheets = $checksheets->where('target', $leader->employeeID);
 
@@ -416,22 +463,29 @@ class ReportController extends Controller
                 // Kalau minggu ini belum dimulai sama sekali (Masa Depan) -> 0
                 if ($weekStartDate->greaterThan($today)) {
                     $leaderData[] = 0;
+                    $customFilled[] = 0;
+                    $customTotal[] = 0;
                 }
                 // Kalau emang ga ada jadwal buat leader ini di minggu ini -> 0
                 elseif ($detailIdsThisWeek->isEmpty()) {
                     $leaderData[] = 0;
+                    $customFilled[] = 0;
+                    $customTotal[] = 0;
                 } else {
-                    // 🔥 STRICT MILITARY LOGIC: Form HARUS diisi MAKSIMAL di hari terakhir minggu tersebut 🔥
-                    $isCompletedOnTime = $leaderChecksheets->whereIn('schedule_detail_id', $detailIdsThisWeek)
+                    // Cek checksheet yang valid di minggu ini
+                    $validChecksheets = $leaderChecksheets->whereIn('schedule_detail_id', $detailIdsThisWeek)
                         ->filter(function ($c) use ($week) {
-                            // Cek tanggal berapa form ini beneran disubmit ke database
                             $dayFilled = $c->created_at->day;
-
-                            // Harus selesai KAPANPUN asalkan tidak lebih dari akhir minggu jadwalnya
                             return $dayFilled <= $week['end'];
-                        })->isNotEmpty();
+                        });
+
+                    $isCompletedOnTime = $validChecksheets->isNotEmpty();
 
                     $leaderData[] = $isCompletedOnTime ? 100 : 0;
+
+                    // 🔥 SIMPAN TOTAL JADWAL & BERAPA YANG UDAH DIKERJAIN 🔥
+                    $customTotal[] = $detailIdsThisWeek->count();
+                    $customFilled[] = $validChecksheets->unique('schedule_detail_id')->count();
                 }
             }
 
@@ -440,6 +494,9 @@ class ReportController extends Controller
                 'label' => $leader->name,
                 'data' => $leaderData,
                 'backgroundColor' => $colors[$colorIndex % count($colors)],
+                // 🔥 Lempar data mentahnya ke frontend biar ditangkep JS 🔥
+                'customFilled' => $customFilled,
+                'customTotal' => $customTotal
             ];
             $colorIndex++;
         }
@@ -466,9 +523,7 @@ class ReportController extends Controller
         $date = Carbon::createFromFormat('Y-m', $monthInput);
         $leaderId = $request->leader_id;
 
-        // Jangan lupa panggil fungsi target dinamisnya
         $targetValue = $this->getTargetValue('consistency_leader');
-
         $days_in_month = $date->daysInMonth;
 
         $totalOperators = User::where('superior_id', $leaderId)
@@ -483,8 +538,6 @@ class ReportController extends Controller
             ->get();
 
         $labels = range(1, $days_in_month);
-
-        // Garis target hijau dinamis dari DB
         $targetData = array_fill(0, $days_in_month, $targetValue);
 
         $phases = [
@@ -501,29 +554,45 @@ class ReportController extends Controller
             'setelah_istirahat' => [],
             'akhir_shift' => []
         ];
-        $liburData = [];
 
+        // 🔥 ARRAY BARU BUAT NYIMPEN ANGKA 7/10 🔥
+        $filledDataArrays = [
+            'awal_shift' => [],
+            'saat_bekerja' => [],
+            'setelah_istirahat' => [],
+            'akhir_shift' => []
+        ];
+        $totalDataArrays = [
+            'awal_shift' => [],
+            'saat_bekerja' => [],
+            'setelah_istirahat' => [],
+            'akhir_shift' => []
+        ];
+
+        $liburData = [];
         $today = now()->startOfDay();
 
         for ($day = 1; $day <= $days_in_month; $day++) {
             $currentDate = $date->copy()->day($day);
 
-            // 🔥 BLOCK MASA DEPAN: Kalau harinya belum kejadian, PAKSA JADI 0 SEMUA 🔥
             if ($currentDate->greaterThan($today)) {
                 $liburData[] = 0;
                 foreach ($phases as $key => $config) {
                     $phaseDataArrays[$key][] = 0;
+                    $filledDataArrays[$key][] = 0;
+                    $totalDataArrays[$key][] = 0;
                 }
-                continue; // Langsung lompat ke hari berikutnya
+                continue;
             }
 
             $dayChecksheets = $checksheets->filter(fn($c) => $c->created_at->day == $day);
 
-            // Libur cuma aktif kalau GAK ADA isian, hari Weekend, DAN harinya UDAH LEWAT/HARI INI
             if ($dayChecksheets->isEmpty() && $currentDate->isWeekend()) {
                 $liburData[] = 100;
                 foreach ($phases as $key => $config) {
                     $phaseDataArrays[$key][] = 0;
+                    $filledDataArrays[$key][] = 0;
+                    $totalDataArrays[$key][] = 0;
                 }
             } else {
                 $liburData[] = 0;
@@ -531,6 +600,8 @@ class ReportController extends Controller
                 if ($totalOperators == 0) {
                     foreach ($phases as $key => $config) {
                         $phaseDataArrays[$key][] = 0;
+                        $filledDataArrays[$key][] = 0;
+                        $totalDataArrays[$key][] = 0;
                     }
                 } else {
                     foreach ($phases as $key => $config) {
@@ -540,6 +611,10 @@ class ReportController extends Controller
 
                         $score = ($filledChecksheets / $totalOperators) * 25;
                         $phaseDataArrays[$key][] = round(min(25, $score), 2);
+
+                        // 🔥 SIMPAN JUMLAH OPERATOR KE ARRAY 🔥
+                        $filledDataArrays[$key][] = $filledChecksheets;
+                        $totalDataArrays[$key][] = $totalOperators;
                     }
                 }
             }
@@ -551,6 +626,9 @@ class ReportController extends Controller
                 'label' => $config['label'],
                 'data' => $phaseDataArrays[$key],
                 'backgroundColor' => $config['color'],
+                // 🔥 Lempar data mentahnya ke frontend lewat custom property 🔥
+                'customFilled' => $filledDataArrays[$key],
+                'customTotal' => $totalDataArrays[$key]
             ];
         }
 

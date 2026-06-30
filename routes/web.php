@@ -89,7 +89,7 @@ Route::middleware('auth')->group(function () {
                 Route::prefix('divisions')->as('divisions.')->controller(DivisionController::class)->group(function () {
                     Route::get('/', 'index')->name('index');
                     Route::post('/store', 'store')->name('store');
-                    Route::put('/update/{id}', 'update')->name('update');
+                    Route::post('/update/{id}', 'update')->name('update');
                     Route::get('/search', 'search')->name('search');
                 });
             });

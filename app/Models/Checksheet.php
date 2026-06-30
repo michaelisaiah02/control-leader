@@ -104,16 +104,26 @@ class Checksheet extends Model
             }
 
             if ($statusWaktu === 'Late') {
-                ConsistencyProblem::create([
-                    'user_id' => $plan->scheduler_id,
-                    'inferior_id' => $checksheet->target,
-                    'role_type' => 'leader',
-                    'remark' => 'Late',
-                    'problem' => 'Checksheet terlambat diisi',
-                    // 'problem'     => "Mengisi checksheet phase {$phase} (Shift {$shift}) tidak sesuai standar waktu. Diisi pada jam: " . $waktuIsi->format('H:i'),
-                    'status' => 'open',
-                    'due_date' => Carbon::parse($checksheet->created_at)->addDays(2), // H+2 realtime
-                ]);
+
+                // 🔥 1. Tarik nama target biar jelas di laporannya 🔥
+                $targetUser = User::where('employeeID', $checksheet->target)->first();
+                $targetName = $targetUser ? $targetUser->name : 'Unknown';
+
+                // 🔥 2. Pake updateOrCreate dan kunci pakai schedule_detail_id 🔥
+                ConsistencyProblem::updateOrCreate(
+                    [
+                        'schedule_detail_id' => $checksheet->schedule_detail_id,
+                    ],
+                    [
+                        'user_id' => $plan->scheduler_id,
+                        'inferior_id' => $checksheet->target,
+                        'role_type' => 'leader',
+                        'remark' => 'Late',
+                        'problem' => "Checksheet terlambat diisi - {$checksheet->target} - {$targetName}",
+                        'status' => 'open',
+                        'due_date' => Carbon::parse($checksheet->created_at)->addDays(2),
+                    ]
+                );
             }
         });
     }

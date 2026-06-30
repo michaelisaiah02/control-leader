@@ -157,15 +157,30 @@
                             <i class="bi bi-kanban me-1"></i> Control Leader Plan
                         </h6>
                     </div>
-                    <div class="col-12 col-md-auto">
-                        <form action="{{ route('schedule.index') }}" method="get" class="m-0">
-                            <div class="input-group input-group-sm justify-content-center justify-content-md-end">
+                    <div class="col-auto">
+                        <form action="{{ route('schedule.index') }}" method="get" class="m-0 d-flex gap-2">
+                            <div class="input-group input-group-sm shadow-sm">
                                 <span class="input-group-text bg-white fw-bold text-muted border-end-0">Month:</span>
                                 <input type="month" name="month" id="monthPicker"
                                     value="{{ $plan->year }}-{{ str_pad($plan->month, 2, '0', STR_PAD_LEFT) }}"
                                     class="form-control form-control-sm border-start-0 fw-bold text-primary"
-                                    style="max-width: 150px;" onchange="this.form.submit()" />
+                                    onchange="this.form.submit()" />
                             </div>
+                            @if (auth()->user()->role !== 'supervisor')
+                                <div class="input-group input-group-sm shadow-sm">
+                                    <span class="input-group-text bg-white fw-bold text-muted border-end-0"><i
+                                            class="bi bi-person-badge"></i></span>
+                                    <select class="form-select form-select-sm border-start-0 fw-bold text-primary"
+                                        name="supervisor" onchange="this.form.submit()">
+                                        @foreach ($availableSupervisors as $supervisor)
+                                            <option value="{{ $supervisor->employeeID }}"
+                                                {{ request('supervisor') == $supervisor->employeeID ? 'selected' : '' }}>
+                                                {{ $supervisor->employeeID . ' - ' . $supervisor->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
                         </form>
                     </div>
                 </div>
@@ -174,7 +189,7 @@
 
         {{-- SECTION 2: KANBAN BOARD --}}
         <div class="card position-relative bg-white rounded-3 shadow-sm p-2 mb-2 border-0">
-            <div class="kanban-wrapper">
+            <div class="kanban-wrapper" style="min-height: 200px">
 
                 @foreach ($weeksData as $weekNum => $weekData)
                     @php
@@ -221,8 +236,8 @@
                         </div>
 
                         {{-- Tombol Add --}}
-                        @if (!$isLocked && count($weekData['leaders']) < 3)
-                            <button class="btn btn-add-leader w-100 mt-2 shadow-sm add-leader-btn" data-bs-toggle="modal"
+                        @if (!$isLocked && count($weekData['leaders']) < 3 && auth()->user()->role === 'supervisor')
+                            <button class="btn btn-add-leader w-100 mt-2 shadow-sm" data-bs-toggle="modal"
                                 data-bs-target="#addLeaderModal" data-week="{{ $weekNum }}">
                                 <i class="bi bi-plus-lg me-1"></i> Add Leader
                             </button>
@@ -399,7 +414,7 @@
         $(document).ready(function() {
 
             // 1. BUKA MODAL ADD LEADER & FILTER DROPDOWN
-            $('.add-leader-btn').on('click', function() {
+            $('.btn-add-leader').on('click', function() {
                 const week = $(this).data('week');
                 $('#selectedWeek').val(week);
                 $('#modalWeekTitle').text('Week ' + week);

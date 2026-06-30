@@ -126,21 +126,20 @@
             const ROUTES = {
                 SEARCH: "{{ route('divisions.search') }}",
                 STORE: "{{ route('divisions.store') }}",
-                UPDATE: "{{ url('divisions/update-division') }}"
+                UPDATE: "{{ url('divisions/update') }}"
             };
 
             let debounceTimer;
 
             // 1. Fetch Divisions Logic
-            function fetchDivisions(keyword = '', page = 1) {
+            function fetchDivisions(keyword = '') {
                 $('#table-loader').removeClass('d-none');
 
                 $.ajax({
                     url: ROUTES.SEARCH,
                     type: 'GET',
                     data: {
-                        keyword: keyword,
-                        page: page
+                        query: keyword
                     },
                     success: function(response) {
                         $('#division-table-body').html(response.html);
